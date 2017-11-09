@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html ng-app="app">
+    <head>
+        <title>Angular Routing App</title>
+        <meta charset="utf-8">
+        <script src="{% static 'js/angular.min.js' %}"></script>
+        <script src="{% static 'js/angular-route.js' %}"></script>
+        <script type="text/javascript">
+            var app = angular.module('app', ['ngRoute'])
+                .config(function($routeProvider) {
+                    $routeProvider
+                        .when('/', {
+                            templateUrl: "/static/pages/page1.html"
+                        })
+                        .when('/foo', {
+                            templateUrl: "static/pages/foo.html",
+                            controller: "fooController"
+                        })
+                        .when('/bar', {
+                            templateUrl: "static/pages/bar.html"
+                        })
+                });
+
+                app.controller('fooController', function($scope) {
+                    $scope.val = "This is my bar"
+                });
+        </script>
+    </head>
+    <body>
+        {% verbatim %}
+        <base href="/"></base>
+        <a href="/#/foo">Foo</a>
+        <a href="/#/bar">Bar</a>
+        <div ng-view></div>
+        {% endverbatim %}
+    </body>
+</html>
