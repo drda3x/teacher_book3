@@ -57,7 +57,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            '/home/da3x/freelance/angular_pet/application/templates'
+            '/app   /app/alication/templates'
         ],
         'APP_DIRS': True,
         'OPTIONS': {

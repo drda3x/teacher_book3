@@ -16,10 +16,11 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 import views
+import rest_api
 
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^groups$', rest_api.get_list, name="groups"),
     url(r'^$', views.index, name="index"),
-    url(r'^page1/$', views.page1, name="page1")
 ]

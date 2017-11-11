@@ -8,7 +8,11 @@ from django.db.models.query import QuerySet
 from django.utils.functional import cached_property
 from django.utils.timezone import utc
 from django.contrib.auth.models import User as UserOrigin, UserManager
-from project.settings import FILE_STORAGE
+
+try:
+    from project.settings import FILE_STORAGE
+except ImportError:
+    FILE_STORAGE='/'
 
 
 from application.utils.date_api import get_count_of_weekdays_per_interval, get_week_days_names, MONTH_PARENT_FORM, WEEK, get_last_day_of_month
