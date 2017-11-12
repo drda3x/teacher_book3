@@ -13,40 +13,32 @@
              <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
                  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 
-</script>
-        <script type="text/javascript">
-            var app = angular.module('app', ['ngRoute'])
-                .config(function($routeProvider) {
-                    $routeProvider
-                        .when('/', {
-                            templateUrl: "/static/pages/page1.html"
-                        })
-                        .when('/foo', {
-                            templateUrl: "static/pages/foo.html",
-                            controller: "fooController"
-                        })
-                        .when('/bar', {
-                            templateUrl: "static/pages/bar.html"
-                        })
-                });
-
-                app.controller('fooController', function($scope, $http) {
-                    $http({
-                        method: "GET",
-                        url: "/groups"
-                    }).then(function(response) {
-                        console.log(response);
-                    }, function(response) {
-                        console.log(response);
-                    })
-                });
         </script>
+        <script type="text/javascript">
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        </script>
+        <script src="{% static 'js/app.js' %}"></script>
     </head>
     <body>
+        {% csrf_token %}
         {% verbatim %}
-        <base href="/"></base>
-        <a href="/#/foo">Foo</a>
-        <a href="/#/bar">Bar</a>
+        <div ng-controller="sideBarCtrl">
+            {{groups}}
+        </div>
         <div ng-view></div>
         {% endverbatim %}
     </body>

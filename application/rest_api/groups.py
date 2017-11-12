@@ -14,11 +14,15 @@ from application.models import (
     User
 )
 from auth import auth
+from traceback import format_exc
 import json
 
 
-#@auth
+@auth
 def get_list(request):
-    data = []
+    data = [
+        g.__json__()
+        for g in Groups.objects.all()
+    ]
 
     return HttpResponse(json.dumps(data))

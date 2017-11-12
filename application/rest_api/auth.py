@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from django.contrib import auth as auth_origin
+from django.http import HttpResponseForbidden, HttpResponse
+from django.contrib.sessions.backends.db import SessionStore
+from application.models import User
+import json
+
+
 # Декоратор для проверки авторизации
 def auth(request_processor):
     def wrapper(request, *args, **kwargs):
@@ -17,17 +24,18 @@ def auth(request_processor):
             return request_processor(request, *args, **kwargs)
 
         else:
-            username = request.POST.get('username')
-            password = request.POST.get('password')
-            user = auth.authenticate(username=username, password=password)
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+            user = auth_origin.authenticate(username=username, password=password)
 
-            if user and user.id_active:
+            if user and user.is_active:
                 if 'remember' in request.POST:
                     auth.login(request, user)
 
                 request.session = SessionStore()
                 request.session['uid'] = user.id
-                requese.user = user
+                request.user = user
 
                 return request_processor(request, *args, **kwargs)
 
@@ -35,3 +43,8 @@ def auth(request_processor):
                 return HttpResponseForbidden()
 
     return wrapper
+
+
+@auth
+def login(request):
+    return HttpResponse()
