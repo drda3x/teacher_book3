@@ -21,6 +21,7 @@ from traceback import format_exc
 import json
 from datetime import datetime, timedelta
 from application.utils.date_api import get_calendar
+from collections import defaultdict, namedtuple
 from itertools import takewhile
 
 
@@ -67,11 +68,35 @@ def get_base_info(request):
         ).values_list('student')
     )
 
+    lessons = Lessons.objects.filter(
+        group=group,
+        date__range=(dates[0], dates[-1])
+    ).order_by('student', 'date')
+
+    default_lesson = namedtuple("DefaultLesson", ['date'])
+
+    lessons_map = defaultdict(list)
+
+    for lesson in lessons:
+        lessons_map[lesson.student].append(lesson)
+
+    for student in students:
+        _dates = set(l.date for l in lessons_map[student])
+        for date in set(dates) - _dates:
+            lessons_map[student].append(default_lesson(date))
+
     response = {
         "group": group.__json__(),
         "dates": [d.strftime('%d.%m.%Y') for d in dates],
         "students": [
-            student.__json__()
+            {
+                'info': student.__json__(),
+                'lessons': [
+                    'aaaa' if isinstance(l, Lessons) else 'bbbb'
+                    for l in lessons_map[student]
+                ]
+            }
+
             for student in students
         ]
     }
