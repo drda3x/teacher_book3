@@ -1,4 +1,26 @@
 (function(window) {
+    function all(arr, condition) {
+        var i = arr.length-1;
+        for(;i>=0; i--) {
+            if(!condition(arr[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function any(arr, condition) {
+        var i = arr.length-1;
+        for(;i>=0; i--) {
+            if(condition(arr[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     var app = angular.module('app', ['ngRoute'])
     .config(function($routeProvider) {
         $routeProvider
@@ -76,14 +98,33 @@
 
     app.controller('groupCtrl', function($scope, $http, $location, $rootScope) {
         $scope.data = {};
+        $scope.main_list = [];
+        $scope.sub_list = [];
+
         $http({
             method: "GET",
             url: $location.path()
         }).then(function(response) {
+
             $scope.data = response.data;
+            $scope.main_list = [];
+            $scope.sub_list = [];
             var group = $scope.data.group;
             $rootScope.header = group.name;
             $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
+            
+            for(var i=0, j=$scope.data.students.length; i<j; i++) {
+                var passed = any($scope.data.students[i].lessons, function(lesson) {
+                    return lesson.status != -2
+                })
+
+                if(passed){
+                    $scope.main_list.push($scope.data.students[i]);
+                } else {
+                    $scope.sub_list.push($scope.data.students[i]);
+                }
+            }
+
         }, function(response) {
         });
 

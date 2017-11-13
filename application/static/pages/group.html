@@ -9,7 +9,7 @@
             <th style="width: 30%">Коментарии</th>
             <th ng-repeat="date in data.dates">{{date}}</th>
         </tr>
-        <tr ng-repeat="student in data.students">
+        <tr ng-repeat="student in main_list">
             <td>{{$index + 1}}</td>
             <td>{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
             <td></td>
