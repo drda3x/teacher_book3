@@ -21,6 +21,7 @@
 
     app.controller('sideBarCtrl', function($scope, $http, $location) {
         $scope.groups = [];
+        $scope.active = null;
 
         $http({
             method: "GET",
@@ -33,6 +34,14 @@
             }
             console.log(response);
         })
+
+        $scope.$on('$locationChangeSuccess', function() {
+            var path = $location.path().split('/'),
+                category = path[1],
+                id = parseInt(path[2]);
+            
+            $scope.active = id;
+        });
     });
 
     app.controller('authCtrl', function($scope, $http, $location) {
@@ -60,7 +69,7 @@
         $scope.data = {};
         $http({
             method: "GET",
-            url: $location.$$path
+            url: $location.path()
         }).then(function(response) {
             $scope.data = response.data;
         }, function(response) {
