@@ -14,7 +14,8 @@ from application.models import (
     GroupList,
     Students,
     User,
-    Lessons
+    Lessons,
+    PassTypes
 )
 from auth import auth
 from traceback import format_exc
@@ -84,9 +85,17 @@ def get_base_info(request):
         for date in set(dates) - _dates:
             lessons_map[student].append(DefaultLesson(date, -2))
 
+    pass_types = PassTypes.objects.filter(
+        pk__in=group.available_passes.all()
+    )
+
     response = {
         "group": group.__json__(),
         "dates": [d.strftime('%d.%m.%Y') for d in dates],
+        "pass_types": [
+            p.__json__()
+            for p in pass_types
+        ],
         "students": [
             {
                 'info': student.__json__(),

@@ -45,7 +45,12 @@
                         <td ng-click="lessonWidget.process_student(student.lesson)" 
                             style="background-color: {{student.lesson.group_pass.color}}">
 
-                            <a href="" ng-if="student.lesson.temp_status < 0">Добавить оплату</a>
+                            <select id="" name="" ng-if="student.lesson.temp_status < 0" class="form-control">
+                                <option value="">--добавить оплату--</option>
+                                <option value="{{pass_type.id}}" ng-repeat="pass_type in data.pass_types">
+                                    {{pass_type.name}}
+                                </option>
+                            </select>
                             <input type="checkbox" ng-if="student.lesson.temp_status >= 0" 
                                    ng-checked="student.lesson.temp_status == 1" />
 
