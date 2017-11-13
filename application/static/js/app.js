@@ -162,6 +162,7 @@
 
         LessonWidget.prototype.save = function(attendance) {
             var data = {
+                group: $scope.data.group.id,
                 date: this.date,
                 set_attendance: attendance,
                 students: []
@@ -180,7 +181,7 @@
 
                 d.lesson.pass_type = (function () {
                     if(d.lesson.is_new) {
-                        return elem.lesson.temp_pass
+                        return parseInt(elem.lesson.temp_pass);
                     } else if (elem.lesson.temp_status != -2) {
                         return elem.lesson.group_pass.pass_type.id
                     } else {

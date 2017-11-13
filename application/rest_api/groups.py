@@ -109,10 +109,15 @@ def get_base_info(request):
         ]
     }
 
-
     return HttpResponse(json.dumps(response))
 
 
 @auth
 def process_lesson(request):
-    return HttpResponseServerError("Method not implemented")
+    try:
+        data = json.loads(request.body)
+        print data
+    except Exception:
+        return HttpResponseServerError("Data is not valid")
+
+    return HttpResponse()
