@@ -142,6 +142,7 @@
                 student = $scope.data.students[i];
                 lesson = student.lessons[index];
                 lesson.temp_status = lesson.status;
+                lesson.temp_pass = null;
                 
                 data.push({
                     info: student.info,
@@ -158,8 +159,91 @@
                 lesson.temp_status = (lesson.temp_status == 1) ? 0 : 1; 
             }
         }
+
+        LessonWidget.prototype.save = function(attendance) {
+            var data = {
+                date: this.date,
+                set_attendance: attendance,
+                students: []
+            };
+
+            $.map(this.data, function(elem) {
+                var d = {};
+                d.stid = elem.info.id;
+                d.lesson = {}; 
+
+                d.lesson.is_new = elem.lesson.temp_pass != null;
+                
+                if(!d.lesson.is_new && elem.lesson.temp_status == elem.lesson.status) {
+                    return
+                }
+
+                d.lesson.pass_type = (function () {
+                    if(d.lesson.is_new) {
+                        return elem.lesson.temp_pass
+                    } else if (elem.lesson.temp_status != -2) {
+                        return elem.lesson.group_pass.pass_type.id
+                    } else {
+                        return null;
+                    }
+                })()
+
+                d.lesson.status = elem.lesson.temp_pass == null ? elem.lesson.temp_status : 1;
+
+                data.students.push(d);
+            });
+            
+            $http({
+                method: "POST",
+                url: '/process_lesson',
+                data: data,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+            }).then(function(response) {
+                console.log("OK");
+            }, function(response) {
+                console.log("ERROR")
+            });
+        }
         
         $scope.lessonWidget = new LessonWidget();
+
+        $scope.calcLesson = function(index) {
+            var lessons = [];
+            var money,
+                lesson;
+
+            $.map($scope.data.students, function(student) {
+                lesson = student.lessons[index]
+                if(lesson.status == 1 || lesson.status == 2) {
+                    money = (money || 0) + (lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons);
+                }
+            });
+
+            return money;
+        }
+
+        $scope.calcClub = function(index) {
+            var total = $scope.calcLesson(index);
+            
+            if(total) {
+                total -= $scope.data.group.dance_hall.prise;
+                total *= 0.3;
+            }
+
+            return total
+        }
+
+        $scope.calcTotal = function(index) {
+            var total = $scope.calcLesson(index);
+            
+            if(total) {
+                total -= ($scope.data.group.dance_hall.prise + $scope.calcClub(index));
+            }
+
+            return total;
+        }
 
     });
 })(window)

@@ -1,7 +1,5 @@
 <div>
-    <div ng-repeat="student in data.students">
-        {{student.first_name}} {{student.last_name}}
-    </div>
+    <h5><<<Кнопки добавления, удаления, перевода учеников>>></h5>
     <table class="table table-bordered table-striped table-hover">
         <tr>
             <th style="width: 1%">#</th>
@@ -27,6 +25,26 @@
                 </span>
             </td>
         </tr>
+        <tr>
+            <td colspan="3">Всего за занятие</td>
+            <td ng-repeat="date in data.dates">{{calcLesson($index)}}</td>
+        </tr>
+        <tr>
+            <td colspan="3">Аренда зала</td>
+            <td ng-repeat="date in data.dates">
+                <span ng-if="calcLesson($index)">
+                    {{data.group.dance_hall.prise}}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">% Клуба</td>
+            <td ng-repeat="date in data.dates">{{calcClub($index)}}</td>
+        </tr>
+        <tr>
+            <td colspan="3">ИТОГО за занятие</td>
+            <td ng-repeat="date in data.dates">{{calcTotal($index)}}</td>
+        </tr>
     </table>
 
     <div id="lessonWidget" class="modal" tabindex="-1" role="dialog">
@@ -45,7 +63,10 @@
                         <td ng-click="lessonWidget.process_student(student.lesson)" 
                             style="background-color: {{student.lesson.group_pass.color}}">
 
-                            <select id="" name="" ng-if="student.lesson.temp_status < 0" class="form-control">
+                            <select id="" 
+                                    ng-model="student.lesson.temp_pass"
+                                    name="" ng-if="student.lesson.temp_status < 0" 
+                                    class="form-control">
                                 <option value="">--добавить оплату--</option>
                                 <option value="{{pass_type.id}}" ng-repeat="pass_type in data.pass_types">
                                     {{pass_type.name}}
@@ -59,8 +80,8 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn">Сохранить без пропусков</button>
-                <button type="button" class="btn btn-primary">Сохранить с пропусками</button>
+                <button type="button" class="btn" ng-click="lessonWidget.save(false)">Сохранить без пропусков</button>
+                <button type="button" class="btn btn-primary" ng-click="lessonWidget.save(true)">Сохранить с пропусками</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
             </div>
             </div>

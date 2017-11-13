@@ -111,3 +111,8 @@ def get_base_info(request):
 
 
     return HttpResponse(json.dumps(response))
+
+
+@auth
+def process_lesson(request):
+    return HttpResponseServerError("Method not implemented")
