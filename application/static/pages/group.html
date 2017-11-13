@@ -1,15 +1,21 @@
-<div ng-controller="groupCtrl">
+<div>
     <div ng-repeat="student in data.students">
         {{student.first_name}} {{student.last_name}}
     </div>
-    <table class="table table-bordered">
+    <table class="table table-bordered table-striped">
         <tr>
             <th>#</th>
+            <th>ФИО, Телефон</th>
             <th ng-repeat="date in data.dates">{{date}}</th>
         </tr>
         <tr ng-repeat="student in data.students">
-            <td>{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
-            <td ng-repeat="lesson in student.lessons track by $index"></td>
+            <td>{{$index + 1}}</td>
+            <td>{{student.info.last_name}} {{student.info.first_name}} {{student.info.phone}}</td>
+            <td ng-repeat="lesson in student.lessons track by $index" style="background-color: {{lesson.group_pass.color}}">
+                <span ng-if="lesson.group_pass">
+                    {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
+                </span>
+            </td>
         </tr>
     </table>
 </div>

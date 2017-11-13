@@ -801,7 +801,7 @@ class Passes(models.Model):
             student=self.student.__json__(),
             group=self.group.id if self.group else None,
             start_date=self.start_date.isoformat(),
-            end_date=self.end_date.isoformat(),
+            end_date=self.end_date.isoformat() if self.end_date else None,
             pass_type=self.pass_type.__json__(),
             lessons=self.lessons,
             skips=self.skips,
@@ -843,6 +843,15 @@ class Lessons(models.Model):
     student = models.ForeignKey(Students, verbose_name=u'Учение')
     group_pass = models.ForeignKey(Passes, verbose_name=u'Абонемент', related_name=u'lesson_group_pass')
     status = models.IntegerField(verbose_name=u'Статус занятия', choices=[(val, key) for key, val in STATUSES.iteritems()], default=DEFAULT_STATUS)
+
+    def __json__(self):
+        return dict(
+            date=self.date.strftime("%d.%m.%Y"),
+            group=self.group.__json__(),
+            student=self.student.__json__(),
+            group_pass=self.group_pass.__json__(),
+            status=self.status
+        )
 
     @property
     def sign(self):
