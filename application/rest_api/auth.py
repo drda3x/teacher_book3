@@ -24,10 +24,13 @@ def auth(request_processor):
             return request_processor(request, *args, **kwargs)
 
         else:
-            data = json.loads(request.body)
-            username = data.get('username')
-            password = data.get('password')
-            user = auth_origin.authenticate(username=username, password=password)
+            try:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+                user = auth_origin.authenticate(username=username, password=password)
+            except ValueError:
+                user = None
 
             if user and user.is_active:
                 if 'remember' in request.POST:
