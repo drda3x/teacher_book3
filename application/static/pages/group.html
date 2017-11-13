@@ -2,20 +2,63 @@
     <div ng-repeat="student in data.students">
         {{student.first_name}} {{student.last_name}}
     </div>
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped table-hover">
         <tr>
-            <th>#</th>
-            <th>ФИО, Телефон</th>
+            <th style="width: 1%">#</th>
+            <th style="width: 20%">ФИО, Телефон</th>
+            <th style="width: 30%">Коментарии</th>
             <th ng-repeat="date in data.dates">{{date}}</th>
         </tr>
         <tr ng-repeat="student in data.students">
             <td>{{$index + 1}}</td>
-            <td>{{student.info.last_name}} {{student.info.first_name}} {{student.info.phone}}</td>
-            <td ng-repeat="lesson in student.lessons track by $index" style="background-color: {{lesson.group_pass.color}}">
-                <span ng-if="lesson.group_pass">
+            <td>{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
+            <td></td>
+            <td ng-repeat="lesson in student.lessons track by $index" 
+                ng-click="lessonWidget.show($index)"
+                style="background-color: {{lesson.group_pass.color}}">
+                <span ng-if="lesson.status == 1">
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
+                </span>
+                <span style="color: red" ng-if="lesson.status == 2">
+                    {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
+                </span>
+                <span style="color: red" ng-if="lesson.status == 4" >
+                    пропуск
                 </span>
             </td>
         </tr>
     </table>
+
+    <div id="lessonWidget" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{lessonWidget.date}}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <tr ng-repeat="student in lessonWidget.data">
+                        <td style="width: 50%">{{student.info.last_name}} {{student.info.first_name}}</td>
+                        <td ng-click="lessonWidget.process_student(student.lesson)" 
+                            style="background-color: {{student.lesson.group_pass.color}}">
+
+                            <a href="" ng-if="student.lesson.temp_status < 0">Добавить оплату</a>
+                            <input type="checkbox" ng-if="student.lesson.temp_status >= 0" 
+                                   ng-checked="student.lesson.temp_status == 1" />
+
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary">Сохранить с пропусками</button>
+                <button type="button" class="btn btn-primary">Сохранить без пропусков</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
+            </div>
+            </div>
+        </div>
+    </div>
 </div>

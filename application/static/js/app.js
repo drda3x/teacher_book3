@@ -67,7 +67,7 @@
                 }
             }).then(function(response) {
                 $location.path('/');
-                $router.reload();
+                grouter.reload();
             }, function(response) {
                 console.log("ERROR")
             }); 
@@ -86,5 +86,39 @@
             $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
         }, function(response) {
         });
+
+        function LessonWidget() {
+            this.elem = $("#lessonWidget").modal({
+                show: false
+            })
+        }
+
+        LessonWidget.prototype.show = function(index) {
+            this.elem.modal('show');
+            var data = [],
+                lesson, student;
+            for(var i=0, j=$scope.data.students.length; i<j; i++) {
+                student = $scope.data.students[i];
+                lesson = student.lessons[index];
+                lesson.temp_status = lesson.status;
+                
+                data.push({
+                    info: student.info,
+                    lesson: lesson
+                });
+            }
+
+            this.data = data;
+            this.date = $scope.data.dates[index];
+        }
+
+        LessonWidget.prototype.process_student = function(lesson) {
+            if(lesson.temp_status >= 0) {
+                lesson.temp_status = (lesson.temp_status == 1) ? 0 : 1; 
+            }
+        }
+        
+        $scope.lessonWidget = new LessonWidget();
+
     });
 })(window)
