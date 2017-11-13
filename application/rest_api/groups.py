@@ -86,7 +86,7 @@ def get_base_info(request):
 
     response = {
         "group": group.__json__(),
-        "dates": [d.strftime('%d') for d in dates],
+        "dates": [d.strftime('%d.%m.%Y') for d in dates],
         "students": [
             {
                 'info': student.__json__(),

@@ -30,7 +30,7 @@
     </table>
 
     <div id="lessonWidget" class="modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{lessonWidget.date}}</h5>
@@ -54,8 +54,8 @@
                 </table>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn">Сохранить без пропусков</button>
                 <button type="button" class="btn btn-primary">Сохранить с пропусками</button>
-                <button type="button" class="btn btn-primary">Сохранить без пропусков</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
             </div>
             </div>
