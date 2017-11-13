@@ -22,6 +22,7 @@ import rest_api
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^groups$', rest_api.get_list, name="groups"),
+    url(r'^group/', rest_api.get_base_info),
     url(r'^login$', rest_api.login),
     url(r'^$', views.index, name="index"),
 ]

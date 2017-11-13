@@ -36,10 +36,16 @@
     <body>
         {% csrf_token %}
         {% verbatim %}
-        <div ng-controller="sideBarCtrl">
-            {{groups}}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-4" ng-controller="sideBarCtrl">
+                    <ul>
+                        <li ng-repeat="group in groups"><a href="/#/group/{{group.id}}">{{group.dance_hall.station}} {{group.days}} {{group.time}}<br>{{group.name}}</a></li>
+                    </ul>
+                </div>
+                <div class="col" ng-view></div>
+            </div>
         </div>
-        <div ng-view></div>
         {% endverbatim %}
     </body>
 </html>

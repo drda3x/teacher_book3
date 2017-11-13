@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import datetime
+from itertools import cycle, dropwhile
 
 WEEK = (
     (0, u'Пн'),
@@ -106,3 +107,14 @@ def get_month_offset(date, offset):
         return datetime.datetime(year, month-offset, 1)
     else:
         return datetime.datetime(year-1, 12+(month-offset), 1)
+
+
+def get_calendar(date, week_days):
+    wdn = [d[0] for d in WEEK if d[1] in week_days]
+    _date = date + datetime.timedelta(days=0)
+
+    while True:
+        if _date.weekday() in wdn:
+            yield _date
+
+        _date += datetime.timedelta(days=1)

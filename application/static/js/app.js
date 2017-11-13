@@ -6,7 +6,16 @@
                 templateUrl: "/static/pages/page1.html"
             })
             .when('/login', {
-                templateUrl: "/static/pages/login.html"
+                templateUrl: "/static/pages/login.html",
+                controller: "authCtrl"
+            })
+            .when('/group/:id/', {
+                templateUrl: "static/pages/group.html",
+                controller: "groupCtrl"
+            })
+            .when('/group/:id/:date', {
+                templateUrl: "static/pages/group.html",
+                controller: "groupCtrl"
             })
     });
 
@@ -45,5 +54,16 @@
                 console.log("ERROR")
             }); 
         };
+    });
+
+    app.controller('groupCtrl', function($scope, $http, $location) {
+        $scope.data = {};
+        $http({
+            method: "GET",
+            url: $location.$$path
+        }).then(function(response) {
+            $scope.data = response.data;
+        }, function(response) {
+        });
     });
 })(window)
