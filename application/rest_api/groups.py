@@ -51,7 +51,7 @@ def get_base_info(request):
     date = max(group.start_date, date.replace(day=1).date())
 
     if group.end_date is not None:
-        last_group_lesson = Lessons.objects.last('date').date
+        last_group_lesson = Lessons.objects.all().order_by('date').last().date
     else:
         last_group_lesson = date + timedelta(days=100)
 
