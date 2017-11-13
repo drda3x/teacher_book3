@@ -19,6 +19,16 @@
             })
     });
 
+    app.controller('navBarCtrl', function($scope, $rootScope) {
+        $scope.header = null;
+        $scope.header2 = null;
+
+        $scope.$watch('$root.header', function() {
+            $scope.header = $rootScope.header;
+            $scope.header2 = $rootScope.header2;
+        });
+    });
+
     app.controller('sideBarCtrl', function($scope, $http, $location) {
         $scope.groups = [];
         $scope.active = null;
@@ -32,7 +42,6 @@
             if(response.status == 403) {
                 $location.path('/login')
             }
-            console.log(response);
         })
 
         $scope.$on('$locationChangeSuccess', function() {
@@ -44,7 +53,7 @@
         });
     });
 
-    app.controller('authCtrl', function($scope, $http, $location) {
+    app.controller('authCtrl', function($scope, $http, $location, $router) {
         $scope.login = function(uname, passwd) {
             $http({
                 headers: {
@@ -57,21 +66,24 @@
                     password: passwd
                 }
             }).then(function(response) {
-                //$location.path('/');
-                console.log("OK")
+                $location.path('/');
+                $router.reload();
             }, function(response) {
                 console.log("ERROR")
             }); 
         };
     });
 
-    app.controller('groupCtrl', function($scope, $http, $location) {
+    app.controller('groupCtrl', function($scope, $http, $location, $rootScope) {
         $scope.data = {};
         $http({
             method: "GET",
             url: $location.path()
         }).then(function(response) {
             $scope.data = response.data;
+            var group = $scope.data.group;
+            $rootScope.header = group.name;
+            $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
         }, function(response) {
         });
     });

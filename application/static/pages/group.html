@@ -1,9 +1,15 @@
 <div ng-controller="groupCtrl">
-    <div>{{data.group.dance_hall.station}} {{data.group.days}} {{data.group.time}} {{data.group.name}}</div>
-    <div>
-        <span ng-repeat="date in data.dates">{{date}}</span>
-    </div>
     <div ng-repeat="student in data.students">
         {{student.first_name}} {{student.last_name}}
     </div>
+    <table class="table table-bordered">
+        <tr>
+            <th>#</th>
+            <th ng-repeat="date in data.dates">{{date}}</th>
+        </tr>
+        <tr ng-repeat="student in data.students">
+            <td>{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
+            <td ng-repeat="lesson in student.lessons track by $index"></td>
+        </tr>
+    </table>
 </div>

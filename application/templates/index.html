@@ -35,12 +35,15 @@
     </head>
     <body>
         {% csrf_token %}
+        {% verbatim %}
 
-        <nav class="navbar navbar-dark bg-primary">
+        <nav style="margin-bottom: 5px;" 
+             ng-controller="navBarCtrl"
+             class="navbar navbar-dark bg-primary">
             <a class="navbar-brand" href="/">ШТ "Динамика". Электронный журнал</a>
+            <span class="navbar-text" style="padding-top: 0; padding-bottom: 0;">{{header2}}<br>{{header}}</span>
         </nav>
 
-        {% verbatim %}
         <div class="container-fluid">
             <div class="row">
                 <div class="col-2" ng-controller="sideBarCtrl">
