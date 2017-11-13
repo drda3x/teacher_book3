@@ -23,7 +23,7 @@ import json
 from datetime import datetime, timedelta
 from application.utils.date_api import get_calendar
 from application.utils.lessons import DefaultLesson
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, Counter
 from itertools import takewhile
 
 
@@ -116,8 +116,99 @@ def get_base_info(request):
 def process_lesson(request):
     try:
         data = json.loads(request.body)
-        print data
     except Exception:
         return HttpResponseServerError("Data is not valid")
 
+    group = Groups.objects.get(pk=data['group'])
+    date = datetime.strptime(data['date'], '%d.%m.%Y')
+
+    attended = (
+        s
+        for s in data['students']
+        if s['lesson']['status'] == Lessons.STATUSES['attended'] \
+        and s['lesson']['is_new'] == False
+    )
+
+    Lessons.objects.filter(
+        group=group,
+        date=date,
+        student_id__in=[s['stid'] for s in attended]
+    ).update(status=Lessons.STATUSES['attended'])
+
+    not_attended = (
+        s
+        for s in data['students']
+        if s['lesson']['status'] == Lessons.STATUSES['not_attended'] \
+        and s['lesson']['is_new'] == False
+    )
+
+    process_not_attended_lessons(group, date, not_attended)
+    restore_database(group, date, attended, not_attended)
+
+    new_passes = (
+        s
+        for s in data['students']
+        if s['lesson']['is_new'] == True
+    )
+
     return HttpResponse()
+
+
+# Функция для отмечания пропусков и непосещенных занятий
+def process_not_attended_lessons(group, date, lessons):
+    # TODO Обработка пропуска
+    #   1. ОРГ
+    #   2. Кол-во пропусков < чем заявленное
+    #   3. Кол-во пропусков > чем заявленное
+
+    Data = namedtuple("LessonData", ['student', 'pid', 'skips', 'org'])
+    data = [
+        Data(*l)
+        for l in Lessons.objects.filter(
+            group=group,
+            date=date,
+            student_id__in=[s['stid'] for s in lessons]
+        ) \
+        .select_related() \
+        .values_list(
+            'student',
+            'group_pass__id',
+            'group_pass__skips_origin',
+            'student__org'
+        )
+    ]
+
+    missed_lessons = Counter(
+        Lessons.objects.filter(
+            group_pass_id__in=[l.pid for l in data],
+            status=Lessons.STATUSES['moved'],
+            date__lte=date
+        ).values_list('student', flat=True)
+    )
+
+    not_attended = (
+        s.student
+        for s in data if not s.org and s.skips <= missed_lessons[s.student]
+    )
+    moved = (
+        s.student
+        for s in data if s.org or s.skips > missed_lessons[s.student]
+    )
+
+    Lessons.objects.filter(
+        group=group,
+        date=date,
+        student_id__in=not_attended
+    ).update(status=Lessons.STATUSES['not_attended'])
+
+    Lessons.objects.filter(
+        group=group,
+        date=date,
+        student_id__in=moved
+    ).update(status=Lessons.STATUSES['moved'])
+
+
+# Функция для провекри соответствия количества
+# занятий в базе, указанному количеству абонементов
+def restore_database(group, date, stdents):
+    pass

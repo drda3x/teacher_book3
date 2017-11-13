@@ -75,7 +75,7 @@
         });
     });
 
-    app.controller('authCtrl', function($scope, $http, $location, $router) {
+    app.controller('authCtrl', function($scope, $http, $location, $route) {
         $scope.login = function(uname, passwd) {
             $http({
                 headers: {
@@ -89,7 +89,7 @@
                 }
             }).then(function(response) {
                 $location.path('/');
-                grouter.reload();
+                $route.reload();
             }, function(response) {
                 console.log("ERROR")
             }); 
@@ -156,7 +156,7 @@
 
         LessonWidget.prototype.process_student = function(lesson) {
             if(lesson.temp_status >= 0) {
-                lesson.temp_status = (lesson.temp_status == 1) ? 0 : 1; 
+                lesson.temp_status = (lesson.temp_status == 1) ? 2 : 1; 
             }
         }
 
