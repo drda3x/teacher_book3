@@ -68,7 +68,7 @@ def get_base_info(request):
             group_id=group_id,
             active=True
         ).values_list('student')
-    )
+    ).order_by('last_name', 'first_name')
 
     lessons = Lessons.objects.filter(
         group=group,
