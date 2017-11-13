@@ -35,13 +35,20 @@
     </head>
     <body>
         {% csrf_token %}
+
+        <nav class="navbar navbar-dark bg-primary">
+            <a class="navbar-brand" href="/">ШТ "Динамика". Электронный журнал</a>
+        </nav>
+
         {% verbatim %}
         <div class="container-fluid">
             <div class="row">
-                <div class="col-4" ng-controller="sideBarCtrl">
-                    <ul>
-                        <li ng-repeat="group in groups"><a href="/#/group/{{group.id}}">{{group.dance_hall.station}} {{group.days}} {{group.time}}<br>{{group.name}}</a></li>
-                    </ul>
+                <div class="col-2" ng-controller="sideBarCtrl">
+                    <div class="list-group">
+                        <a class="list-group-item" href="/#/group/{{group.id}}" ng-repeat="group in groups">
+                            {{group.dance_hall.station}} {{group.days}} {{group.time}}<br>{{group.name}}
+                        </a>
+                    </div>
                 </div>
                 <div class="col" ng-view></div>
             </div>
