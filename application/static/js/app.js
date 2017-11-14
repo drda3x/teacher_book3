@@ -246,5 +246,51 @@
             return total;
         }
 
+        function StudentEditWidget() {
+            this.window = $('#studentEdit').modal({
+                show: false
+            });
+
+            this.data = {
+                phone: '',
+                name: '',
+                last_name: '',
+                org_status: false
+            };
+
+            this.student = null;
+        }
+        
+        StudentEditWidget.prototype.show = function(index, arr) {
+            if(!isNaN(parseInt(index))) {
+                var student = arr[index];
+
+                this.data.phone = student.info.phone;
+                this.data.name = student.info.first_name;
+                this.data.last_name = student.info.last_name;
+                this.data.org_status = student.info.is_org;
+                this.student = student;
+
+            } else {
+                this.clear();
+            }
+
+            this.window.modal('show');
+        }
+
+        StudentEditWidget.prototype.clear = function() {
+            this.data.phone = '';
+            this.data.name = '';
+            this.data.last_name = '';
+            this.data.org_status = false;
+            this.student = null;
+        }
+
+        StudentEditWidget.prototype.save = function() {
+            alert("Method not implemented");
+        }
+        
+        $scope.studentEditWidget = new StudentEditWidget();
+
     });
 })(window)

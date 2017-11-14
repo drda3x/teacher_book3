@@ -1,5 +1,7 @@
 <div>
-    <h5><<<Кнопки добавления, удаления, перевода учеников>>></h5>
+    <div style="margin-bottom: 5px">
+        <button type="button" class="btn btn-secondary" ng-click="studentEditWidget.show()">Добавить</button>
+    </div>
     <table class="table table-bordered table-striped table-hover">
         <tr>
             <th style="width: 1%">#</th>
@@ -9,7 +11,7 @@
         </tr>
         <tr ng-repeat="student in main_list">
             <td>{{$index + 1}}</td>
-            <td>{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
+            <td ng-dblclick="studentEditWidget.show($index, main_list)">{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
             <td></td>
             <td ng-repeat="lesson in student.lessons track by $index" 
                 ng-click="lessonWidget.show($index)"
@@ -83,6 +85,51 @@
                 <button type="button" class="btn" ng-click="lessonWidget.save(false)">Сохранить без пропусков</button>
                 <button type="button" class="btn btn-primary" ng-click="lessonWidget.save(true)">Сохранить с пропусками</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentEdit" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{studentEditWidget.student.name}}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="studentEditPhone">Телефон</label>
+                        <input type="text" 
+                               class="form-control"
+                               id="studentEditPhone"
+                               placeholder="Введите телефон"
+                               ng-model="studentEditWidget.data.phone" />
+                    </div>
+                    <div class="form-group">
+                        <label for="studentEditLastName">Фамилия</label>
+                        <input type="text"
+                               class="form-control"
+                               id="studentEditLastName"
+                               placeholder="Введите фамилию"
+                               ng-model="studentEditWidget.data.last_name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="studentEditName">Имя</label>
+                        <input type="text"
+                               class="form-control"
+                               id="studentEditName"
+                               placeholder="Введите имя"
+                               ng-model="studentEditWidget.data.name" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" ng-click="studentEditWidget.save()">Сохранить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="studentEditWidget.clear()">Отмена</button>
             </div>
             </div>
         </div>
