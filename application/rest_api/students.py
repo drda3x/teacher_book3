@@ -27,7 +27,9 @@ def edit_student(request):
     except Exception:
         return HttpResponseServerError('Student data process error')
 
-    lessons = common.lessons.get_students_lessons(data['group'], [student])
+    lessons = common.lessons.get_students_lessons(
+        data['group'], data['date'], [student]
+    )
 
     response = {
         'info': student.__json__(),
