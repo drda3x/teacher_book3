@@ -134,6 +134,20 @@
         $scope.main_list = [];
         $scope.sub_list = [];
 
+        function fillSubLists() {
+            $.map($scope.data.students, function(student) {
+                var passed = any(student.lessons, function(lesson) {
+                    return lesson.status != -2;
+                })
+
+                if(passed) {
+                    $scope.main_list.push(student);
+                } else {
+                    $scope.sub_list.push(student);
+                }
+            })
+        }
+
         $http({
             method: "GET",
             url: $location.path()
@@ -145,19 +159,8 @@
             var group = $scope.data.group;
             $rootScope.header = group.name;
             $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
-            
-            for(var i=0, j=$scope.data.students.length; i<j; i++) {
-                var passed = any($scope.data.students[i].lessons, function(lesson) {
-                    return lesson.status != -2
-                })
 
-                if(passed){
-                    $scope.main_list.push($scope.data.students[i]);
-                } else {
-                    $scope.sub_list.push($scope.data.students[i]);
-                }
-            }
-
+            fillSubLists()
         }, function(response) {
         });
 
@@ -320,7 +323,25 @@
         }
 
         StudentEditWidget.prototype.save = function() {
-            alert("Method not implemented");
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                url: '/editstudent',
+                data: {
+                    name: this.data.name,
+                    last_name: this.data.last_name,
+                    phone: this.data.phone,
+                    org_status: this.data.org_status,
+                    group: $scope.data.group.id
+                }
+            }).then(function(response) {
+                $scope.data.students.push(response.data.student);
+                fillSubLists();
+            }, function(response) {
+                console.log("ERROR")
+            });
         }
         
         $scope.studentEditWidget = new StudentEditWidget();
