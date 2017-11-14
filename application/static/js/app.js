@@ -328,7 +328,7 @@
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 method: "POST",
-                url: '/editstudent',
+                url: '/edit_student',
                 data: {
                     name: this.data.name,
                     last_name: this.data.last_name,

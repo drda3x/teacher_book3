@@ -21,8 +21,8 @@ from auth import auth
 from traceback import format_exc
 import json
 from datetime import datetime, timedelta
-from application.utils.date_api import get_calendar
-from application.utils.lessons import DefaultLesson
+from application.common.date import get_calendar
+from application.common.lessons import DefaultLesson
 from collections import defaultdict, namedtuple, Counter
 from itertools import takewhile, chain
 
