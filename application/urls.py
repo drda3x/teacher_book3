@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^groups$', rest_api.get_list, name="groups"),
     url(r'^group/', rest_api.get_base_info),
     url(r'^login$', rest_api.login),
+    url(r'^logout$', rest_api.logout),
     url(r'^process_lesson', rest_api.process_lesson),
     url(r'^$', views.index, name="index"),
 ]

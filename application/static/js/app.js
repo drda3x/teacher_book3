@@ -51,20 +51,23 @@
         });
     });
 
-    app.controller('sideBarCtrl', function($scope, $http, $location) {
+    app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
         $scope.groups = [];
         $scope.active = null;
+        $scope.showSideBar = false;
 
-        $http({
-            method: "GET",
-            url: "/groups"
-        }).then(function(response) {
-            $scope.groups = response.data;
-        }, function(response) {
-            if(response.status == 403) {
-                $location.path('/login')
-            }
-        })
+        $scope.load = function() {
+            $http({
+                method: "GET",
+                url: "/groups"
+            }).then(function(response) {
+                $scope.groups = response.data;
+            }, function(response) {
+                if(response.status == 403) {
+                    $location.path('/login')
+                }
+            })
+        }
 
         $scope.$on('$locationChangeSuccess', function() {
             var path = $location.path().split('/'),
@@ -73,9 +76,23 @@
             
             $scope.active = id;
         });
+
+        $scope.$watch('$root.showSideBar', function(val) {
+            if(val == undefined) {
+                return;
+            }
+
+            $scope.showSideBar = val;
+
+            if(val) {
+                $scope.load();
+            }
+        })
+
+        $scope.load();
     });
 
-    app.controller('authCtrl', function($scope, $http, $location, $route) {
+    app.controller('authCtrl', function($scope, $http, $location, $window, $rootScope) {
         $scope.login = function(uname, passwd) {
             $http({
                 headers: {
@@ -89,11 +106,27 @@
                 }
             }).then(function(response) {
                 $location.path('/');
-                $route.reload();
+                $rootScope.showSideBar = true;
             }, function(response) {
                 console.log("ERROR")
             }); 
         };
+
+        $scope.logout = function() {
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                url: "/logout"
+            }).then(function(response) {
+                $rootScope.showSideBar = false;
+                $location.path('/login');
+            }, function(response) {
+            });
+        }
+
+
     });
 
     app.controller('groupCtrl', function($scope, $http, $location, $rootScope) {

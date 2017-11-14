@@ -51,3 +51,9 @@ def auth(request_processor):
 @auth
 def login(request):
     return HttpResponse()
+
+
+def logout(request):
+    request.session.delete()
+    auth_origin.logout(request)
+    return HttpResponse()

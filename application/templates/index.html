@@ -41,12 +41,17 @@
              ng-controller="navBarCtrl"
              class="navbar navbar-dark bg-primary">
             <a class="navbar-brand" href="/">ШТ "Динамика". Электронный журнал</a>
-            <span class="navbar-text" style="padding-top: 0; padding-bottom: 0;">{{header2}}<br>{{header}}</span>
+            <span class="navbar-text" style="padding-top: 0; padding-bottom: 0;">{{header2}} {{header}}</span>
+            <ul class="nav justify-content-end">
+                <li class="nav-item" ng-controller="authCtrl">
+                    <a class="nav-link" href="#" style="color: #fff;" ng-click="logout()">Выход</a>
+                </li>
+            </ul>
         </nav>
 
         <div class="container-fluid">
             <div class="row">
-                <div class="col-2" ng-controller="sideBarCtrl">
+                <div class="col-2" ng-controller="sideBarCtrl" ng-show="showSideBar">
                     <div class="list-group">
                         <a class="list-group-item" 
                            href="/#/group/{{group.id}}" 
