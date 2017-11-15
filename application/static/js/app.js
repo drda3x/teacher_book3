@@ -291,7 +291,8 @@
                 phone: '',
                 name: '',
                 last_name: '',
-                org_status: false
+                org_status: false,
+                id: null
             };
 
             this.student = null;
@@ -305,6 +306,7 @@
                 this.data.name = student.info.first_name;
                 this.data.last_name = student.info.last_name;
                 this.data.org_status = student.info.is_org;
+                this.data.id = student.info.id;
                 this.student = student;
 
             } else {
@@ -319,10 +321,12 @@
             this.data.name = '';
             this.data.last_name = '';
             this.data.org_status = false;
+            this.data.id = null;
             this.student = null;
         }
 
         StudentEditWidget.prototype.save = function() {
+            var date = $scope.data.dates[0]
             $http({
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
@@ -330,6 +334,8 @@
                 method: "POST",
                 url: '/edit_student',
                 data: {
+                    date: date,
+                    stid: this.data.id,
                     name: this.data.name,
                     last_name: this.data.last_name,
                     phone: this.data.phone,
@@ -337,8 +343,9 @@
                     group: $scope.data.group.id
                 }
             }).then(function(response) {
-                $scope.data.students.push(response.data.student);
+                $scope.data.students.push(response.data);
                 fillSubLists();
+                
             }, function(response) {
                 console.log("ERROR")
             });

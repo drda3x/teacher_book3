@@ -5,7 +5,11 @@ from auth import auth
 from application.utils.lessons import DefaultLesson
 from django.http import HttpResponse, HttpResponseServerError
 
-import common
+from application.models import Groups
+from application.common.students import edit_student as edit_func
+from application.common.lessons import get_students_lessons
+from datetime import datetime
+
 import json
 
 
@@ -17,7 +21,7 @@ def edit_student(request):
         return HttpResponseServerError('JSON is not valid')
 
     try:
-        student = common.students.edit_student(
+        student = edit_func(
             data.get('stid'),
             data['phone'],
             data['name'],
@@ -25,10 +29,13 @@ def edit_student(request):
             data['org_status']
         )
     except Exception:
-        return HttpResponseServerError('Student data process error')
+        from traceback import format_exc
+        return HttpResponseServerError(format_exc())#'Student data process error')
 
-    lessons = common.lessons.get_students_lessons(
-        data['group'], data['date'], [student]
+    date = datetime.strptime(data['date'], '%d.%m.%Y')
+    group = Groups.objects.get(pk=data['group'])
+    lessons = get_students_lessons(
+        group, date, [student]
     )
 
     response = {
