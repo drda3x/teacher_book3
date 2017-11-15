@@ -1,4 +1,6 @@
 (function(window) {
+    'use strict'
+
     function all(arr, condition) {
         var i = arr.length-1;
         for(;i>=0; i--) {
@@ -54,7 +56,7 @@
     app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
         $scope.groups = [];
         $scope.active = null;
-        $scope.showSideBar = false;
+        $scope.showSideBar = true;
 
         $scope.load = function() {
             $http({
@@ -93,6 +95,7 @@
     });
 
     app.controller('authCtrl', function($scope, $http, $location, $window, $rootScope) {
+        $rootScope.showSideBar = false;
         $scope.login = function(uname, passwd) {
             $http({
                 headers: {
@@ -129,7 +132,7 @@
 
     });
 
-    app.controller('groupCtrl', function($scope, $http, $location, $rootScope) {
+    app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $document) {
         $scope.data = {};
         $scope.main_list = [];
         $scope.sub_list = [];
@@ -147,22 +150,26 @@
                 }
             })
         }
+        
+        function load() {
+            $http({
+                method: "GET",
+                url: $location.path()
+            }).then(function(response) {
 
-        $http({
-            method: "GET",
-            url: $location.path()
-        }).then(function(response) {
+                $scope.data = response.data;
+                $scope.main_list = [];
+                $scope.sub_list = [];
+                var group = $scope.data.group;
+                $rootScope.header = group.name;
+                $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
 
-            $scope.data = response.data;
-            $scope.main_list = [];
-            $scope.sub_list = [];
-            var group = $scope.data.group;
-            $rootScope.header = group.name;
-            $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
-
-            fillSubLists()
-        }, function(response) {
-        });
+                fillSubLists();
+                alertify.success("OK")
+            }, function(response) {
+                alertify.error("Ошибка при загрузке страницы")
+            });
+        }
 
         function LessonWidget() {
             this.elem = $("#lessonWidget").modal({
@@ -326,7 +333,12 @@
         }
 
         StudentEditWidget.prototype.save = function() {
-            var date = $scope.data.dates[0]
+            var date = $scope.data.dates[0],
+                self = this;
+
+            self.window.modal('hide');
+            alertify.message('Сохранение данных');
+
             $http({
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
@@ -335,23 +347,39 @@
                 url: '/edit_student',
                 data: {
                     date: date,
-                    stid: this.data.id,
-                    name: this.data.name,
-                    last_name: this.data.last_name,
-                    phone: this.data.phone,
-                    org_status: this.data.org_status,
+                    stid: self.data.id,
+                    name: self.data.name,
+                    last_name: self.data.last_name,
+                    phone: self.data.phone,
+                    org_status: self.data.org_status,
                     group: $scope.data.group.id
                 }
             }).then(function(response) {
                 $scope.data.students.push(response.data);
                 fillSubLists();
-                
+                alertify.success('Сохранено'); 
             }, function(response) {
-                console.log("ERROR")
+                alertify.error('В процессе сохранения произошла ошибка'); 
             });
         }
         
         $scope.studentEditWidget = new StudentEditWidget();
 
+        $document.on('keydown', function(event) {
+            var localReload;
+            try {
+                localReload = $location.path().split('/')[1] == 'group';
+            } catch(e) {
+                localReload = false;
+            }
+
+            if(event.key == 'F5' && localReload) {
+                alertify.success("Перезагрузка")
+                event.preventDefault();
+                load();
+            }
+        })
+
+        load();
     });
 })(window)

@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseServerError
 from application.models import Groups
 from application.common.students import edit_student as edit_func
 from application.common.lessons import get_students_lessons
+from application.common.group import add_student_to_group
 from datetime import datetime
 
 import json
@@ -34,6 +35,9 @@ def edit_student(request):
 
     date = datetime.strptime(data['date'], '%d.%m.%Y')
     group = Groups.objects.get(pk=data['group'])
+
+    add_student_to_group(group, student)
+
     lessons = get_students_lessons(
         group, date, [student]
     )
