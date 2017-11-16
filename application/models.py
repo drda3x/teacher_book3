@@ -531,7 +531,7 @@ class Students(models.Model):
         )
 
     def __unicode__(self):
-        return u'%s %s.%s' % (self.first_name, self.last_name[0].upper(), self.father_name[0].upper() if self.father_name else '')
+        return u'%s %s.%s' % (self.first_name, self.last_name, self.father_name[0].upper() if self.father_name else '')
 
     @property
     def str_phone(self):

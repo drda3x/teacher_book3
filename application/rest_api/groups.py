@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from application.utils.date_api import get_calendar
 from application.utils.lessons import DefaultLesson
 from collections import defaultdict, namedtuple, Counter
-from itertools import takewhile
+from itertools import takewhile, chain
 
 
 @auth
@@ -85,6 +85,8 @@ def get_base_info(request):
         for date in set(dates) - _dates:
             lessons_map[student].append(DefaultLesson(date, -2))
 
+        lessons_map[student].sort(key=lambda x: x.date)
+
     pass_types = PassTypes.objects.filter(
         pk__in=group.available_passes.all()
     )
@@ -122,28 +124,28 @@ def process_lesson(request):
     group = Groups.objects.get(pk=data['group'])
     date = datetime.strptime(data['date'], '%d.%m.%Y')
 
-    attended = (
+    attended = [
         s
         for s in data['students']
         if s['lesson']['status'] == Lessons.STATUSES['attended'] \
         and s['lesson']['is_new'] == False
-    )
+    ]
 
-    Lessons.objects.filter(
+    qs = Lessons.objects.filter(
         group=group,
         date=date,
         student_id__in=[s['stid'] for s in attended]
     ).update(status=Lessons.STATUSES['attended'])
 
-    not_attended = (
+    not_attended = [
         s
         for s in data['students']
         if s['lesson']['status'] == Lessons.STATUSES['not_attended'] \
         and s['lesson']['is_new'] == False
-    )
+    ]
 
     process_not_attended_lessons(group, date, not_attended)
-    restore_database(group, date, attended, not_attended)
+    #restore_database(group, date, chain(attended, not_attended))
 
     new_passes = (
         s
@@ -168,16 +170,15 @@ def process_not_attended_lessons(group, date, lessons):
             group=group,
             date=date,
             student_id__in=[s['stid'] for s in lessons]
-        ) \
-        .select_related() \
-        .values_list(
+        ).select_related().values_list(
             'student',
             'group_pass__id',
-            'group_pass__skips_origin',
+            'group_pass__pass_type__skips',
             'student__org'
         )
     ]
 
+    # TODO Вот тут почему-то генерятся два запроса
     missed_lessons = Counter(
         Lessons.objects.filter(
             group_pass_id__in=[l.pid for l in data],
@@ -186,22 +187,22 @@ def process_not_attended_lessons(group, date, lessons):
         ).values_list('student', flat=True)
     )
 
-    not_attended = (
-        s.student
+    not_attended = [
+        int(s.student)
         for s in data if not s.org and s.skips <= missed_lessons[s.student]
-    )
-    moved = (
+    ]
+    moved = [
         s.student
         for s in data if s.org or s.skips > missed_lessons[s.student]
-    )
+    ]
 
-    Lessons.objects.filter(
+    qs = Lessons.objects.filter(
         group=group,
         date=date,
         student_id__in=not_attended
     ).update(status=Lessons.STATUSES['not_attended'])
 
-    Lessons.objects.filter(
+    qs = Lessons.objects.filter(
         group=group,
         date=date,
         student_id__in=moved
@@ -210,5 +211,65 @@ def process_not_attended_lessons(group, date, lessons):
 
 # Функция для провекри соответствия количества
 # занятий в базе, указанному количеству абонементов
-def restore_database(group, date, stdents):
-    pass
+def restore_database(group, date, students):
+
+    passes = Lessons.objects.filter(
+        student_id__in=[s['stid'] for s in students],
+        group=group,
+        date=date
+    ).select_related('group_pass')
+
+    lessons = Lessons.objects.filter(
+        group=group,
+        group_pass__in=passes.values_list('group_pass', flat=True)
+    ).order_by('date')
+
+    for p in passes.only('group_pass'):
+        my_lessons = [
+            l for l in lessons if l.group_pass == p.group_pass
+        ]
+        misses = [
+            l for l in my_lessons
+            if l.status == Lessons.STATUSES['moved']
+        ]
+
+        # Находим и заменяем перенесенные уроки на не посещенные
+        # и наоборот, если нжуно
+        delta = len(misses) - p.group_pass.pass_type.skips
+        if delta > 0:
+            to_change = [
+                l
+                for l in my_lessons
+                if l.status == Lessons.STATUSES['moved'] and l.date > date.date()
+            ][:delta]
+
+            for l in to_change:
+                l.status = Lessons.STATUSES['not_attended']
+                l.save()
+
+        elif delta < 0:
+            to_change = [
+                l
+                for l in my_lessons
+                if l.status == Lessons.STATUSES['not_attended'] and l.date > date.date()
+            ][:abs(delta)]
+
+            for l in to_change:
+                l.status = Lessons.STATUSES['moved']
+                l.save()
+
+
+        to_check = [
+            l for l in my_lessons
+            if l.status != Lessons.STATUSES['moved']
+        ]
+        delta = len(to_check) - p.group_pass.lessons_origin
+
+        if delta > 0:
+            for l in my_lessons[-delta:]:
+                l.delete()
+        elif delta < 0:
+            _date = date + timedelta(days=1)
+            dates = zip(range(abs(delta)), get_calendar(_date, group.days))
+            for _, _date in dates:
+                Lessons(group=group, date=_date, student=p.student).save()
