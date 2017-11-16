@@ -368,7 +368,6 @@
                     fillSubLists();
                 } else {
                     self.student.info = response.data.info;
-                    self.student.lessons = response.data.lessons;
                 }
                 alertify.success('Сохранено'); 
             }, function(response) {
