@@ -28,7 +28,7 @@ def edit_student(stid, phone, first_name, last_name, org_status):
 
     try:
         if stid is not None:
-            student = Student.objects.get(
+            student = Students.objects.get(
                 pk=stid
             )
         else:

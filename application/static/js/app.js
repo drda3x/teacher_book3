@@ -152,6 +152,10 @@
         }
         
         function load() {
+            $scope.data = {};
+            $scope.main_list = [];
+            $scope.sub_list = [];
+
             $http({
                 method: "GET",
                 url: $location.path()
@@ -160,6 +164,7 @@
                 $scope.data = response.data;
                 $scope.main_list = [];
                 $scope.sub_list = [];
+                    
                 var group = $scope.data.group;
                 $rootScope.header = group.name;
                 $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
@@ -312,7 +317,7 @@
                 this.data.phone = student.info.phone;
                 this.data.name = student.info.first_name;
                 this.data.last_name = student.info.last_name;
-                this.data.org_status = student.info.is_org;
+                this.data.org_status = student.info.org;
                 this.data.id = student.info.id;
                 this.student = student;
 
@@ -321,6 +326,7 @@
             }
 
             this.window.modal('show');
+            console.log(this.data);
         }
 
         StudentEditWidget.prototype.clear = function() {
@@ -355,8 +361,15 @@
                     group: $scope.data.group.id
                 }
             }).then(function(response) {
-                $scope.data.students.push(response.data);
-                fillSubLists();
+                var is_new_student = self.student == null;
+
+                if(is_new_student) {
+                    $scope.data.students.push(response.data);
+                    fillSubLists();
+                } else {
+                    self.student.info = response.data.info;
+                    self.student.lessons = response.data.lessons;
+                }
                 alertify.success('Сохранено'); 
             }, function(response) {
                 alertify.error('В процессе сохранения произошла ошибка'); 
