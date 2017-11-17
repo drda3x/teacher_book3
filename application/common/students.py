@@ -9,19 +9,19 @@ from phones import check_phone
 
 
 def edit_student(stid, phone, first_name, last_name, org_status):
-    #todo При изменении данных ученика нужно проверить их уникальность.
-    #todo если окажется что данные не уникальны - нужно переписать все данные об абонементах,
-    #todo посещениях и вообще всем где есть student на один id-шник.
+    u"""
+    Функция для создания/изменения учеников в системе
 
-    #todo comments
-    #todo debts
-    #todo grouplist
-    #todo lessons
-    #todo passes
+    args:
+        stid int
+        phone str
+        first_name str
+        last_name str
+        org_status bool
 
-    #todo нужно создать пред-деплойный скрипт, который пройдет по всем моделям приложения
-    #todo и сделает список моделей у которых есть поле "студент" дабы не заниматься этим при обреботке запроса
-
+    return:
+        application.models.Students
+    """
     phone = check_phone(phone)
     first_name = first_name.replace(' ', '')
     last_name = last_name.replace(' ', '')
@@ -67,6 +67,17 @@ def edit_student(stid, phone, first_name, last_name, org_status):
 
 
 def check_duplicates(stid, phone, name, last_name, org_status):
+    u"""
+    Функция для проверки наличия и удаления дубликатов записей
+    учеников в системе
+
+    args:
+        stid int
+        phone str
+        name str
+        last_name str
+        org_status bool
+    """
     phone = check_phone(phone)
     first_name = first_name.replace(' ', '')
     last_name = last_name.replace(' ', '')

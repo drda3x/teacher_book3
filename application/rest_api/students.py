@@ -16,6 +16,16 @@ import json
 
 @auth
 def edit_student(request):
+    u"""
+    Функция-обработчик запроса об изменении данных ученика
+
+    args:
+        request django.http.HttpReqest
+
+    return:
+        django.http.HttpResponse
+    """
+
     try:
         data = json.loads(request.body)
     except ValueError:
@@ -31,7 +41,7 @@ def edit_student(request):
         )
     except Exception:
         from traceback import format_exc
-        return HttpResponseServerError(format_exc())#'Student data process error')
+        return HttpResponseServerError(format_exc())
 
     date = datetime.strptime(data['date'], '%d.%m.%Y')
     group = Groups.objects.get(pk=data['group'])

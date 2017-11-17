@@ -8,8 +8,19 @@ from application.models import User
 import json
 
 
-# Декоратор для проверки авторизации
 def auth(request_processor):
+    u"""
+    Функция-декоратор для проверки авторизации и авторизации пользователей
+    Создает обертку для исходного обработчика и перед его выполнением прове
+    ряет авторизацию
+
+    args:
+        request_processor function
+
+    return:
+        function
+    """
+
     def wrapper(request, *args, **kwargs):
         try:
             uid = request.session['uid']

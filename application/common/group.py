@@ -6,6 +6,13 @@ from application.models import GroupList
 
 
 def add_student_to_group(group, student):
+    u"""
+    Функция для добавления ученика в группу
+
+    args:
+        group application.models.Groups
+        student application.models.Students
+    """
     try:
         group_list = GroupList.objects.get(student=student, group=group)
 

@@ -48,6 +48,18 @@ MONTH_PARENT_FORM = [
 
 
 def get_calendar(date, week_days):
+    u"""
+    Функция для генерации последовательности
+    дат из определенных дней недели
+
+        args:
+            date datetime.datetime
+            week_days [int]
+
+        yield:
+            datetime.datetime
+    """
+
     wdn = [d[0] for d in WEEK if d[1] in week_days]
     _date = date + datetime.timedelta(days=0)
 
