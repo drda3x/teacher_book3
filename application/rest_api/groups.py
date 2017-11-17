@@ -145,11 +145,10 @@ def process_lesson(request):
     ]
 
     process_not_attended_lessons(group, date, not_attended)
-    #restore_database(group, date, chain(attended, not_attended))
+    restore_database(group, date, chain(attended, not_attended))
 
     new_passes = (
-        s
-        for s in data['students']
+        s for s in data['students']
         if s['lesson']['is_new'] == True
     )
 
