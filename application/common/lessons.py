@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-from collections import namedtuple
+from collections import namedtuple, Counter
 from date import get_calendar
+from datetime import datetime
 from itertools import takewhile
+from application.models import Groups, Passes, Lessons, PassTypes
 
 
 class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
@@ -47,16 +49,50 @@ def get_students_lessons(group, date, students):
     return (DefaultLesson(date, -2) for date in dates)
 
 
-def create_new_passes(group, date, pt_data):
+def create_new_passes(group, date, data):
     u"""
         Функция для создания и сохранения абонементов в БД
 
         args:
             group application.models.Groups
             data datetime.datetime
-            pd_data PassTypeStudent
+            data [{
+                stid: int,
+                lesson: {
+                    status: application.models.Lessons.STATUSES,
+                    is_new: bool
+                    pass_type: int
+                }
+            }]
     """
-    pass
+
+    assert isinstance(group, Groups)
+    assert isinstance(date, datetime)
+    assert all(st['lesson']['is_new'] for st in data)
+
+    existed_lessons = Lessons.objects.filter(group=group, date__gte=date) \
+        .values_list("student", "date")
+
+    for student in data:
+        p = Passes(
+            group=group,
+            start_date=date,
+            student_id=student['stid'],
+            pass_type_id=student['lesson']['pass_type']
+        )
+
+        p.save()
+
+        cnt = p.lessons if p.one_group_pass else 1
+        dl = zip(get_calendar(date, group.days), range(cnt))
+
+        for _date, _ in dl:
+            Lessons(
+                date=_date,
+                student_id=student['stid'],
+                group=group,
+                group_pass=p
+            ).save()
 
 
 def process_attended_lessons(group, date, lessons):
@@ -75,8 +111,15 @@ def process_attended_lessons(group, date, lessons):
             }
         }]
     """
-    raise Exception('This function is not realized')
-    pass
+
+    assert isinstance(group, Groups)
+    assert isinstance(date, datetime)
+
+    Lessons.objects.filter(
+        group=group,
+        date=date,
+        student_id__in=[s['stid'] for s in lessons]
+    ).update(status=Lessons.STATUSES['attended'])
 
 
 def process_not_attended_lessons(group, date, lessons):
@@ -206,7 +249,6 @@ def restore_database(group, date, students):
             for l in to_change:
                 l.status = Lessons.STATUSES['moved']
                 l.save()
-
 
         to_check = [
             l for l in my_lessons
