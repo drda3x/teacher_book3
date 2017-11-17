@@ -2,20 +2,20 @@
     <div style="margin-bottom: 5px">
         <button type="button" class="btn btn-secondary" ng-click="studentEditWidget.show()">Добавить</button>
     </div>
-    <table class="table table-bordered table-striped table-hover">
+    <table class="table table-bordered table-striped table-hover" style="cursor: pointer">
         <tr>
-            <th style="width: 1%">#</th>
-            <th style="width: 20%">ФИО, Телефон</th>
-            <th style="width: 30%">Коментарии</th>
-            <th ng-repeat="date in data.dates" ng-click="lessonWidget.show($index)">{{date}}</th>
+            <th style="border-color: #000; width: 1%">#</th>
+            <th style="border-color: #000; width: 20%">ФИО, Телефон</th>
+            <th style="border-color: #000; width: 30%">Коментарии</th>
+            <th style="border-color: #000" ng-repeat="date in data.dates" ng-click="lessonWidget.show($index)">{{date}}</th>
         </tr>
         <tr ng-repeat="student in main_list">
-            <td>{{$index + 1}}</td>
-            <td ng-dblclick="studentEditWidget.show($index, main_list)">{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
-            <td></td>
+            <td style="border-color: #000">{{$index + 1}}</td>
+            <td style="border-color: #000" ng-dblclick="studentEditWidget.show($index, main_list)">{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
+            <td style="border-color: #000" ></td>
             <td ng-repeat="lesson in student.lessons track by $index" 
                 ng-click="lessonWidget.show($index)"
-                style="background-color: {{lesson.group_pass.color}}">
+                style="background-color: {{lesson.group_pass.color}}; border-color: #000">
                 <span ng-if="lesson.status == 1">
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
                 </span>
@@ -28,24 +28,24 @@
             </td>
         </tr>
         <tr>
-            <td colspan="3">Всего за занятие</td>
+            <td colspan="3" style="border-color: #000">Всего за занятие</td>
             <td ng-repeat="date in data.dates">{{calcLesson($index)}}</td>
         </tr>
         <tr>
-            <td colspan="3">Аренда зала</td>
-            <td ng-repeat="date in data.dates">
+            <td colspan="3" style="border-color: #000">Аренда зала</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">
                 <span ng-if="calcLesson($index)">
                     {{data.group.dance_hall.prise}}
                 </span>
             </td>
         </tr>
         <tr>
-            <td colspan="3">% Клуба</td>
-            <td ng-repeat="date in data.dates">{{calcClub($index)}}</td>
+            <td style="border-color: #000" colspan="3">% Клуба</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">{{calcClub($index)}}</td>
         </tr>
         <tr>
-            <td colspan="3">ИТОГО за занятие</td>
-            <td ng-repeat="date in data.dates">{{calcTotal($index)}}</td>
+            <td style="border-color: #000" colspan="3">ИТОГО за занятие</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">{{calcTotal($index)}}</td>
         </tr>
     </table>
 
