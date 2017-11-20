@@ -27,6 +27,10 @@ class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
 PassTypeStudent = namedtuple("PassTypeStudent", ["student", "pass_type"])
 
 
+class LessonsCrossException(Exception):
+    pass
+
+
 def get_students_lessons(group, date, students):
     u"""
         Функция для получения списка уроков для заданного
@@ -73,26 +77,45 @@ def create_new_passes(group, date, data):
     existed_lessons = Lessons.objects.filter(group=group, date__gte=date) \
         .values_list("student", "date")
 
-    for student in data:
-        p = Passes(
-            group=group,
-            start_date=date,
-            student_id=student['stid'],
-            pass_type_id=student['lesson']['pass_type']
-        )
+    to_delete = []
 
-        p.save()
-
-        cnt = p.lessons if p.one_group_pass else 1
-        dl = zip(get_calendar(date, group.days), range(cnt))
-
-        for _date, _ in dl:
-            Lessons(
-                date=_date,
-                student_id=student['stid'],
+    try:
+        for student in data:
+            p = Passes(
                 group=group,
-                group_pass=p
-            ).save()
+                start_date=date,
+                student_id=student['stid'],
+                pass_type_id=student['lesson']['pass_type']
+            )
+
+            p.save()
+            to_delete.append(p)
+
+            cnt = p.lessons if p.one_group_pass else 1
+            dl = zip(get_calendar(date, group.days), range(cnt))
+
+            for _date, _ in dl:
+
+                if (student['stid'], _date.date()) in existed_lessons:
+                    raise LessonsCrossException(
+                        '%d %s' % (student['stid'], _date.strftime('%d.%m.%Y'))
+                    )
+
+                l = Lessons(
+                    date=_date,
+                    student_id=student['stid'],
+                    group=group,
+                    group_pass=p
+                )
+
+                l.save()
+                to_delete.append(l)
+
+    except LessonsCrossException as e:
+        for elem in to_delete:
+            elem.delete()
+
+        raise e
 
 
 def process_attended_lessons(group, date, lessons):
@@ -227,7 +250,7 @@ def restore_database(group, date, students):
 
         # Находим и заменяем перенесенные уроки на не посещенные
         # и наоборот, если нжуно
-        delta = len(misses) - p.group_pass.pass_type.skips
+        delta = len(misses) - (p.group_pass.pass_type.skips or 0)
         if delta > 0:
             to_change = [
                 l
