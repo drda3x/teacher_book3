@@ -24,6 +24,7 @@ from datetime import datetime, timedelta
 from application.common.date import get_calendar
 from application.common.lessons import (
     DefaultLesson,
+    create_new_passes,
     process_attended_lessons,
     process_not_attended_lessons,
     restore_database
@@ -161,20 +162,12 @@ def process_lesson(request):
     group = Groups.objects.get(pk=data['group'])
     date = datetime.strptime(data['date'], '%d.%m.%Y')
 
-    print data['students'][0]['lesson'].keys()
-
     attended = [
         s
         for s in data['students']
         if s['lesson']['status'] == Lessons.STATUSES['attended'] \
         and s['lesson']['is_new'] == False
     ]
-
-    qs = Lessons.objects.filter(
-        group=group,
-        date=date,
-        student_id__in=[s['stid'] for s in attended]
-    ).update(status=Lessons.STATUSES['attended'])
 
     not_attended = [
         s
@@ -183,12 +176,22 @@ def process_lesson(request):
         and s['lesson']['is_new'] == False
     ]
 
-    new_passes = (
+    new_passes = [
         s for s in data['students']
         if s['lesson']['is_new'] == True
-    )
+    ]
 
-    process_not_attended_lessons(group, date, not_attended)
-    restore_database(group, date, chain(attended, not_attended))
+    if len(new_passes) > 0:
+        create_new_passes(group, date, new_passes)
+        attended += new_passes
+
+    if len(attended) > 0:
+        process_attended_lessons(group, date, attended)
+
+    if len(not_attended) > 0:
+        process_not_attended_lessons(group, date, not_attended)
+
+    if len(attended) + len(not_attended):
+        restore_database(group, date, chain(attended, not_attended))
 
     return HttpResponse()
