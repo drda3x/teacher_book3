@@ -138,6 +138,8 @@
         $scope.sub_list = [];
 
         function fillSubLists() {
+            $scope.main_list = [];
+            $scope.sub_list = [];
             $.map($scope.data.students, function(student) {
                 var passed = any(student.lessons, function(lesson) {
                     return lesson.status != -2;
@@ -151,6 +153,7 @@
             })
         }
         
+        alertify.success("Обработка данных");
         function load() {
             $scope.data = {};
             $scope.main_list = [];
@@ -202,6 +205,10 @@
             this.date = $scope.data.dates[index];
         }
 
+        LessonWidget.prototype.hide = function(lesson) {
+            this.elem.modal('hide');
+        }
+
         LessonWidget.prototype.process_student = function(lesson) {
             if(lesson.temp_status >= 0) {
                 lesson.temp_status = (lesson.temp_status == 1) ? 2 : 1; 
@@ -242,6 +249,7 @@
                 data.students.push(d);
             });
             
+            this.hide();
             $http({
                 method: "POST",
                 url: '/process_lesson',
@@ -250,9 +258,16 @@
                     'X-CSRFToken': getCookie('csrftoken')
                 },
             }).then(function(response) {
-                console.log("OK");
+                $.map($scope.data.students, function(student) {
+                    var id = parseInt(student.info.id);
+                    if(response.data.hasOwnProperty(id)) {
+                        student.lessons = response.data[id];
+                    }
+                });
+                fillSubLists(); 
+                alertify.success("Сохранено");
             }, function(response) {
-                console.log("ERROR")
+                alertify.error("Ошибка в процессе сохранения");
             });
         }
         

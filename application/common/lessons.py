@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-from collections import namedtuple, Counter
+from collections import namedtuple, Counter, defaultdict
 from date import get_calendar
 from datetime import datetime
 from itertools import takewhile
-from application.models import Groups, Passes, Lessons, PassTypes
-
+from application.models import Groups, Passes, Lessons, PassTypes, Students
 
 class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
     u"""
@@ -31,7 +30,7 @@ class LessonsCrossException(Exception):
     pass
 
 
-def get_students_lessons(group, date, students):
+def get_students_lessons(group, date_from, date_to, students):
     u"""
         Функция для получения списка уроков для заданного
         списка учеников
@@ -39,18 +38,52 @@ def get_students_lessons(group, date, students):
         args:
             group application.models.Groups
             date datetime.datetime
-            students [application.models.Students]
+            students [application.models.Students] or [int]
 
-        return:
-            [application.models.Lessons or DefaultLesson]
+        return: {
+            application.models.Students: [application.models.Lessons or DefaultLesson],
+            application.models.Students: [application.models.Lessons or DefaultLesson]
+        }
     """
+    all_is_Students = all(isinstance(x, Students) for x in students)
+    all_is_ints = all(isinstance(x, int) for x in students)
 
-    dates = takewhile(
-        lambda x: x.month == date.month,
-        get_calendar(date, group.days)
+    assert all_is_Students or all_is_ints
+
+    #group_lessonos
+    lessons = Lessons.objects.filter(
+        group=group,
+        date__range=(date_from, date_to)
     )
 
-    return (DefaultLesson(date, -2) for date in dates)
+    if all_is_Students:
+        lessons = lessons.filter(student__in=students)
+    else:
+        lessons = lessons.filter(student_id__in=students)
+
+    _dates = takewhile(
+        lambda x: x <= date_to,
+        get_calendar(date_from, group.days)
+    )
+
+    if isinstance(date_from, datetime):
+        dates = set(d.date() for d in _dates)
+    else:
+        dates = set(d for d in _dates)
+
+    lessons_map = defaultdict(list)
+    for lesson in lessons:
+        key = lesson.student if all_is_Students else lesson.student.id
+        lessons_map[key].append(lesson)
+
+    for student in students:
+        _dates = dates - set(l.date for l in lessons_map[student])
+        fl = [DefaultLesson(_date, -2) for _date in _dates]
+
+        lessons_map[student] += fl
+        lessons_map[student].sort(key=lambda x: x.date)
+
+    return lessons_map
 
 
 def create_new_passes(group, date, data):

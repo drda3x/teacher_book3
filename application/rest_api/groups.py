@@ -27,8 +27,10 @@ from application.common.lessons import (
     create_new_passes,
     process_attended_lessons,
     process_not_attended_lessons,
+    get_students_lessons,
     restore_database
 )
+from application.common.group import get_students
 from collections import defaultdict, namedtuple, Counter
 from itertools import takewhile, chain
 
@@ -89,29 +91,8 @@ def get_base_info(request):
         )
     )
 
-    students = Students.objects.filter(
-        pk__in=GroupList.objects.filter(
-            group_id=group_id,
-            active=True
-        ).values_list('student')
-    ).order_by('last_name', 'first_name')
-
-    lessons = Lessons.objects.filter(
-        group=group,
-        date__range=(dates[0], dates[-1])
-    ).order_by('student', 'date')
-
-    lessons_map = defaultdict(list)
-
-    for lesson in lessons:
-        lessons_map[lesson.student].append(lesson)
-
-    for student in students:
-        _dates = set(l.date for l in lessons_map[student])
-        for date in set(dates) - _dates:
-            lessons_map[student].append(DefaultLesson(date, -2))
-
-        lessons_map[student].sort(key=lambda x: x.date)
+    students = get_students(group).order_by('last_name', 'first_name')
+    lessons = get_students_lessons(group, dates[0], dates[-1], students)
 
     pass_types = PassTypes.objects.filter(
         pk__in=group.available_passes.all()
@@ -129,7 +110,7 @@ def get_base_info(request):
                 'info': student.__json__(),
                 'lessons': [
                     l.__json__()
-                    for l in lessons_map[student]
+                    for l in lessons[student]
                 ]
             }
 
@@ -194,4 +175,19 @@ def process_lesson(request):
     if len(attended) + len(not_attended):
         restore_database(group, date, chain(attended, not_attended))
 
-    return HttpResponse()
+    only_id = [s['stid'] for s in new_passes]
+
+    #TODO Наверное можно и по изящнее как-то
+    dates = list(takewhile(
+        lambda x: x.month == date.month,
+        get_calendar(date.replace(day=1), group.days)
+    ))
+
+    date_from, date_to = dates[0::len(dates)-1]
+
+    new_lessons = get_students_lessons(group, date_from, date_to, only_id)
+    new_lessons_json = dict()
+    for st, ls in new_lessons.iteritems():
+        new_lessons_json[str(st)] = [l.__json__() for l in ls]
+
+    return HttpResponse(json.dumps(new_lessons_json))

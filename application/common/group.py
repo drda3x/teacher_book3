@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from application.models import GroupList
+from application.models import GroupList, Groups, Students
 
 
 def add_student_to_group(group, student):
@@ -28,3 +28,31 @@ def add_student_to_group(group, student):
         )
 
         group_list.save()
+
+
+def get_students(group):
+    u"""
+    Функция для получения списка студентов для заданной группы
+
+    args:
+        group application.models.Groups
+
+    return:
+        queryset
+    """
+
+    assert isinstance(group, (Groups, int))
+
+    params = {"active": True}
+    if isinstance(group, int):
+        params['group_id'] = group
+    else:
+        params['group'] = group
+
+    students = Students.objects.filter(
+        pk__in=GroupList.objects.filter(
+            **params
+        ).values_list("student", flat=True)
+    )
+
+    return students
