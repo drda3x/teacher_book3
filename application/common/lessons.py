@@ -4,7 +4,7 @@
 
 from collections import namedtuple, Counter, defaultdict
 from date import get_calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import takewhile
 from application.models import Groups, Passes, Lessons, PassTypes, Students
 
@@ -316,7 +316,13 @@ def restore_database(group, date, students):
             for l in my_lessons[-delta:]:
                 l.delete()
         elif delta < 0:
-            _date = date + timedelta(days=1)
+            last_lesson = Lessons.objects.filter(group_pass=p.group_pass).latest('date')
+            _date = last_lesson.date + timedelta(days=1)
             dates = zip(range(abs(delta)), get_calendar(_date, group.days))
             for _, _date in dates:
-                Lessons(group=group, date=_date, student=p.student).save()
+                Lessons(
+                    group=group,
+                    date=_date,
+                    student=p.student,
+                    group_pass=p.group_pass
+                ).save()

@@ -229,8 +229,13 @@
                 d.lesson = {}; 
 
                 d.lesson.is_new = elem.lesson.temp_pass != null;
+
+                if(attendance && elem.lesson.temp_status == 0) {
+                    elem.lesson.temp_status = 2;
+                }
                 
-                if(!d.lesson.is_new && elem.lesson.temp_status == elem.lesson.status) {
+                var check_status = elem.lesson.temp_status == elem.lesson.status;
+                if(!d.lesson.is_new && check_status) {
                     return
                 }
 
