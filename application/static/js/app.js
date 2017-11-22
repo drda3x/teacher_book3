@@ -397,6 +397,7 @@
         
         $scope.studentEditWidget = new StudentEditWidget();
 
+        $document.off('keydown');
         $document.on('keydown', function(event) {
             var localReload;
             try {
