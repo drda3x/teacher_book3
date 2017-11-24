@@ -102,6 +102,28 @@
                 </button>
             </div>
             <div class="modal-body">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" 
+                           ng-click="studentEditWidget.setTab('info')"
+                           ng-class="{active: studentEditWidget.tab=='info'}"
+                           href="">Информация</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           ng-click="studentEditWidget.setTab('editor')"
+                           ng-class="{active: studentEditWidget.tab=='editor'}"
+                           href="">Редактирование занятий</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           ng-click="studentEditWidget.setTab('history')"
+                           ng-class="{active: studentEditWidget.tab=='history'}"
+                           href="">История абонементов</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-body" ng-show="studentEditWidget.tab=='info'">
                 <form>
                     <div class="form-group row">
                         <label for="studentEditPhone" class="col-sm-2 col-form-label">Телефон</label>
@@ -144,10 +166,8 @@
                         </div>
                     </div>
                 </form>
-            <div class="modal-header">
-                История абонементов
             </div>
-            <div class="modal-body">
+            <div class="modal-body" ng-show="studentEditWidget.tab=='history'">
                 <table style="border: 1px solid #000;" 
                        class="table table-bordered table-stripped">
                     <tr>
@@ -164,10 +184,7 @@
                     </tr>
                 </table>
             </div>
-            <div class="modal-header">
-               Редактирование занятий 
-            </div>
-            <div class="modal-body">
+            <div class="modal-body" ng-show="studentEditWidget.tab=='editor'">
                 <form action="">
                     <div class="form-group">
                         <label class="col-form-label" for="lessonsToDelete">Удалить</label>

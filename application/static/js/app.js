@@ -328,6 +328,12 @@
             };
 
             this.student = null;
+            this.tab = 'history';
+        }
+
+        StudentEditWidget.prototype.setTab = function(newTabName) {
+            this.tab = newTabName;
+            $scope.$apply();
         }
         
         StudentEditWidget.prototype.show = function(index, arr) {
