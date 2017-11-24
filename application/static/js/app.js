@@ -328,12 +328,15 @@
             };
 
             this.student = null;
-            this.tab = 'history';
-        }
+            this.tab = 'info';
+
+            this.editor = {
+                tab: 'delete'
+            }
+        }   
 
         StudentEditWidget.prototype.setTab = function(newTabName) {
             this.tab = newTabName;
-            $scope.$apply();
         }
         
         StudentEditWidget.prototype.show = function(index, arr) {
@@ -352,7 +355,8 @@
             }
 
             this.window.modal('show');
-            console.log(this.data);
+            this.tab = 'info';
+            this.editor.tab = 'delete';
         }
 
         StudentEditWidget.prototype.clear = function() {
