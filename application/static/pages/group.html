@@ -109,18 +109,20 @@
                            ng-class="{active: studentEditWidget.tab=='info'}"
                            href="">Информация</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" ng-show="studentEditWidget.student!=null">
                         <a class="nav-link"
                            ng-click="studentEditWidget.setTab('editor')"
                            ng-class="{active: studentEditWidget.tab=='editor'}"
                            href="">Редактирование занятий</a>
                     </li>
+                    <!--
                     <li class="nav-item">
                         <a class="nav-link"
                            ng-click="studentEditWidget.setTab('history')"
                            ng-class="{active: studentEditWidget.tab=='history'}"
                            href="">История абонементов</a>
                     </li>
+                    -->
                 </ul>
             </div>
             <div class="modal-body" ng-show="studentEditWidget.tab=='info'">
@@ -185,7 +187,7 @@
                 </table>
             </div>
             <div class="modal-body" ng-show="studentEditWidget.tab=='editor'">
-                <form>
+                <form  class="col-md-5" style="margin: 0 auto">
                     <div class="form-group">
                         <label for="act">Действие</label>
                         <select id="act" name="" ng-model="studentEditWidget.editor.tab" class="custom-select form-control">
@@ -194,14 +196,14 @@
                         </select>
                     </div>
                     <div class="form-group" ng-show="studentEditWidget.editor.tab=='delete'">
-                    <datepicker date-format="dd.MM.yyyy" date-week-start-day="1" date-year-title="selected title">
-                        <input type="text" placeholder="дата" class="form-control" ng-model="studentEditWidget.editor.data.date_0" />
-                    </datepicker>
+                        <datepicker date-format="dd.MM.yyyy" date-week-start-day="1" date-year-title="selected title">
+                            <input style="margin-bottom: 15px" type="text" placeholder="дата" class="form-control" ng-model="studentEditWidget.editor.data.date_0" />
+                        </datepicker>
                         <input type="number" placeholder="количество занятий"  ng-model="studentEditWidget.editor.data.cnt" class="form-control" />
                     </div>
                     <div class="form-group" ng-show="studentEditWidget.editor.tab=='move'">
                     <datepicker date-format="dd.MM.yyyy" date-week-start-day="1" date-year-title="selected title">
-                        <input type="text" placeholder="дата с" class="form-control" ng-model="studentEditWidget.editor.data.date_1" />
+                        <input style="margin-bottom: 15px" type="text" placeholder="дата с" class="form-control" ng-model="studentEditWidget.editor.data.date_1" />
                     </datepicker>
                     <datepicker date-format="dd.MM.yyyy" date-week-start-day="1" date-year-title="selected title">
                         <input type="text" placeholder="дата на" class="form-control" ng-model="studentEditWidget.editor.data.date_2" />

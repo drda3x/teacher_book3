@@ -346,6 +346,7 @@
         }
         
         StudentEditWidget.prototype.show = function(index, arr) {
+            this.clear();
             if(!isNaN(parseInt(index))) {
                 var student = arr[index];
 
@@ -356,11 +357,19 @@
                 this.data.id = student.info.id;
                 this.student = student;
 
-            } else {
-                this.clear();
             }
 
             this.window.modal('show');
+        }
+
+        StudentEditWidget.prototype.clear = function() {
+            this.data.phone = '';
+            this.data.name = '';
+            this.data.last_name = '';
+            this.data.org_status = false;
+            this.data.id = null;
+            this.student = null;
+
             this.tab = 'info';
             this.editor.tab = 'delete';
             this.editor.data = {
@@ -371,15 +380,6 @@
             };
         }
 
-        StudentEditWidget.prototype.clear = function() {
-            this.data.phone = '';
-            this.data.name = '';
-            this.data.last_name = '';
-            this.data.org_status = false;
-            this.data.id = null;
-            this.student = null;
-        }
-
         StudentEditWidget.prototype.save = function() {
             var date = $scope.data.dates[0],
                 self = this;
@@ -387,7 +387,7 @@
             self.window.modal('hide');
             alertify.message('Сохранение данных');
             
-            if (this.tab == "info") {
+            if (self.tab == "info") {
                 $http({
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
@@ -416,8 +416,8 @@
                 }, function(response) {
                     alertify.error('В процессе сохранения произошла ошибка'); 
                 });
-            } else if (this.tab == "editor") {
-                if (this.editor.tab == "delete") {
+            } else if (self.tab == "editor") {
+                if (self.editor.tab == "delete") {
                     $http({
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken')
@@ -427,15 +427,36 @@
                         data: {
                             stid: self.data.id,
                             group: $scope.data.group.id,
-                            date: this.editor.data.date_0,
-                            count: this.editor.data.cnt
+                            date: self.editor.data.date_0,
+                            count: self.editor.data.cnt
                         }
-                    }).then(function() {
+                    }).then(function(response) {
+                        self.student.lessons = response.data;
+                        fillSubLists();
                         alertify.success('Сохранено');
                     }, function() {
                         alertify.error('В процессе удаления произошла ошибка');
                     });
-                } else if (this.editor.tab == "move") {
+                } else if (self.editor.tab == "move") {
+                    $http({
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        method: "POST",
+                        url: "/move_lessons",
+                        data: {
+                            stid: self.data.id,
+                            group: $scope.data.group.id,
+                            date_from: self.editor.data.date_1,
+                            date_to: self.editor.data.date_2
+                        }
+                    }).then(function(response) {
+                        self.student.lessons = response.data;
+                        fillSubLists();
+                        alertify.success("Сохранено");
+                    }, function() {
+                        alertify.error("В процессе переноса занятий возникла ошибка");
+                    });
                 }
             }
         }

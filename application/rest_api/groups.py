@@ -29,7 +29,8 @@ from application.common.lessons import (
     process_not_attended_lessons,
     get_students_lessons,
     restore_database,
-    delete_lessons as delete_lessons_func
+    delete_lessons as delete_lessons_func,
+    move_lessons as move_lessons_func
 )
 from application.common.group import get_students
 from collections import defaultdict, namedtuple, Counter
@@ -178,7 +179,7 @@ def process_lesson(request):
 
     only_id = [s['stid'] for s in new_passes]
 
-    #TODO Наверное можно и по изящнее как-то
+    # TODO Наверное можно и по изящнее как-то
     dates = list(takewhile(
         lambda x: x.month == date.month,
         get_calendar(date.replace(day=1), group.days)
@@ -196,12 +197,59 @@ def process_lesson(request):
 
 @auth
 def delete_lessons(request):
+    u"""
+    Функция для удаления занятий у выбранного ученика
+    args:
+        request django.http.request.HttpRequest
+
+    return:
+        django.http.response.HttpResponse
+    """
     try:
         data = json.loads(request.body)
         date = datetime.strptime(data['date'], "%d.%m.%Y")
         delete_lessons_func(date, data['count'], data['stid'], data['group'])
 
-        return HttpResponse()
+        lessons = get_students_lessons(
+            data['group'],
+            date.replace(day=1),
+            None,
+            [data['stid']]
+        )
+
+        lessons_json = [l.__json__() for l in lessons[data['stid']]]
+        return HttpResponse(json.dumps(lessons_json))
+
+    except Exception:
+        return HttpResponseServerError(format_exc())
+
+
+@auth
+def move_lessons(request):
+    u"""
+    Функция для переноса занятий у выбранного ученика
+    args:
+        request django.http.request.HttpRequest
+
+    return:
+        django.http.response.HttpResponse
+    """
+    try:
+        data = json.loads(request.body)
+        date_from = datetime.strptime(data['date_from'], "%d.%m.%Y")
+        date_to = datetime.strptime(data['date_to'], "%d.%m.%Y")
+
+        move_lessons_func(date_from, date_to, data['stid'], data['group'])
+
+        lessons = get_students_lessons(
+            data['group'],
+            date_from.replace(day=1),
+            None,
+            [data['stid']]
+        )
+
+        lessons_json = [l.__json__() for l in lessons[data['stid']]]
+        return HttpResponse(json.dumps(lessons_json))
 
     except Exception:
         return HttpResponseServerError(format_exc())

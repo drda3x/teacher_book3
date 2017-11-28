@@ -50,21 +50,31 @@ def get_students_lessons(group, date_from, date_to, students):
     all_is_ints = all(isinstance(x, int) for x in students)
 
     assert all_is_Students or all_is_ints
+    assert isinstance(group, (Groups, int))
+
+    if isinstance(group, int):
+        group = Groups.objects.get(pk=group)
+
+    if date_to is not None:
+        _dates = list(takewhile(
+            lambda x: x <= date_to,
+            get_calendar(date_from, group.days)
+        ))
+    else:
+        _dates = list(takewhile(
+            lambda x: x.month == date_from.month,
+            get_calendar(date_from, group.days)
+        ))
 
     lessons = Lessons.objects.filter(
         group=group,
-        date__range=(date_from, date_to)
+        date__range=(_dates[0], _dates[-1])
     )
 
     if all_is_Students:
         lessons = lessons.filter(student__in=students)
     else:
         lessons = lessons.filter(student_id__in=students)
-
-    _dates = takewhile(
-        lambda x: x <= date_to,
-        get_calendar(date_from, group.days)
-    )
 
     if isinstance(date_from, datetime):
         dates = set(d.date() for d in _dates)
@@ -334,7 +344,7 @@ def delete_lessons(date_from, count, student_id, group_id):
         date__gte=date_from,
         student_id=student_id,
         group_id=group_id
-    ).select_related('group_pass')[:count+1]
+    ).select_related('group_pass').order_by('date')[:count]
 
     passes_to_edit = set()
     lessons_to_delete = list()
@@ -345,6 +355,23 @@ def delete_lessons(date_from, count, student_id, group_id):
         lessons_to_delete.append(lesson.pk)
 
     Lessons.objects.filter(pk__in=lessons_to_delete).delete()
-    Passes.objects.filter(
-        pk__in=[p.pk for p in passes_to_edit if p.lessons <= 0]
-    ).delete()
+    passes_to_delete = [p.pk for p in passes_to_edit if p.lessons <= 0]
+
+    if len(passes_to_delete) > 0:
+        Passes.objects.filter(
+            pk__in=[p.pk for p in passes_to_edit if p.lessons <= 0]
+        ).delete()
+
+
+def move_lessons(date_from, date_to, student_id, group_id):
+
+    group = Groups.objects.get(pk=group_id)
+    lessons = list(Lessons.objects.filter(
+        date__gte=date_from,
+        student_id=student_id,
+        group=group
+    ))
+
+    for lesson, date in zip(lessons, get_calendar(date_to, group.days)):
+        lesson.date = date
+        lesson.save()
