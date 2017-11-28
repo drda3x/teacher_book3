@@ -136,6 +136,7 @@
         $scope.data = {};
         $scope.main_list = [];
         $scope.sub_list = [];
+        $scope.selected_month = null;
 
         function fillSubLists() {
             $scope.main_list = [];
@@ -167,6 +168,7 @@
                 $scope.data = response.data;
                 $scope.main_list = [];
                 $scope.sub_list = [];
+                $scope.selected_month = response.data.selected_month;
                     
                 var group = $scope.data.group;
                 $rootScope.header = group.name;
@@ -478,6 +480,16 @@
                 load();
             }
         })
+
+        $scope.$watch('selected_month', function(new_val, old_val) {
+            if(new_val == undefined) {
+                return;
+            }
+            try {
+                $location.path('group/'+$scope.data.group.id+'/'+new_val);
+            } catch(e) {
+            }
+        });
 
         load();
     });

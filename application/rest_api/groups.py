@@ -21,7 +21,7 @@ from auth import auth
 from traceback import format_exc
 import json
 from datetime import datetime, timedelta
-from application.common.date import get_calendar
+from application.common.date import get_calendar, MONTH_RUS
 from application.common.lessons import (
     DefaultLesson,
     create_new_passes,
@@ -73,11 +73,12 @@ def get_base_info(request):
     path = [elem for elem in request.path.split('/')[2:] if elem != u'']
     path.append(datetime.now())
 
-    group_id, date = path[:2]
+    group_id, raw_date = path[:2]
     group = Groups.objects.get(pk=int(group_id))
 
+    date = raw_date
     if isinstance(date, (str, unicode)):
-        date = datetime.strptime(date, '%m%Y')
+        date = datetime.strptime(raw_date, '%m%Y')
 
     date = max(group.start_date, date.replace(day=1).date())
 
@@ -100,7 +101,16 @@ def get_base_info(request):
         pk__in=group.available_passes.all()
     )
 
+    month_min = max(group.start_date, (date - timedelta(days=90)).replace(day=1))
+    month = takewhile(
+        lambda x: x <= (date + timedelta(days=30)).replace(day=1),
+        (month_min + timedelta(days=i) for i in range(0, 90, 30))
+    )
+    month_list = [(MONTH_RUS[i.month], i.strftime('%m%Y')) for i in month]
+
     response = {
+        "selected_month": raw_date,
+        "month_list": month_list,
         "group": group.__json__(),
         "dates": [d.strftime('%d.%m.%Y') for d in dates],
         "pass_types": [
