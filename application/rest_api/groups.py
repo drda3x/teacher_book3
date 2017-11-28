@@ -28,7 +28,8 @@ from application.common.lessons import (
     process_attended_lessons,
     process_not_attended_lessons,
     get_students_lessons,
-    restore_database
+    restore_database,
+    delete_lessons as delete_lessons_func
 )
 from application.common.group import get_students
 from collections import defaultdict, namedtuple, Counter
@@ -191,3 +192,16 @@ def process_lesson(request):
         new_lessons_json[str(st)] = [l.__json__() for l in ls]
 
     return HttpResponse(json.dumps(new_lessons_json))
+
+
+@auth
+def delete_lessons(request):
+    try:
+        data = json.loads(request.body)
+        date = datetime.strptime(data['date'], "%d.%m.%Y")
+        delete_lessons_func(date, data['count'], data['stid'], data['group'])
+
+        return HttpResponse()
+
+    except Exception:
+        return HttpResponseServerError(format_exc())

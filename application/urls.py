@@ -27,5 +27,6 @@ urlpatterns = [
     url(r'^logout$', rest_api.logout),
     url(r'^edit_student', rest_api.edit_student),
     url(r'^process_lesson', rest_api.process_lesson),
+    url(r'^delete_lessons', rest_api.delete_lessons),
     url(r'^$', views.index, name="index"),
 ]

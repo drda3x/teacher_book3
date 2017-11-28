@@ -6,7 +6,8 @@ from collections import namedtuple, Counter, defaultdict
 from date import get_calendar
 from datetime import datetime, timedelta
 from itertools import takewhile
-from application.models import Groups, Passes, Lessons, PassTypes, Students
+from application.models import Groups, Passes, Lessons, Students
+
 
 class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
     u"""
@@ -50,7 +51,6 @@ def get_students_lessons(group, date_from, date_to, students):
 
     assert all_is_Students or all_is_ints
 
-    #group_lessonos
     lessons = Lessons.objects.filter(
         group=group,
         date__range=(date_from, date_to)
@@ -134,15 +134,15 @@ def create_new_passes(group, date, data):
                         '%d %s' % (student['stid'], _date.strftime('%d.%m.%Y'))
                     )
 
-                l = Lessons(
+                _l = Lessons(
                     date=_date,
                     student_id=student['stid'],
                     group=group,
                     group_pass=p
                 )
 
-                l.save()
-                to_delete.append(l)
+                _l.save()
+                to_delete.append(_l)
 
     except LessonsCrossException as e:
         for elem in to_delete:
@@ -228,13 +228,13 @@ def process_not_attended_lessons(group, date, lessons):
         for s in data if s.org or s.skips > missed_lessons[s.student]
     ]
 
-    qs = Lessons.objects.filter(
+    Lessons.objects.filter(
         group=group,
         date=date,
         student_id__in=not_attended
     ).update(status=Lessons.STATUSES['not_attended'])
 
-    qs = Lessons.objects.filter(
+    Lessons.objects.filter(
         group=group,
         date=date,
         student_id__in=moved
@@ -326,3 +326,25 @@ def restore_database(group, date, students):
                     student=p.student,
                     group_pass=p.group_pass
                 ).save()
+
+
+def delete_lessons(date_from, count, student_id, group_id):
+
+    lessons = Lessons.objects.filter(
+        date__gte=date_from,
+        student_id=student_id,
+        group_id=group_id
+    ).select_related('group_pass')[:count+1]
+
+    passes_to_edit = set()
+    lessons_to_delete = list()
+
+    for lesson in lessons:
+        passes_to_edit.add(lesson.group_pass)
+        lesson.group_pass.lessons -= 1
+        lessons_to_delete.append(lesson.pk)
+
+    Lessons.objects.filter(pk__in=lessons_to_delete).delete()
+    Passes.objects.filter(
+        pk__in=[p.pk for p in passes_to_edit if p.lessons <= 0]
+    ).delete()

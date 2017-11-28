@@ -194,12 +194,18 @@
                         </select>
                     </div>
                     <div class="form-group" ng-show="studentEditWidget.editor.tab=='delete'">
-                        <input type="text" placeholder="дата" class="form-control" />
-                        <input type="number" placeholder="количество занятий" class="form-control" />
+                    <datepicker date-format="dd.MM.yyyy" date-week-start-day="1" date-year-title="selected title">
+                        <input type="text" placeholder="дата" class="form-control" ng-model="studentEditWidget.editor.data.date_0" />
+                    </datepicker>
+                        <input type="number" placeholder="количество занятий"  ng-model="studentEditWidget.editor.data.cnt" class="form-control" />
                     </div>
                     <div class="form-group" ng-show="studentEditWidget.editor.tab=='move'">
-                        <input type="text" placeholder="дата с" class="form-control" />
-                        <input type="text" placeholder="дата на" class="form-control" />
+                    <datepicker date-format="dd.MM.yyyy" date-week-start-day="1" date-year-title="selected title">
+                        <input type="text" placeholder="дата с" class="form-control" ng-model="studentEditWidget.editor.data.date_1" />
+                    </datepicker>
+                    <datepicker date-format="dd.MM.yyyy" date-week-start-day="1" date-year-title="selected title">
+                        <input type="text" placeholder="дата на" class="form-control" ng-model="studentEditWidget.editor.data.date_2" />
+                    </datepicker>
                     </div>
                 </form>
             </div>

@@ -23,7 +23,7 @@
         return false;
     }
 
-    var app = angular.module('app', ['ngRoute'])
+    var app = angular.module('app', ['ngRoute', '720kb.datepicker'])
     .config(function($routeProvider) {
         $routeProvider
             .when('/', {
@@ -331,7 +331,13 @@
             this.tab = 'info';
 
             this.editor = {
-                tab: 'delete'
+                tab: 'delete',
+                data: {
+                    date_0: null,
+                    date_1: null,
+                    date_2: null,
+                    cnt: null
+                }
             }
         }   
 
@@ -357,6 +363,12 @@
             this.window.modal('show');
             this.tab = 'info';
             this.editor.tab = 'delete';
+            this.editor.data = {
+                date_0: null,
+                date_1: null,
+                date_2: null,
+                cnt: null
+            };
         }
 
         StudentEditWidget.prototype.clear = function() {
@@ -374,35 +386,58 @@
 
             self.window.modal('hide');
             alertify.message('Сохранение данных');
+            
+            if (this.tab == "info") {
+                $http({
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    method: "POST",
+                    url: '/edit_student',
+                    data: {
+                        date: date,
+                        stid: self.data.id,
+                        name: self.data.name,
+                        last_name: self.data.last_name,
+                        phone: self.data.phone,
+                        org_status: self.data.org_status,
+                        group: $scope.data.group.id
+                    }
+                }).then(function(response) {
+                    var is_new_student = self.student == null;
 
-            $http({
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                method: "POST",
-                url: '/edit_student',
-                data: {
-                    date: date,
-                    stid: self.data.id,
-                    name: self.data.name,
-                    last_name: self.data.last_name,
-                    phone: self.data.phone,
-                    org_status: self.data.org_status,
-                    group: $scope.data.group.id
+                    if(is_new_student) {
+                        $scope.data.students.push(response.data);
+                        fillSubLists();
+                    } else {
+                        self.student.info = response.data.info;
+                    }
+                    alertify.success('Сохранено'); 
+                }, function(response) {
+                    alertify.error('В процессе сохранения произошла ошибка'); 
+                });
+            } else if (this.tab == "editor") {
+                if (this.editor.tab == "delete") {
+                    $http({
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        method: "POST",
+                        url: "/delete_lessons",
+                        data: {
+                            stid: self.data.id,
+                            group: $scope.data.group.id,
+                            date: this.editor.data.date_0,
+                            count: this.editor.data.cnt
+                        }
+                    }).then(function() {
+                        alertify.success('Сохранено');
+                    }, function() {
+                        alertify.error('В процессе удаления произошла ошибка');
+                    });
+                } else if (this.editor.tab == "move") {
                 }
-            }).then(function(response) {
-                var is_new_student = self.student == null;
-
-                if(is_new_student) {
-                    $scope.data.students.push(response.data);
-                    fillSubLists();
-                } else {
-                    self.student.info = response.data.info;
-                }
-                alertify.success('Сохранено'); 
-            }, function(response) {
-                alertify.error('В процессе сохранения произошла ошибка'); 
-            });
+            }
         }
         
         $scope.studentEditWidget = new StudentEditWidget();
