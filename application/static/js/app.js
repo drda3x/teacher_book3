@@ -169,6 +169,7 @@
                 $scope.main_list = [];
                 $scope.sub_list = [];
                 $scope.selected_month = response.data.selected_month;
+                $scope.month_list = response.data.month_list;
                     
                 var group = $scope.data.group;
                 $rootScope.header = group.name;
@@ -480,9 +481,9 @@
                 load();
             }
         })
-
+        
         $scope.$watch('selected_month', function(new_val, old_val) {
-            if(new_val == undefined) {
+            if(new_val == undefined || old_val == undefined) {
                 return;
             }
             try {

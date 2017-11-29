@@ -101,15 +101,19 @@ def get_base_info(request):
         pk__in=group.available_passes.all()
     )
 
-    month_min = max(group.start_date, (date - timedelta(days=90)).replace(day=1))
+    now = datetime.now().replace(day=15).date()
+    month_min = max(group.start_date.replace(day=15), (now - timedelta(days=90)))
     month = takewhile(
-        lambda x: x <= (date + timedelta(days=30)).replace(day=1),
-        (month_min + timedelta(days=i) for i in range(0, 90, 30))
+        lambda x: x <= (now + timedelta(days=30)),
+        (month_min + timedelta(days=i) for i in range(0, 150, 30))
     )
-    month_list = [(MONTH_RUS[i.month], i.strftime('%m%Y')) for i in month]
+    month_list = [
+       dict(label="%s %d" % (MONTH_RUS[i.month], i.year), val=i.strftime('%m%Y'))
+       for i in month
+    ]
 
     response = {
-        "selected_month": raw_date,
+        "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
         "group": group.__json__(),
         "dates": [d.strftime('%d.%m.%Y') for d in dates],
