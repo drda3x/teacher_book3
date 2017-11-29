@@ -69,7 +69,7 @@ def get_students_lessons(group, date_from, date_to, students):
     lessons = Lessons.objects.filter(
         group=group,
         date__range=(_dates[0], _dates[-1])
-    )
+    ).exclude(status=Lessons.STATUSES['canceled'])
 
     if all_is_Students:
         lessons = lessons.filter(student__in=students)

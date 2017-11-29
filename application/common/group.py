@@ -2,7 +2,16 @@
 # -*- coding: utf-8 -*-
 
 
-from application.models import GroupList, Groups, Students
+from application.models import (
+    GroupList,
+    Groups,
+    Students,
+    Lessons,
+    CanceledLessons
+)
+from application.common.date import get_calendar
+from django.db.models import Max
+from datetime import timedelta
 
 
 def add_student_to_group(group, student):
@@ -56,3 +65,42 @@ def get_students(group):
     )
 
     return students
+
+
+def cancel_lesson(group, date):
+    u"""
+    Функция для отмены занятий
+
+    args:
+        group application.models.Groups
+    """
+
+    assert isinstance(group, (Groups, int))
+
+    if isinstance(group, int):
+        group = Groups.objects.get(pk=group)
+
+    today_lessons = Lessons.objects.filter(
+        group=group,
+        date=date
+    )
+
+    lessons = Lessons.objects.filter(
+        group_pass__in=today_lessons.values_list("group_pass", flat=True)
+    )
+
+    max_lessons = lessons.values("group_pass", "student").annotate(max_date=Max("date"))
+    for lesson in max_lessons:
+        date_from = lesson['max_date'] + timedelta(days=1)
+        new_date = get_calendar(date_from, group.days).next()
+        new_lesson = Lessons(
+            student_id=lesson['student'],
+            group=group,
+            group_pass_id=lesson['group_pass'],
+            date=new_date
+        )
+
+        new_lesson.save()
+
+    today_lessons.update(status=Lessons.STATUSES['canceled'])
+    CanceledLessons(group=group, date=date).save()

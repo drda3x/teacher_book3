@@ -15,7 +15,8 @@ from application.models import (
     Students,
     User,
     Lessons,
-    PassTypes
+    PassTypes,
+    CanceledLessons
 )
 from auth import auth
 from traceback import format_exc
@@ -94,6 +95,10 @@ def get_base_info(request):
         )
     )
 
+    canceled_dates = CanceledLessons.objects.filter(
+        group=group, date__range=(dates[0], dates[-1])
+    ).values_list("date", flat=True)
+
     students = get_students(group).order_by('last_name', 'first_name')
     lessons = get_students_lessons(group, dates[0], dates[-1], students)
 
@@ -116,7 +121,13 @@ def get_base_info(request):
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
         "group": group.__json__(),
-        "dates": [d.strftime('%d.%m.%Y') for d in dates],
+        "dates": [
+            dict(
+                val=d.strftime('%d.%m.%Y'),
+                canceled=d in canceled_dates
+            )
+            for d in dates
+        ],
         "pass_types": [
             p.__json__()
             for p in pass_types

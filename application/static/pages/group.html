@@ -10,7 +10,7 @@
             <th style="border-color: #000; width: 1%">#</th>
             <th style="border-color: #000; width: 20%">ФИО, Телефон</th>
             <th style="border-color: #000; width: 30%">Коментарии</th>
-            <th style="border-color: #000" ng-repeat="date in data.dates" ng-click="lessonWidget.show($index)">{{date}}</th>
+            <th style="border-color: #000" ng-repeat="date in data.dates" ng-click="lessonWidget.show($index)">{{date.val}}</th>
         </tr>
         <tr ng-repeat="student in main_list">
             <td style="border-color: #000">{{$index + 1}}</td>
