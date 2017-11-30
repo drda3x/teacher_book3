@@ -22,6 +22,7 @@ from auth import auth
 from traceback import format_exc
 import json
 from datetime import datetime, timedelta
+
 from application.common.date import get_calendar, MONTH_RUS
 from application.common.lessons import (
     DefaultLesson,
@@ -33,7 +34,12 @@ from application.common.lessons import (
     delete_lessons as delete_lessons_func,
     move_lessons as move_lessons_func
 )
-from application.common.group import get_students
+
+from application.common.group import (
+    get_students,
+    cancel_lesson as cancel_lesson_func
+)
+
 from collections import defaultdict, namedtuple, Counter
 from itertools import takewhile, chain
 
@@ -275,6 +281,45 @@ def move_lessons(request):
 
         lessons_json = [l.__json__() for l in lessons[data['stid']]]
         return HttpResponse(json.dumps(lessons_json))
+
+    except Exception:
+        return HttpResponseServerError(format_exc())
+
+
+@auth
+def cancel_lesson(request):
+    u"""
+    Функция для отмены знятий
+    args:
+        request django.http.request.HttpRequest
+
+    return:
+        django.http.response.HttpResponse
+    """
+    try:
+        data = json.loads(request.body)
+        date = datetime.strptime(data['date'], "%d.%m.%Y")
+
+        #cancel_lesson_func(data['group'], date)
+
+        students = get_students(data['group'])
+        studnets_lessons = get_students_lessons(
+            data['group'],
+            date.replace(day=1),
+            None,
+            students
+        )
+        lessons_json = [
+            {
+                'info': student.__json__(),
+                'lessons': [
+                    l.__json__()
+                    for l in ls
+                ]
+            }
+            for st, ls in students_lessons.iteritems()
+        ]
+        return HttpResponse(lessons_json)
 
     except Exception:
         return HttpResponseServerError(format_exc())

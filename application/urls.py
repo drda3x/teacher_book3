@@ -29,5 +29,6 @@ urlpatterns = [
     url(r'^process_lesson', rest_api.process_lesson),
     url(r'^delete_lessons', rest_api.delete_lessons),
     url(r'^move_lessons', rest_api.move_lessons),
+    url(r'^cancel_lesson', rest_api.cancel_lesson),
     url(r'^$', views.index, name="index"),
 ]

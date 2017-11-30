@@ -291,7 +291,8 @@
                     date: this.date,
                     group: $scope.data.group.id
                 }
-            }).then(function() {
+            }).then(function(response) {
+                console.log(response);
             }, function() {
             });
         }

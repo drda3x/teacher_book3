@@ -72,7 +72,8 @@ def cancel_lesson(group, date):
     Функция для отмены занятий
 
     args:
-        group application.models.Groups
+        group application.models.Groups or int
+        date datetime.datetime
     """
 
     assert isinstance(group, (Groups, int))
