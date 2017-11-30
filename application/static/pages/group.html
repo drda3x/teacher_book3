@@ -57,40 +57,51 @@
     <div id="lessonWidget" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{lessonWidget.date}}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-bordered">
-                    <tr ng-repeat="student in lessonWidget.data">
-                        <td style="width: 50%">{{student.info.last_name}} {{student.info.first_name}}</td>
-                        <td ng-click="lessonWidget.process_student(student.lesson)" 
-                            style="background-color: {{student.lesson.group_pass.color}}">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        {{lessonWidget.date}} <span ng-show="lessonWidget.is_canceled"> - ОТМЕНЕНО</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" ng-show="!lessonWidget.is_canceled">
+                    <table class="table table-bordered">
+                        <tr ng-repeat="student in lessonWidget.data">
+                            <td style="width: 50%">{{student.info.last_name}} {{student.info.first_name}}</td>
+                            <td ng-click="lessonWidget.process_student(student.lesson)" 
+                                style="background-color: {{student.lesson.group_pass.color}}">
 
-                            <select id="" 
-                                    ng-model="student.lesson.temp_pass"
-                                    name="" ng-if="student.lesson.temp_status < 0" 
-                                    class="form-control">
-                                <option value="">--добавить оплату--</option>
-                                <option value="{{pass_type.id}}" ng-repeat="pass_type in data.pass_types">
-                                    {{pass_type.name}}
-                                </option>
-                            </select>
-                            <input type="checkbox" ng-if="student.lesson.temp_status >= 0" 
-                                   ng-checked="student.lesson.temp_status == 1" />
+                                <select id="" 
+                                        ng-model="student.lesson.temp_pass"
+                                        name="" ng-if="student.lesson.temp_status < 0" 
+                                        class="form-control">
+                                    <option value="">--добавить оплату--</option>
+                                    <option value="{{pass_type.id}}" ng-repeat="pass_type in data.pass_types">
+                                        {{pass_type.name}}
+                                    </option>
+                                </select>
+                                <input type="checkbox" ng-if="student.lesson.temp_status >= 0" 
+                                    ng-checked="student.lesson.temp_status == 1" />
 
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn" ng-click="lessonWidget.save(false)">Сохранить без пропусков</button>
-                <button type="button" class="btn btn-primary" ng-click="lessonWidget.save(true)">Сохранить с пропусками</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
-            </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer" ng-show="!lessonWidget.is_canceled">
+                    <div>
+                        <button class="btn" type="button" ng-click="lessonWidget.cancelLesson()">Отменить занятие</button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn" ng-click="lessonWidget.save(false)">Сохранить без пропусков</button>
+                        <button type="button" class="btn btn-primary" ng-click="lessonWidget.save(true)">Сохранить с пропусками</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
+                    </div>
+                </div>
+                <div class="modal-footer" ng-show="lessonWidget.is_canceled">
+                    <button class="btn" type="button" ng-click="lessonWidget.restoreLesson()">Восстановить</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
+                </div>
             </div>
         </div>
     </div>

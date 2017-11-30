@@ -205,7 +205,8 @@
             }
 
             this.data = data;
-            this.date = $scope.data.dates[index];
+            this.date = $scope.data.dates[index].val;
+            this.is_canceled = $scope.data.dates[index].canceled;
         }
 
         LessonWidget.prototype.hide = function(lesson) {
@@ -277,6 +278,25 @@
             }, function(response) {
                 alertify.error("Ошибка в процессе сохранения");
             });
+        }
+
+        LessonWidget.prototype.cancelLesson = function() {
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                url: "/cancel_lesson",
+                data : {
+                    date: this.date,
+                    group: $scope.data.group.id
+                }
+            }).then(function() {
+            }, function() {
+            });
+        }
+
+        LessonWidget.prototype.restoreLesson = function() {
         }
         
         $scope.lessonWidget = new LessonWidget();
