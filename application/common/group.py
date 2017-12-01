@@ -10,8 +10,9 @@ from application.models import (
     CanceledLessons
 )
 from application.common.date import get_calendar
-from django.db.models import Max
+from django.db.models import Max, Q
 from datetime import timedelta
+from itertools import groupby
 
 
 def add_student_to_group(group, student):
@@ -62,7 +63,7 @@ def get_students(group):
         pk__in=GroupList.objects.filter(
             **params
         ).values_list("student", flat=True)
-    )
+    ).order_by("last_name", "first_name")
 
     return students
 
@@ -105,3 +106,37 @@ def cancel_lesson(group, date):
 
     today_lessons.update(status=Lessons.STATUSES['canceled'])
     CanceledLessons(group=group, date=date).save()
+
+
+def restore_lesson(group, date):
+    u"""
+    Функция для восстановления отмененных занятий
+
+    args:
+        group application.models.Groups or int
+        date datetime.datetime
+    """
+
+    assert isinstance(group, (Groups, int))
+
+    if isinstance(group, int):
+        group = Groups.objects.get(pk=group)
+
+    today_lessons = Lessons.objects.filter(
+        group=group,
+        date=date,
+        status=Lessons.STATUSES['canceled']
+    )
+
+    lessons = Lessons.objects.filter(
+        group_pass__in=today_lessons.values_list("group_pass", flat=True)
+    ).order_by("student", "-date")
+
+    to_delete = [
+        g.next().pk
+        for k, g in groupby(lessons, lambda x: x.student)
+    ]
+
+    CanceledLessons.objects.get(group=group, date=date).delete()
+    Lessons.objects.filter(pk__in=to_delete).delete()
+    today_lessons.update(status=Lessons.STATUSES['not_processed'])

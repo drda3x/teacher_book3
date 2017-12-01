@@ -205,6 +205,7 @@
             }
 
             this.data = data;
+            this.index = index;
             this.date = $scope.data.dates[index].val;
             this.is_canceled = $scope.data.dates[index].canceled;
         }
@@ -281,6 +282,9 @@
         }
 
         LessonWidget.prototype.cancelLesson = function() {
+            var self = this;
+            self.hide();
+
             $http({
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
@@ -292,12 +296,37 @@
                     group: $scope.data.group.id
                 }
             }).then(function(response) {
-                console.log(response);
+                $scope.data.students = response.data;
+                fillSubLists();
+                alertify.success("Сохранено");
+                $scope.data.dates[self.index].canceled = true; 
             }, function() {
+                alertify.error("Ошибка в процессе сохранения");
             });
         }
 
         LessonWidget.prototype.restoreLesson = function() {
+            var self = this;
+            self.hide();
+
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST", 
+                url: "/restore_lesson",
+                data : {
+                    date: this.date,
+                    group: $scope.data.group.id
+                }
+            }).then(function(response) {
+                $scope.data.students = response.data;
+                fillSubLists();
+                alertify.success("Сохранено");
+                $scope.data.dates[self.index].canceled = true; 
+            }, function() {
+                alertify.error("Ошибка в процессе сохранения");
+            });
         }
         
         $scope.lessonWidget = new LessonWidget();

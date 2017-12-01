@@ -8,7 +8,8 @@ from groups import (
     process_lesson,
     delete_lessons,
     move_lessons,
-    cancel_lesson
+    cancel_lesson,
+    restore_lesson
 )
 from students import edit_student
 from auth import login, logout

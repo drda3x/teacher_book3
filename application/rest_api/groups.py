@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.contrib.sessions.backends.db import SessionStore
-from django.contrib import auth
 from django.http.response import (
     HttpResponse,
     HttpResponseServerError,
-    HttpResponseForbidden
 )
 from application.models import (
     Groups,
-    GroupLevels,
-    GroupList,
-    Students,
-    User,
     Lessons,
     PassTypes,
     CanceledLessons
@@ -25,7 +18,6 @@ from datetime import datetime, timedelta
 
 from application.common.date import get_calendar, MONTH_RUS
 from application.common.lessons import (
-    DefaultLesson,
     create_new_passes,
     process_attended_lessons,
     process_not_attended_lessons,
@@ -37,10 +29,10 @@ from application.common.lessons import (
 
 from application.common.group import (
     get_students,
-    cancel_lesson as cancel_lesson_func
+    cancel_lesson as cancel_lesson_func,
+    restore_lesson as restore_lesson_func
 )
 
-from collections import defaultdict, namedtuple, Counter
 from itertools import takewhile, chain
 
 
@@ -74,8 +66,8 @@ def get_base_info(request):
         django.http.response.HttpResponse
     """
 
-    #TODO Тут оставить только прием запроса и отправку ответа
-    #TODO остальное вынести в common.group
+    # TODO Тут оставить только прием запроса и отправку ответа
+    # TODO остальное вынести в common.group
 
     path = [elem for elem in request.path.split('/')[2:] if elem != u'']
     path.append(datetime.now())
@@ -179,14 +171,14 @@ def process_lesson(request):
     attended = [
         s
         for s in data['students']
-        if s['lesson']['status'] == Lessons.STATUSES['attended'] \
+        if s['lesson']['status'] == Lessons.STATUSES['attended']
         and s['lesson']['is_new'] == False
     ]
 
     not_attended = [
         s
         for s in data['students']
-        if s['lesson']['status'] == Lessons.STATUSES['not_attended'] \
+        if s['lesson']['status'] == Lessons.STATUSES['not_attended']
         and s['lesson']['is_new'] == False
     ]
 
@@ -300,26 +292,81 @@ def cancel_lesson(request):
         data = json.loads(request.body)
         date = datetime.strptime(data['date'], "%d.%m.%Y")
 
-        #cancel_lesson_func(data['group'], date)
+        cancel_lesson_func(data['group'], date)
 
         students = get_students(data['group'])
-        studnets_lessons = get_students_lessons(
+        students_lessons = get_students_lessons(
             data['group'],
             date.replace(day=1),
             None,
             students
         )
+
+        ordered = sorted(
+            students_lessons.keys(),
+            key=lambda s: (s.last_name, s.first_name)
+        )
+
         lessons_json = [
             {
-                'info': student.__json__(),
+                'info': st.__json__(),
                 'lessons': [
                     l.__json__()
-                    for l in ls
+                    for l in students_lessons[st]
                 ]
             }
-            for st, ls in students_lessons.iteritems()
+            for st in ordered
         ]
-        return HttpResponse(lessons_json)
+
+        return HttpResponse(json.dumps(lessons_json))
+
+    except Exception:
+        return HttpResponseServerError(format_exc())
+
+
+@auth
+def restore_lesson(request):
+    u"""
+    Функция для восстановления отмененых занятий
+    args:
+        request django.http.request.HttpRequest
+
+    return:
+        django.http.response.HttpResponse
+    """
+
+    try:
+        data = json.loads(request.body)
+        date = datetime.strptime(data["date"], "%d.%m.%Y")
+        group = data['group']
+
+        restore_lesson_func(group, date)
+
+        students = get_students(data['group'])
+        students_lessons = get_students_lessons(
+            data['group'],
+            date.replace(day=1),
+            None,
+            students
+        )
+
+        ordered = sorted(
+            students_lessons.keys(),
+            key=lambda s: (s.last_name, s.first_name)
+        )
+
+        lessons_json = [
+            {
+                'info': st.__json__(),
+                'lessons': [
+                    l.__json__()
+                    for l in students_lessons[st]
+                ]
+            }
+            for st in ordered
+        ]
+
+        return HttpResponse(json.dumps(lessons_json))
 
     except Exception:
         return HttpResponseServerError(format_exc())
