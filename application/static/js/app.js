@@ -43,6 +43,24 @@
             })
     });
 
+    app.directive('ngSize', function(){
+        return {
+            restrict: 'A',
+            scope: {
+                size: "=ngSize"
+            },
+            link: function(scope, element, attrs){
+                if(!element.nodeName === 'SELECT'){
+                    return;
+                }
+
+                scope.$watch("size", function(val) {
+                    attrs.$set('size', val);	
+                })
+            }
+        }
+    })
+
     app.controller('navBarCtrl', function($scope, $rootScope) {
         $scope.header = null;
         $scope.header2 = null;
@@ -400,6 +418,8 @@
         
         StudentEditWidget.prototype.show = function(index, arr) {
             this.clear();
+            this.index = index;
+
             if(!isNaN(parseInt(index))) {
                 var student = arr[index];
 
@@ -412,7 +432,11 @@
 
             }
 
-            this.window.modal('show');
+            //this.window.modal('show');
+            $('body').one('click', $.proxy(this.save, this));
+            $('.student-edit-widget').click(function(e) {
+                e.stopPropagation();
+            });
         }
 
         StudentEditWidget.prototype.clear = function() {
@@ -422,6 +446,7 @@
             this.data.org_status = false;
             this.data.id = null;
             this.student = null;
+            this.index = null;
 
             this.tab = 'info';
             this.editor.tab = 'delete';
@@ -431,16 +456,23 @@
                 date_2: null,
                 cnt: null
             };
+
+            $('.student-edit-widget').off('click');
         }
 
         StudentEditWidget.prototype.save = function() {
-            var date = $scope.data.dates[0],
-                self = this;
+            var date = $scope.data.dates[0].val,
+                self = this,
+                student = self.student;
 
-            self.window.modal('hide');
-            alertify.message('Сохранение данных');
-            
-            if (self.tab == "info") {
+
+            if(!student
+                    || !(student.info.last_name == self.data.last_name)
+                    || !(student.info.first_name == self.data.name)
+                    || !(student.info.phone == self.data.phone)
+                    || !(student.info.org == self.data.org_status))
+            {
+                alertify.message('Сохранение данных');
                 $http({
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
@@ -457,61 +489,22 @@
                         group: $scope.data.group.id
                     }
                 }).then(function(response) {
-                    var is_new_student = self.student == null;
+                    var is_new_student = student == null;
 
                     if(is_new_student) {
                         $scope.data.students.push(response.data);
                         fillSubLists();
                     } else {
-                        self.student.info = response.data.info;
+                        student.info = response.data.info;
                     }
                     alertify.success('Сохранено'); 
                 }, function(response) {
                     alertify.error('В процессе сохранения произошла ошибка'); 
                 });
-            } else if (self.tab == "editor") {
-                if (self.editor.tab == "delete") {
-                    $http({
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        method: "POST",
-                        url: "/delete_lessons",
-                        data: {
-                            stid: self.data.id,
-                            group: $scope.data.group.id,
-                            date: self.editor.data.date_0,
-                            count: self.editor.data.cnt
-                        }
-                    }).then(function(response) {
-                        self.student.lessons = response.data;
-                        fillSubLists();
-                        alertify.success('Сохранено');
-                    }, function() {
-                        alertify.error('В процессе удаления произошла ошибка');
-                    });
-                } else if (self.editor.tab == "move") {
-                    $http({
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        method: "POST",
-                        url: "/move_lessons",
-                        data: {
-                            stid: self.data.id,
-                            group: $scope.data.group.id,
-                            date_from: self.editor.data.date_1,
-                            date_to: self.editor.data.date_2
-                        }
-                    }).then(function(response) {
-                        self.student.lessons = response.data;
-                        fillSubLists();
-                        alertify.success("Сохранено");
-                    }, function() {
-                        alertify.error("В процессе переноса занятий возникла ошибка");
-                    });
-                }
             }
+
+            this.clear();
+            $scope.$apply();
         }
         
         $scope.studentEditWidget = new StudentEditWidget();

@@ -15,7 +15,23 @@
         <tr ng-repeat="student in main_list">
             <td style="border-color: #000">{{$index + 1}}</td>
             <td style="border-color: #000" ng-dblclick="studentEditWidget.show($index, main_list)">
-                {{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}
+                <span ng-show="$index!=studentEditWidget.index">
+                    {{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}
+                </span>
+                <span class="student-edit-widget" ng-show="$index==studentEditWidget.index">
+                    <input type="text" 
+                           ng-size="studentEditWidget.data.last_name.length" 
+                           placeholder="Фамилия"
+                           ng-model="studentEditWidget.data.last_name" />
+                    <input type="text" 
+                           ng-size="studentEditWidget.data.name.length" 
+                           placeholder="Имя"
+                           ng-model="studentEditWidget.data.name" /><br>
+                    <input type="text" style="margin-top: 3px" 
+                           ng-size="studentEditWidget.data.phone.length" 
+                           placeholder="телефон"
+                           ng-model="studentEditWidget.data.phone" />
+                </span>
             </td>
             <td style="border-color: #000" ></td>
             <td ng-repeat="lesson in student.lessons track by $index" 

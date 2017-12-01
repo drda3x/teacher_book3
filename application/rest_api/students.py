@@ -48,7 +48,7 @@ def edit_student(request):
     add_student_to_group(group, student)
 
     lessons = get_students_lessons(
-        group, date, [student]
+        group, date, None, [student]
     )
 
     response = {

@@ -35,8 +35,7 @@
                 return cookieValue;
             }
         </script>
-        <script>document.write('<script src="static/js/app.js?dev=' + Math.floor(Math.random() * 100) + '"\><\/script>');</script>
-        <!--script src="{% static 'js/app.js' %}"></script-->
+        <script src="{% static 'js/app.js' %}"></script>
     </head>
     <body>
         {% csrf_token %}
