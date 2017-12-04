@@ -4,6 +4,7 @@ var gulp = require("gulp");
 var concat = require("gulp-concat");
 var bower = require("gulp-bower-files");
 var gulpFilter = require("gulp-filter");
+var rigger = require("gulp-rigger");
 
 
 //
@@ -17,11 +18,11 @@ gulp.task('bower', function() {
   return bower()
     .pipe(jsFilter)
     .pipe(concat('vendor.js'))
-    .pipe(gulp.dest('js'))
+    .pipe(gulp.dest('build'))
     //.pipe(jsFilter.restore())
     .pipe(cssFilter)
     .pipe(concat('vendor.css'))
-    .pipe(gulp.dest('css'))
+    .pipe(gulp.dest('build'))
     //.pipe(cssFilter.restore())
     //.pipe(rename(function(path) {
     //  if (~path.dirname.indexOf('fonts')) {
@@ -29,4 +30,11 @@ gulp.task('bower', function() {
     //  }
     //}))
     //.pipe(gulp.dest(dist.vendor))
-})
+});
+
+
+gulp.task('js', function() {
+    gulp.src('src/js/app.js')
+        .pipe(rigger())
+        .pipe(gulp.dest('build'))
+});
