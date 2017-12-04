@@ -1,6 +1,6 @@
 <div>
     <div style="margin-bottom: 5px">
-        <button type="button" class="btn btn-secondary" ng-click="studentEditWidget.show()">Добавить</button>
+        <button type="button" class="btn btn-secondary" ng-click="studentEditWidget.add()">Добавить</button>
         <select id="" class="custom-select" name="" ng-model="selected_month">
             <option value="{{m.val}}" ng-repeat="m in month_list">{{m.label}}</option>
         </select>
@@ -21,15 +21,18 @@
                 <span class="student-edit-widget" ng-show="$index==studentEditWidget.index">
                     <input type="text" 
                            ng-size="studentEditWidget.data.last_name.length" 
+                           default-size="7"
                            placeholder="Фамилия"
                            ng-model="studentEditWidget.data.last_name" />
                     <input type="text" 
                            ng-size="studentEditWidget.data.name.length" 
                            placeholder="Имя"
+                           default-size="3"
                            ng-model="studentEditWidget.data.name" /><br>
                     <input type="text" style="margin-top: 3px" 
                            ng-size="studentEditWidget.data.phone.length" 
-                           placeholder="телефон"
+                           placeholder="Телефон"
+                           default-size="7"
                            ng-model="studentEditWidget.data.phone" />
                 </span>
             </td>

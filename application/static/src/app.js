@@ -47,7 +47,8 @@
         return {
             restrict: 'A',
             scope: {
-                size: "=ngSize"
+                size: "=ngSize",
+                defaultSize: '=defaultSize'
             },
             link: function(scope, element, attrs){
                 if(!element.nodeName === 'SELECT'){
@@ -55,7 +56,7 @@
                 }
 
                 scope.$watch("size", function(val) {
-                    attrs.$set('size', val);	
+                    attrs.$set('size', val || scope.defaultSize);	
                 })
             }
         }
@@ -150,7 +151,7 @@
 
     });
 
-    app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $document) {
+    app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $document, $timeout) {
         $scope.data = {};
         $scope.main_list = [];
         $scope.sub_list = [];
@@ -173,6 +174,7 @@
         }
         
         alertify.success("Обработка данных");
+
         function load() {
             $scope.data = {};
             $scope.main_list = [];
@@ -415,6 +417,34 @@
         StudentEditWidget.prototype.setTab = function(newTabName) {
             this.tab = newTabName;
         }
+
+        StudentEditWidget.prototype.add = function() {
+            var new_student = {
+                info: {
+                    id: null,
+                    first_name: null,
+                    last_name: null,
+                    phone: null,
+                    org: false
+                },
+                lessons: $.map($scope.data.dates, function(date) {
+                    return {
+                        status: -2,
+                        date: date.val
+                    }
+                })
+            };
+
+            $scope.data.students.unshift(new_student);
+            $scope.main_list.unshift(new_student);
+             
+            $timeout($.proxy(this.show, this), 10, true, 0, $scope.main_list);
+            //this.show(0, $scope.main_list);
+        }
+
+        StudentEditWidget.prototype.remove = function(index, arr) {
+            arr.splice(index, 1);
+        }
         
         StudentEditWidget.prototype.show = function(index, arr) {
             this.clear();
@@ -501,7 +531,9 @@
                 }, function(response) {
                     alertify.error('В процессе сохранения произошла ошибка'); 
                 });
-            }
+            } else if(student.info.last_name == null && student.info.first_name == null && student.info.phone == null) {
+                this.remove();
+            } 
 
             this.clear();
             $scope.$apply();

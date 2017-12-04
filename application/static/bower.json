@@ -1,0 +1,21 @@
+{
+  "name": "teacher_book",
+  "description": "",
+  "main": "index.js",
+  "license": "ISC",
+  "homepage": "https://github.com/drda3x/teacher_book3",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.6.7",
+    "bootstrap": "^3.3.7",
+    "alertifyjs": "^1.0.11",
+    "angular-route": "^1.6.7",
+    "angularjs-datepicker": "^2.1.23"
+  }
+}
