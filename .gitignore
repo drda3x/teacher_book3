@@ -4,3 +4,5 @@ db.*
 
 bower_components
 node_modules
+
+application/static/package-lock.json

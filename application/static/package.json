@@ -8,7 +8,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "devDependencies": {
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
     "gulp-rigger": "^0.5.8"
   }
 }
