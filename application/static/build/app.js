@@ -187,7 +187,6 @@
             })
         }
         
-        alertify.success("Обработка данных");
     
         function load() {
             $scope.data = {};
@@ -210,9 +209,7 @@
                 $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
     
                 fillSubLists();
-                alertify.success("OK")
             }, function(response) {
-                alertify.error("Ошибка при загрузке страницы")
             });
         }
     
@@ -302,16 +299,8 @@
                     'X-CSRFToken': getCookie('csrftoken')
                 },
             }).then(function(response) {
-                $.map($scope.data.students, function(student) {
-                    var id = parseInt(student.info.id);
-                    if(response.data.hasOwnProperty(id)) {
-                        student.lessons = response.data[id];
-                    }
-                });
-                fillSubLists(); 
-                alertify.success("Сохранено");
+                load();
             }, function(response) {
-                alertify.error("Ошибка в процессе сохранения");
             });
         }
     
@@ -332,10 +321,8 @@
             }).then(function(response) {
                 $scope.data.students = response.data;
                 fillSubLists();
-                alertify.success("Сохранено");
                 $scope.data.dates[self.index].canceled = true; 
             }, function() {
-                alertify.error("Ошибка в процессе сохранения");
             });
         }
     
@@ -356,10 +343,8 @@
             }).then(function(response) {
                 $scope.data.students = response.data;
                 fillSubLists();
-                alertify.success("Сохранено");
                 $scope.data.dates[self.index].canceled = true; 
             }, function() {
-                alertify.error("Ошибка в процессе сохранения");
             });
         }
         
@@ -511,12 +496,11 @@
     
     
             if(!student
-                    || !(student.info.last_name == self.data.last_name)
-                    || !(student.info.first_name == self.data.name)
-                    || !(student.info.phone == self.data.phone)
-                    || !(student.info.org == self.data.org_status))
+                    || !(!self.data.last_name || student.info.last_name == self.data.last_name)
+                    || !(!self.data.name || student.info.first_name == self.data.name)
+                    || !(!self.data.phone || student.info.phone == self.data.phone)
+                    || !(!self.data.org_status || student.info.org == self.data.org_status))
             {
-                alertify.message('Сохранение данных');
                 $http({
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
@@ -541,12 +525,11 @@
                     } else {
                         student.info = response.data.info;
                     }
-                    alertify.success('Сохранено'); 
                 }, function(response) {
-                    alertify.error('В процессе сохранения произошла ошибка'); 
                 });
-            } else if(student.info.last_name == null && student.info.first_name == null && student.info.phone == null) {
-                this.remove();
+                
+            } else if(!student.info.last_name && !student.info.first_name && !student.info.phone) {
+                this.remove(0, $scope.main_list);
             } 
     
             this.clear();
@@ -565,7 +548,6 @@
             }
     
             if(event.key == 'F5' && localReload) {
-                alertify.success("Перезагрузка")
                 event.preventDefault();
                 load();
             }
