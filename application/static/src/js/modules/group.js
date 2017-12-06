@@ -399,6 +399,14 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     
     $scope.studentEditWidget = new StudentEditWidget();
 
+    $scope.hideSidebar = function() {
+        $rootScope.showSideBar = false;
+    }
+    
+    $scope.showSidebar = function() {
+        $rootScope.showSideBar = true;
+    }
+
     $document.off('keydown');
     $document.on('keydown', function(event) {
         var localReload;
@@ -422,6 +430,11 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             $location.path('group/'+$scope.data.group.id+'/'+new_val);
         } catch(e) {
         }
+    });
+    
+    $scope.sideBarIsOpened = true;
+    $scope.$watch('$root.showSideBar', function(val) {
+        $scope.sideBarIsOpened = val;
     });
 
     load();
