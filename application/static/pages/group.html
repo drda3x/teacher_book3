@@ -83,6 +83,31 @@
             <td style="border-color: #000" ng-repeat="date in data.dates">{{calcTotal($index)}}</td>
         </tr>
     </table>
+     
+    <div class="row">
+        <div class="col-sm-5">
+            <h5>Финансы</h5>
+
+        </div>
+        <div class="col-sm-7">
+            <h5>Ученики не посещанющие занятия</h5>
+            <table class="table table-bordered table-stripped table-hovered">
+                <tr>
+                    <th style="border-color: #000; width: 30%">Фамилия, Имя<br>Телефон</th>
+                    <th style="border-color: #000">Коментарии</th>
+                    <th style="border-color: #000; width: 15%"></th>
+                </tr>
+                <tr ng-repeat="student in sub_list">
+                    <td style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
+                    <td style="border-color: #000"></td>
+                    <td style="border-color: #000">
+                        <a href="">Удалить</a><br>
+                        <a href="">В помойку</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
 
     <div id="lessonWidget" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
