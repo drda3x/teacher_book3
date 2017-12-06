@@ -10,7 +10,7 @@ from application.models import (
     CanceledLessons
 )
 from application.common.date import get_calendar
-from django.db.models import Max, Q
+from django.db.models import Max
 from datetime import timedelta
 from itertools import groupby
 
@@ -38,6 +38,32 @@ def add_student_to_group(group, student):
         )
 
         group_list.save()
+
+
+def delete_student(group, student):
+    u"""
+    Функция для удаления ученика из группы
+
+    args:
+        group application.models.Groups or int
+        student application.models.Students or int
+    """
+    assert isinstance(group, (int, Groups))
+    assert isinstance(student, (int, Students))
+
+    qs_params = {}
+
+    if isinstance(group, int):
+        qs_params['group_id'] = group
+    else:
+        qs_params['group'] = group
+
+    if isinstance(student, int):
+        qs_params['student_id'] = student
+    else:
+        qs_params['student'] = student
+
+    GroupList.objects.filter(**qs_params).update(active=False)
 
 
 def get_students(group):

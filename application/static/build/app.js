@@ -535,6 +535,34 @@
             this.clear();
             $scope.$apply();
         }
+    
+        StudentEditWidget.prototype.showMenu = function(index) {
+            this.menuIndex = index;
+        }
+    
+        StudentEditWidget.prototype.delete = function(index) {
+            var self = this;
+    
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                url: "/delete_student",
+                data: {
+                    group: $scope.data.group.id,
+                    stid: $scope.main_list[index].info.id
+                }
+            }).then(function() {
+                self.remove(index, $scope.main_list);
+            }, function() {
+    
+            });
+        }
+    
+        StudentEditWidget.prototype.trash = function(index) {
+            alert("Method doesn't implemented");
+        }
         
         $scope.studentEditWidget = new StudentEditWidget();
     

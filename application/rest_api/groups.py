@@ -30,7 +30,8 @@ from application.common.lessons import (
 from application.common.group import (
     get_students,
     cancel_lesson as cancel_lesson_func,
-    restore_lesson as restore_lesson_func
+    restore_lesson as restore_lesson_func,
+    delete_student as delete_student_func
 )
 
 from itertools import takewhile, chain
@@ -172,19 +173,19 @@ def process_lesson(request):
         s
         for s in data['students']
         if s['lesson']['status'] == Lessons.STATUSES['attended']
-        and s['lesson']['is_new'] == False
+        and s['lesson']['is_new'] is False
     ]
 
     not_attended = [
         s
         for s in data['students']
         if s['lesson']['status'] == Lessons.STATUSES['not_attended']
-        and s['lesson']['is_new'] == False
+        and s['lesson']['is_new'] is False
     ]
 
     new_passes = [
         s for s in data['students']
-        if s['lesson']['is_new'] == True
+        if s['lesson']['is_new'] is True
     ]
 
     if len(new_passes) > 0:
@@ -367,6 +368,18 @@ def restore_lesson(request):
         ]
 
         return HttpResponse(json.dumps(lessons_json))
+
+    except Exception:
+        return HttpResponseServerError(format_exc())
+
+
+@auth
+def delete_student(request):
+    try:
+        data = json.loads(request.body)
+        delete_student_func(data['group'], data['stid'])
+
+        return HttpResponse()
 
     except Exception:
         return HttpResponseServerError(format_exc())
