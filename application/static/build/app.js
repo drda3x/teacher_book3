@@ -114,6 +114,7 @@
                 id = parseInt(path[2]);
             
             $scope.active = id;
+            $scope.showSideBar = category !== 'login';
         });
     
         $scope.$watch('$root.showSideBar', function(val) {
