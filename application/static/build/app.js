@@ -162,6 +162,8 @@
                 url: "/logout"
             }).then(function(response) {
                 $rootScope.showSideBar = false;
+                $rootScope.header = null;
+                $rootScope.header2 = null;
                 $location.path('/login');
             }, function(response) {
             });
