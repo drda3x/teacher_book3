@@ -48,10 +48,16 @@ def get_list(request):
     return:
         django.http.response.HttpResponse
     """
-    data = [
-        g.__json__()
-        for g in Groups.objects.all()
-    ]
+
+    groups = Groups.objects.all()
+    data = []
+    now = datetime.now().date()
+
+    for group in groups:
+        js = group.__json__()
+        js['show_date'] = group.start_date >= now
+
+        data.append(js)
 
     return HttpResponse(json.dumps(data))
 

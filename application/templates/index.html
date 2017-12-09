@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html ng-app="app">
     <head>
-        <title>Angular Routing App</title>
+        <title>Электронный журнал</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="{% static 'build/vendor.css' %}" />
         <script src="{% static 'build/vendor.js' %}"></script>
@@ -32,7 +32,14 @@
                            href="/#/group/{{group.id}}" 
                            ng-class="{active: active==group.id}"
                            ng-repeat="group in groups">
-                            {{group.dance_hall.station}} {{group.days}} {{group.time}}<br>{{group.name}}
+                            <span ng-show={{group.show_date}}>
+                                <strong>
+                                    c {{group.start_date}}
+                                </strong>
+                            </span>
+                            {{group.dance_hall.station}} {{group.days}} {{group.time}}
+                            <br>
+                            {{group.name}}
                         </a>
                     </div>
                 </div>
