@@ -47,7 +47,7 @@ MONTH_PARENT_FORM = [
 ]
 
 
-def get_calendar(date, week_days):
+def get_calendar(date, week_days, direction="forward"):
     u"""
     Функция для генерации последовательности
     дат из определенных дней недели
@@ -67,4 +67,11 @@ def get_calendar(date, week_days):
         if _date.weekday() in wdn:
             yield _date
 
-        _date += datetime.timedelta(days=1)
+        if direction == "forward":
+           _date += datetime.timedelta(days=1)
+
+        elif direction == "backward":
+           _date -= datetime.timedelta(days=1)
+
+        else:
+             raise Exception("wrong direction walue")

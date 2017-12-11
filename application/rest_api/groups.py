@@ -31,7 +31,8 @@ from application.common.group import (
     get_students,
     cancel_lesson as cancel_lesson_func,
     restore_lesson as restore_lesson_func,
-    delete_student as delete_student_func
+    delete_student as delete_student_func,
+    calc_group_profit
 )
 
 from itertools import takewhile, chain, groupby
@@ -59,13 +60,33 @@ def get_list(request):
     groups = sorted(groups, key=lambda x: x.level.id)
     now = datetime.now().date()
 
-    def stdt(g):
-        return dict(show_st=g.start_date >= now, **g.__json__())
+    def get_info(g):
+        calendar = get_calendar(now, g.days, "backward")
+        days = 3
+
+        try:
+            profit = calc_group_profit(g, [calendar.next() for i in range(days)])
+            _, profit = zip(*profit)
+
+            teachers = len(g.teachers.exclude(assistant=True))
+            assistants = len(g.teachers.all()) - teachers
+            assistant_sal = 500 * assistants * days
+            good_profit = 1000 * teachers * days - assistant_sal
+            normal_profit = 650 * teachers * days - assistant_sal
+
+            profit = sum(profit)
+            profit = 1 if profit >= good_profit else \
+                    -1 if profit < normal_profit else 0
+
+        except Exception:
+            profit = 0
+
+        return dict(profit=profit, show_st=g.start_date >= now, **g.__json__())
 
     for level, groups in groupby(groups, lambda x: x.level):
         data.append(dict(
             label=level.name,
-            groups=map(stdt, groups)
+            groups=map(get_info, groups)
         ))
 
     return HttpResponse(json.dumps(data))

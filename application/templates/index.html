@@ -44,7 +44,9 @@
                                       c {{group.start_date}}
                                   </div>
                                 </strong>
-                                {{group.dance_hall.station}} {{group.days}} {{group.time}}<br>{{group.name}}
+                                <span ng-class="{'text-danger': group.profit==-1, 'text-success': group.profit==1}">
+                                    {{group.dance_hall.station}} {{group.days}} {{group.time}}<br>{{group.name}}
+                                </span>
                             </a>
                         </span>
                     </div>
