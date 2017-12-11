@@ -34,7 +34,7 @@ from application.common.group import (
     delete_student as delete_student_func
 )
 
-from itertools import takewhile, chain
+from itertools import takewhile, chain, groupby
 
 
 @auth
@@ -48,10 +48,20 @@ def get_list(request):
     return:
         django.http.response.HttpResponse
     """
-    data = [
-        g.__json__()
-        for g in Groups.objects.all()
-    ]
+
+    if request.user.is_superuser:
+        groups = Groups.objects.all()
+
+    else:
+        groups = Groups.objects.filter(teachers=request.user)
+
+    data = []
+    groups = sorted(groups, key=lambda x: x.level.id)
+    for level, groups in groupby(groups, lambda x: x.level):
+        data.append(dict(
+            label=level.name,
+            groups=[g.__json__() for g in groups]
+        ))
 
     return HttpResponse(json.dumps(data))
 
