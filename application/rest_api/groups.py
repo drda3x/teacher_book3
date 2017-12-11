@@ -57,10 +57,15 @@ def get_list(request):
 
     data = []
     groups = sorted(groups, key=lambda x: x.level.id)
+    now = datetime.now().date()
+
+    def stdt(g):
+        return dict(show_st=g.start_date >= now, **g.__json__())
+
     for level, groups in groupby(groups, lambda x: x.level):
         data.append(dict(
             label=level.name,
-            groups=[g.__json__() for g in groups]
+            groups=map(stdt, groups)
         ))
 
     return HttpResponse(json.dumps(data))

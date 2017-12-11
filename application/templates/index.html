@@ -38,7 +38,12 @@
                                href="/#/group/{{group.id}}" 
                                ng-class="{active: active==group.id}"
                                ng-show="show"
-                               ng-repeat="group in level.groups">
+                               ng-repeat="group in level.groups track by $index">
+                                <strong ng-show="group.show_st">
+                                  <div style="padding: 0 5px" class="bg-info text-white">
+                                      c {{group.start_date}}
+                                  </div>
+                                </strong>
                                 {{group.dance_hall.station}} {{group.days}} {{group.time}}<br>{{group.name}}
                             </a>
                         </span>
