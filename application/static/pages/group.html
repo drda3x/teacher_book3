@@ -125,7 +125,9 @@
                     <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" ng-show="!lessonWidget.is_canceled">
+                <div class="modal-body"
+                     ng-show="!lessonWidget.is_canceled"
+                     style="overflow-y: scroll; height: {{lessonWidget.windowHeight-200}}px;">
                     <table class="table table-bordered">
                         <tr ng-repeat="student in lessonWidget.data">
                             <td style="width: 50%">{{student.info.last_name}} {{student.info.first_name}}</td>

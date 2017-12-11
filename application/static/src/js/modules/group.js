@@ -72,6 +72,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         this.index = index;
         this.date = $scope.data.dates[index].val;
         this.is_canceled = $scope.data.dates[index].canceled;
+        this.windowHeight = window.innerHeight;
     }
 
     LessonWidget.prototype.hide = function(lesson) {
