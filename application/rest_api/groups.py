@@ -9,12 +9,15 @@ from application.models import (
     Groups,
     Lessons,
     PassTypes,
-    CanceledLessons
+    CanceledLessons,
+    TeachersSubstitution,
+    User
 )
 from auth import auth
 from traceback import format_exc
 import json
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 from application.common.date import get_calendar, MONTH_RUS
 from application.common.lessons import (
@@ -173,6 +176,11 @@ def get_base_info(request):
             _profit[dt] = 0
     profit = _profit
 
+    subst = TeachersSubstitution.objects.filter(
+        group=group,
+        date__in=dates
+    ).values_list("date", "teachers")
+
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
@@ -197,9 +205,15 @@ def get_base_info(request):
                     for l in lessons[student]
                 ]
             }
-
             for student in students
-        ]
+        ],
+        "teachers": {
+            "cnt": teachers + assistants,
+            "list": [
+                t.__json__()
+                for t in User.objects.filter(Q(teacher=True) | Q(assistant=True))
+            ]
+        }
     }
 
     return HttpResponse(json.dumps(response))
