@@ -11,7 +11,7 @@ from application.models import (
 )
 from application.common.date import get_calendar
 from django.db.models import Max
-from datetime import timedelta, datetime, date
+from datetime import timedelta, datetime, date as date_cls
 from itertools import groupby
 
 
@@ -181,7 +181,7 @@ def calc_group_profit(group, dates):
     """
 
     assert isinstance(group, (Groups, int))
-    assert all(isinstance(d, (datetime, date)) for d in dates)
+    assert all(isinstance(d, (datetime, date_cls)) for d in dates)
 
     if isinstance(group, int):
         params = dict(group_id=group)
@@ -189,9 +189,15 @@ def calc_group_profit(group, dates):
         params = dict(group=group)
 
     params['date__in'] = dates
-    lessons = sorted(Lessons.objects.filter(**params), key=lambda l: l.date)
-
-    return (
-        (date, sum(l.prise() for l in lessons))
-        for date, lessons in groupby(lessons, lambda l: l.date)
+    lessons = sorted(
+        Lessons.objects.filter(**params).exclude(status=Lessons.STATUSES['not_processed']),
+        key=lambda l: l.date
     )
+
+    vals = dict(zip(dates, [None] * len(dates)))
+    for date, lessons in groupby(lessons, lambda l: l.date):
+        vals[date] = sum(l.prise() for l in lessons) - group.dance_hall.prise
+        vals[date] -= vals[date] * 0.3
+        vals[date] = max(0, vals[date])
+
+    return vals.iteritems()

@@ -155,6 +155,24 @@ def get_base_info(request):
        for i in month
     ]
 
+    profit = calc_group_profit(group, dates)
+    teachers = len(group.teachers.exclude(assistant=True))
+    assistants = len(group.teachers.all()) - teachers
+    assist_sal = 500 * assistants
+    normal_profit = 650 * teachers
+    good_profit = 1000 * teachers
+
+    _profit = {}
+    for dt, val in profit:
+        if val is not None:
+            val -= assist_sal
+            _profit[dt] = 1 if val >= good_profit else 0 \
+                if val >= normal_profit else -1
+
+        else:
+            _profit[dt] = 0
+    profit = _profit
+
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
@@ -162,7 +180,8 @@ def get_base_info(request):
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
-                canceled=d in canceled_dates
+                canceled=d in canceled_dates,
+                profit=profit[d]
             )
             for d in dates
         ],
