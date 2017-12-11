@@ -65,18 +65,21 @@ def get_list(request):
         days = 3
 
         try:
-            profit = calc_group_profit(g, [calendar.next() for i in range(days)])
-            _, profit = zip(*profit)
+            if request.user.is_superuser:
+                profit = calc_group_profit(g, [calendar.next() for i in range(days)])
+                _, profit = zip(*profit)
 
-            teachers = len(g.teachers.exclude(assistant=True))
-            assistants = len(g.teachers.all()) - teachers
-            assistant_sal = 500 * assistants * days
-            good_profit = 1000 * teachers * days - assistant_sal
-            normal_profit = 650 * teachers * days - assistant_sal
+                teachers = len(g.teachers.exclude(assistant=True))
+                assistants = len(g.teachers.all()) - teachers
+                assistant_sal = 500 * assistants * days
+                good_profit = 1000 * teachers * days - assistant_sal
+                normal_profit = 650 * teachers * days - assistant_sal
 
-            profit = sum(profit)
-            profit = 1 if profit >= good_profit else \
-                    -1 if profit < normal_profit else 0
+                profit = sum(profit)
+                profit = 1 if profit >= good_profit else \
+                        -1 if profit < normal_profit else 0
+            else:
+                profit = 0
 
         except Exception:
             profit = 0
