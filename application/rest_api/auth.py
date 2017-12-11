@@ -61,7 +61,8 @@ def auth(request_processor):
 
 @auth
 def login(request):
-    return HttpResponse()
+    data = dict(first_name=request.user.first_name, last_name=request.user.last_name)
+    return HttpResponse(json.dumps(data))
 
 
 def logout(request):
