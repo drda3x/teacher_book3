@@ -151,9 +151,15 @@
                     </table>
                 </div>
                 <form class="modal-body form-inline" action="">
-                    <div class="form-group mx-sm-3" ng-repeat="n in [].constructor(data.teachers.cnt) track by $index">
-                        <select style="margin-bottom: 10px" class="form-control" id="" name="">
-                            <option value="" ng-repeat="teacher in data.teachers.list">
+                    <div class="form-group mx-sm-3" 
+                         ng-init="t_index = $index"
+                         ng-repeat="n in [].constructor(data.teachers.cnt) track by $index">
+                        <select style="margin-bottom: 10px" 
+                                class="form-control" 
+                                id="" 
+                                name="" 
+                                ng-model="lessonWidget.teachers[t_index]">
+                            <option value="{{teacher.id}}" ng-repeat="teacher in data.teachers.list">
                                 {{teacher.last_name}} {{teacher.first_name}}
                             </option>
                         </select>

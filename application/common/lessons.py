@@ -6,7 +6,14 @@ from collections import namedtuple, Counter, defaultdict
 from date import get_calendar
 from datetime import datetime, timedelta
 from itertools import takewhile
-from application.models import Groups, Passes, Lessons, Students
+from application.models import (
+    User,
+    Groups,
+    Passes,
+    Lessons,
+    Students,
+    TeachersSubstitution
+)
 
 
 class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
@@ -375,3 +382,36 @@ def move_lessons(date_from, date_to, student_id, group_id):
     for lesson, date in zip(lessons, get_calendar(date_to, group.days)):
         lesson.date = date
         lesson.save()
+
+
+def set_substitution(date, group, teachers):
+    u"""
+    Функция для простановки замен преподавателей
+
+    args:
+        date datetime.datetime
+        group application.models.Groups or int
+        teachers [application.models.User or int]
+    """
+
+    assert isinstance(group, (Groups, int))
+    assert isinstance(date, datetime)
+    assert all(isinstance(t, (int, User)) for t in teachers)
+
+    if isinstance(group, int):
+        group = Groups.objects.get(pk=group)
+
+    if all(isinstance(t, User) for t in teachers):
+        group_teachers = group.teachers.all()
+    else:
+        group_teachers = group.teachers.all().values_list("pk", flat=True)
+
+    if all(t in group_teachers for t in teachers):
+        TeachersSubstitution.objects.filter(group=group, date=date).delete()
+    else:
+        ts, created = TeachersSubstitution.objects.get_or_create(group=group, date=date)
+        if created:
+            ts.save()
+
+        ts.teachers.clear()
+        ts.teachers.add(*teachers)

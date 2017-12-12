@@ -27,7 +27,8 @@ from application.common.lessons import (
     get_students_lessons,
     restore_database,
     delete_lessons as delete_lessons_func,
-    move_lessons as move_lessons_func
+    move_lessons as move_lessons_func,
+    set_substitution
 )
 
 from application.common.group import (
@@ -39,6 +40,7 @@ from application.common.group import (
 )
 
 from itertools import takewhile, chain, groupby
+from collections import OrderedDict
 
 
 @auth
@@ -179,7 +181,13 @@ def get_base_info(request):
     subst = TeachersSubstitution.objects.filter(
         group=group,
         date__in=dates
-    ).values_list("date", "teachers")
+    ).values_list("date", "teachers").order_by("date")
+
+    _t = group.teachers.all().values_list("pk", flat=True)
+    teachers_work = OrderedDict(( (d, map(int, _t)) for d in dates ))
+
+    for _date, _teachers in groupby(subst, lambda x: x[0]):
+        teachers_work[_date] = map(int, list(chain(*_teachers))[1::2])
 
     response = {
         "selected_month": date.strftime("%m%Y"),
@@ -209,6 +217,7 @@ def get_base_info(request):
         ],
         "teachers": {
             "cnt": teachers + assistants,
+            "work": teachers_work.values(),
             "list": [
                 t.__json__()
                 for t in User.objects.filter(Q(teacher=True) | Q(assistant=True))
@@ -287,6 +296,9 @@ def process_lesson(request):
     new_lessons_json = dict()
     for st, ls in new_lessons.iteritems():
         new_lessons_json[str(st)] = [l.__json__() for l in ls]
+
+    teachers = map(int, data['teachers'])
+    set_substitution(date, group, teachers)
 
     return HttpResponse(json.dumps(new_lessons_json))
 
