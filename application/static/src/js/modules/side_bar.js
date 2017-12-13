@@ -1,5 +1,5 @@
 app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
-    $scope.groups = [];
+    $scope.elements = [];
     $scope.active = null;
     $scope.showSideBar = true;
 
@@ -8,7 +8,7 @@ app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
             method: "GET",
             url: "/groups"
         }).then(function(response) {
-            $scope.groups = response.data;
+            $scope.elements = response.data;
         }, function(response) {
             if(response.status == 403) {
                 $location.path('/login')

@@ -49,7 +49,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     function LessonWidget() {
         this.elem = $("#lessonWidget").modal({
             show: false
-        })
+        });
     }
 
     LessonWidget.prototype.show = function(index) {
@@ -72,6 +72,17 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         this.index = index;
         this.date = $scope.data.dates[index].val;
         this.is_canceled = $scope.data.dates[index].canceled;
+        this.windowHeight = window.innerHeight;
+
+        this.teachers = $.grep($scope.data.teachers.work, function(val, i) {
+            return i == index;
+        })[0];
+
+        this.teachers = $.map(this.teachers, function(val) {
+            return ""+val;
+        });
+
+        console.log(this.teachers);
     }
 
     LessonWidget.prototype.hide = function(lesson) {
@@ -89,7 +100,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             group: $scope.data.group.id,
             date: this.date,
             set_attendance: attendance,
-            students: []
+            students: [],
+            teachers: this.teachers
         };
 
         $.map(this.data, function(elem) {

@@ -9,12 +9,15 @@ from application.models import (
     Groups,
     Lessons,
     PassTypes,
-    CanceledLessons
+    CanceledLessons,
+    TeachersSubstitution,
+    User
 )
 from auth import auth
 from traceback import format_exc
 import json
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 from application.common.date import get_calendar, MONTH_RUS
 from application.common.lessons import (
@@ -24,17 +27,20 @@ from application.common.lessons import (
     get_students_lessons,
     restore_database,
     delete_lessons as delete_lessons_func,
-    move_lessons as move_lessons_func
+    move_lessons as move_lessons_func,
+    set_substitution
 )
 
 from application.common.group import (
     get_students,
     cancel_lesson as cancel_lesson_func,
     restore_lesson as restore_lesson_func,
-    delete_student as delete_student_func
+    delete_student as delete_student_func,
+    calc_group_profit
 )
 
-from itertools import takewhile, chain
+from itertools import takewhile, chain, groupby
+from collections import OrderedDict
 
 
 @auth
@@ -48,10 +54,48 @@ def get_list(request):
     return:
         django.http.response.HttpResponse
     """
-    data = [
-        g.__json__()
-        for g in Groups.objects.all()
-    ]
+
+    if request.user.is_superuser:
+        groups = Groups.objects.all()
+
+    else:
+        groups = Groups.objects.filter(teachers=request.user)
+
+    data = []
+    groups = sorted(groups, key=lambda x: x.level.id)
+    now = datetime.now().date()
+
+    def get_info(g):
+        calendar = get_calendar(now, g.days, "backward")
+        days = 3
+
+        try:
+            if request.user.is_superuser:
+                profit = calc_group_profit(g, [calendar.next() for i in range(days)])
+                _, profit = zip(*profit)
+
+                teachers = len(g.teachers.exclude(assistant=True))
+                assistants = len(g.teachers.all()) - teachers
+                assistant_sal = 500 * assistants * days
+                good_profit = 1000 * teachers * days - assistant_sal
+                normal_profit = 650 * teachers * days - assistant_sal
+
+                profit = sum(profit)
+                profit = 1 if profit >= good_profit else \
+                        -1 if profit < normal_profit else 0
+            else:
+                profit = 0
+
+        except Exception:
+            profit = 0
+
+        return dict(profit=profit, show_st=g.start_date >= now, **g.__json__())
+
+    for level, groups in groupby(groups, lambda x: x.level):
+        data.append(dict(
+            label=level.name,
+            groups=map(get_info, groups)
+        ))
 
     return HttpResponse(json.dumps(data))
 
@@ -116,6 +160,35 @@ def get_base_info(request):
        for i in month
     ]
 
+    profit = calc_group_profit(group, dates)
+    teachers = len(group.teachers.exclude(assistant=True))
+    assistants = len(group.teachers.all()) - teachers
+    assist_sal = 500 * assistants
+    normal_profit = 650 * teachers
+    good_profit = 1000 * teachers
+
+    _profit = {}
+    for dt, val in profit:
+        if val is not None:
+            val -= assist_sal
+            _profit[dt] = 1 if val >= good_profit else 0 \
+                if val >= normal_profit else -1
+
+        else:
+            _profit[dt] = 0
+    profit = _profit
+
+    subst = TeachersSubstitution.objects.filter(
+        group=group,
+        date__in=dates
+    ).values_list("date", "teachers").order_by("date")
+
+    _t = group.teachers.all().values_list("pk", flat=True)
+    teachers_work = OrderedDict(( (d, map(int, _t)) for d in dates ))
+
+    for _date, _teachers in groupby(subst, lambda x: x[0]):
+        teachers_work[_date] = map(int, list(chain(*_teachers))[1::2])
+
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
@@ -123,7 +196,8 @@ def get_base_info(request):
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
-                canceled=d in canceled_dates
+                canceled=d in canceled_dates,
+                profit=profit[d]
             )
             for d in dates
         ],
@@ -139,9 +213,16 @@ def get_base_info(request):
                     for l in lessons[student]
                 ]
             }
-
             for student in students
-        ]
+        ],
+        "teachers": {
+            "cnt": teachers + assistants,
+            "work": teachers_work.values(),
+            "list": [
+                t.__json__()
+                for t in User.objects.filter(Q(teacher=True) | Q(assistant=True))
+            ]
+        }
     }
 
     return HttpResponse(json.dumps(response))
@@ -215,6 +296,9 @@ def process_lesson(request):
     new_lessons_json = dict()
     for st, ls in new_lessons.iteritems():
         new_lessons_json[str(st)] = [l.__json__() for l in ls]
+
+    teachers = map(int, data['teachers'])
+    set_substitution(date, group, teachers)
 
     return HttpResponse(json.dumps(new_lessons_json))
 

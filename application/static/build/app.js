@@ -81,6 +81,7 @@
     app.controller('navBarCtrl', function($scope, $rootScope) {
         $scope.header = null;
         $scope.header2 = null;
+        $scope.user = null;
     
         $scope.$watch('$root.header', function() {
             $scope.header = $rootScope.header;
@@ -88,10 +89,14 @@
     
         $scope.$watch('$root.header2', function() {
             $scope.header2 = $rootScope.header2;
-        })
+        });
+    
+        $scope.$watch('$root.user', function() {
+            $scope.user = $rootScope.user;
+        });
     });
     app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
-        $scope.groups = [];
+        $scope.elements = [];
         $scope.active = null;
         $scope.showSideBar = true;
     
@@ -100,7 +105,7 @@
                 method: "GET",
                 url: "/groups"
             }).then(function(response) {
-                $scope.groups = response.data;
+                $scope.elements = response.data;
             }, function(response) {
                 if(response.status == 403) {
                     $location.path('/login')
@@ -148,6 +153,7 @@
             }).then(function(response) {
                 $location.path('/');
                 $rootScope.showSideBar = true;
+                $rootScope.user = response.data;
             }, function(response) {
                 console.log("ERROR")
             }); 
@@ -164,6 +170,7 @@
                 $rootScope.showSideBar = false;
                 $rootScope.header = null;
                 $rootScope.header2 = null;
+                $rootScope.user = null;
                 $location.path('/login');
             }, function(response) {
             });
@@ -222,7 +229,7 @@
         function LessonWidget() {
             this.elem = $("#lessonWidget").modal({
                 show: false
-            })
+            });
         }
     
         LessonWidget.prototype.show = function(index) {
@@ -245,6 +252,17 @@
             this.index = index;
             this.date = $scope.data.dates[index].val;
             this.is_canceled = $scope.data.dates[index].canceled;
+            this.windowHeight = window.innerHeight;
+    
+            this.teachers = $.grep($scope.data.teachers.work, function(val, i) {
+                return i == index;
+            })[0];
+    
+            this.teachers = $.map(this.teachers, function(val) {
+                return ""+val;
+            });
+    
+            console.log(this.teachers);
         }
     
         LessonWidget.prototype.hide = function(lesson) {
@@ -262,7 +280,8 @@
                 group: $scope.data.group.id,
                 date: this.date,
                 set_attendance: attendance,
-                students: []
+                students: [],
+                teachers: this.teachers
             };
     
             $.map(this.data, function(elem) {

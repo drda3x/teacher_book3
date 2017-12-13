@@ -12,7 +12,12 @@
             <th style="border-color: #000; width: 1%">#</th>
             <th style="border-color: #000; width: 20%">ФИО, Телефон</th>
             <th style="border-color: #000; width: 30%">Коментарии</th>
-            <th style="border-color: #000" ng-repeat="date in data.dates" ng-click="lessonWidget.show($index)">{{date.val}}</th>
+            <th style="border-color: #000" 
+                ng-repeat="date in data.dates" 
+                ng-class="{'text-danger': date.profit==-1, 'text-success': date.profit==1}"
+                ng-click="lessonWidget.show($index)">
+                {{date.val}}
+            </th>
         </tr>
         <tr ng-repeat="student in main_list">
             <td style="border-color: #000">{{$index + 1}}</td>
@@ -120,13 +125,15 @@
                     <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" ng-show="!lessonWidget.is_canceled">
+                <div class="modal-body"
+                     ng-show="!lessonWidget.is_canceled"
+                     style="overflow-y: scroll; height: {{lessonWidget.windowHeight-315}}px;">
                     <table class="table table-bordered">
                         <tr ng-repeat="student in lessonWidget.data">
                             <td style="width: 50%">{{student.info.last_name}} {{student.info.first_name}}</td>
                             <td ng-click="lessonWidget.process_student(student.lesson)" 
                                 style="background-color: {{student.lesson.group_pass.color}}">
-
+                                
                                 <select id="" 
                                         ng-model="student.lesson.temp_pass"
                                         name="" ng-if="student.lesson.temp_status < 0" 
@@ -143,6 +150,21 @@
                         </tr>
                     </table>
                 </div>
+                <form class="modal-body form-inline" action="">
+                    <div class="form-group mx-sm-3" 
+                         ng-init="t_index = $index"
+                         ng-repeat="n in [].constructor(data.teachers.cnt) track by $index">
+                        <select style="margin-bottom: 10px" 
+                                class="form-control" 
+                                id="" 
+                                name="" 
+                                ng-model="lessonWidget.teachers[t_index]">
+                            <option value="{{teacher.id}}" ng-repeat="teacher in data.teachers.list">
+                                {{teacher.last_name}} {{teacher.first_name}}
+                            </option>
+                        </select>
+                    </div>
+                </form>
                 <div class="modal-footer" ng-show="!lessonWidget.is_canceled">
                     <div>
                         <button class="btn" type="button" ng-click="lessonWidget.cancelLesson()">Отменить занятие</button>
