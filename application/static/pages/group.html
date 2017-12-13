@@ -87,6 +87,10 @@
             <td style="border-color: #000" colspan="3">ИТОГО за занятие</td>
             <td style="border-color: #000" ng-repeat="date in data.dates">{{calcTotal($index)}}</td>
         </tr>
+        <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
+            <td colspan="3" style="border-color: #000">{{teacher.last_name}} {{teacher.first_name}}</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">{{ calcTeacherSalary(teacher, $index) }}</td>
+        </tr>
     </table>
      
     <div class="row">

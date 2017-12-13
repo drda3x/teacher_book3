@@ -217,6 +217,7 @@ def get_base_info(request):
         ],
         "teachers": {
             "cnt": teachers + assistants,
+            "assistants": assistants,
             "work": teachers_work.values(),
             "list": [
                 t.__json__()

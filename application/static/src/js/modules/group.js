@@ -42,14 +42,35 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
 
             fillSubLists();
+            getAllTeachers();
         }, function(response) {
         });
+    }
+
+    function getAllTeachers() {
+        var teachers = {};
+
+        for(var i=0, j=$scope.data.teachers.work.length; i<j; i++) {
+            var list = $scope.data.teachers.work[i];
+
+            for(var k=0, m=list.length; k<m; k++) {
+                teachers[list[k]] = true;
+            }
+        }
+        
+        $scope.data.teachers.cp_teachers = Object.keys(teachers);
     }
 
     function LessonWidget() {
         this.elem = $("#lessonWidget").modal({
             show: false
         });
+    }
+
+    $scope.checkTeacher = function(teacher) {
+        return any($scope.data.teachers.cp_teachers, function(elem) {
+            return elem == teacher.id;
+        })
     }
 
     LessonWidget.prototype.show = function(index) {
@@ -230,6 +251,31 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
         return total;
     }
+
+    $scope.calcTeacherSalary = function(teacher, index) {
+        var cpt = $scope.data.teachers.work[index];
+        var assist_sal = 500;
+
+        function has_work_today(tid) {
+            return any(cpt, function(val) {
+                return val == tid;
+            });
+        }
+
+        if (has_work_today(teacher.id)) {
+            if(teacher.assistant) {
+                return isNaN($scope.calcTotal(index)) ? '-' : assist_sal;
+            } else {
+                var assists = $.grep($scope.data.teachers.list, function(t) {
+                    return has_work_today(t.id) && t.assistant;
+                });
+                var sal = ($scope.calcTotal(index) - assist_sal * assists.length) / (cpt.length - assists.length);
+                return isNaN(sal) ? '-' : sal < 0 ? 0 : sal;
+            }
+        } else {
+            return '-';
+        }
+    };
 
     function StudentEditWidget() {
         this.window = $('#studentEdit').modal({

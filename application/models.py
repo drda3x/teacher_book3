@@ -50,7 +50,8 @@ class User(UserOrigin):
             last_name=self.last_name,
             about=self.about,
             photo=self.photo.url if self.photo else None,
-            video=self.video
+            video=self.video,
+            assistant=self.assistant
         )
 
     def __repr__(self):
