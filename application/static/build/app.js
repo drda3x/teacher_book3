@@ -457,6 +457,46 @@
             }
         };
     
+        $scope.totals = {
+            calcTotal: function() {
+                try {
+                    return $scope.data.dates.reduce(function(sum, cv, index) {
+                        var total = $scope.calcTotal(index);
+                        return sum + (total || 0)
+                    }, 0);
+                } catch(e) {
+                    return 0;
+                }
+            },
+    
+            calcDanceHall: function() {
+                //TODO Не надо считать дни, в которые были отмены занятий
+                return $scope.data.group.dance_hall.prise * $scope.data.dates.length;
+            },
+    
+            calcClubTax: function() {
+                var sum = (this.calcTotal() - this.calcDanceHall()) * 0.3;
+                return sum > 0 ? sum : 0;
+            },
+    
+            calcProfit: function() {
+                var sum = this.calcTotal() - this.calcDanceHall() - this.calcClubTax();
+                return sum;
+            },
+    
+            calcTeacherSalary: function(teacher) {
+                try {
+                    return $scope.data.dates.reduce(function(sum, cv, index) {
+                        var total = parseFloat($scope.calcTeacherSalary(teacher, index));
+                        return sum + (total || 0)
+                    }, 0);
+                } catch(e) {
+                    return 0;
+                }
+            }
+        };
+    
+    
         function StudentEditWidget() {
             this.window = $('#studentEdit').modal({
                 show: false

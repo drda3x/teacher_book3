@@ -96,6 +96,28 @@
     <div class="row">
         <div class="col-sm-5">
             <h5>Финансы</h5>
+            <table class="table">
+                <tr>
+                    <td>Итого за месяц</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcTotal()}}</td>
+                </tr>
+                <tr>
+                    <td>Аренда зала</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcDanceHall()}}</td>
+                </tr>
+                <tr>
+                    <td>% Клуба</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcClubTax()}}</td>
+                </tr>
+                <tr>
+                    <td>Чистая прибыль</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcProfit()}}</td>
+                </tr>
+                <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
+                    <td>{{teacher.last_name}} {{teacher.first_name}} - ЗП</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcTeacherSalary(teacher)}}</td>
+                </tr>
+            </table>
 
         </div>
         <div class="col-sm-7">
