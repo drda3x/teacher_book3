@@ -291,7 +291,11 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
         calcDanceHall: function() {
             //TODO Не надо считать дни, в которые были отмены занятий
-            return $scope.data.group.dance_hall.prise * $scope.data.dates.length;
+            try {
+                return $scope.data.group.dance_hall.prise * $scope.data.dates.length;
+            } catch(e) {
+                return 0;
+            }
         },
 
         calcClubTax: function() {

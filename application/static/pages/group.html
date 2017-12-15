@@ -52,7 +52,10 @@
                            ng-model="studentEditWidget.data.phone" />
                 </span>
             </td>
-            <td style="border-color: #000" ></td>
+            <td style="border-color: #000;" ng-init="disabled=true" ng-dblclick="disabled=!disabled" >
+                <app-comment group="data.group.id" student="student.info.id" disabled="disabled"></app-comment>
+                {{disabled}}
+            </td>
             <td ng-repeat="lesson in student.lessons track by $index" 
                 ng-click="lessonWidget.show($index)"
                 style="background-color: {{lesson.group_pass.color}}; border-color: #000">
