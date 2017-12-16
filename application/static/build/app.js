@@ -91,7 +91,7 @@
             },
             template: '<textarea rows="2" cols="50" ' + 
                       'style="border: none; resize: none; background-color: inherit;" '+
-                      'placeholder="Введите коментарий"'+
+                      'placeholder="{{placeholder}}"'+
                       'ng-disabled="disabled"'+
                       'ng-model="value"' + 
                       ' ></textarea>',
@@ -135,9 +135,12 @@
                         });
     
                         $timeout(function() {
+                            $scope.placeholder = "Введите коментарий"
                             $element[0].focus();
                         });
-                    } 
+                    } else {
+                        $scope.placeholder = ""
+                    }
                 });
             }
         }
