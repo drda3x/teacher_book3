@@ -53,8 +53,7 @@
                 </span>
             </td>
             <td style="border-color: #000;" ng-init="disabled=true" ng-dblclick="disabled=!disabled" >
-                <app-comment group="data.group.id" student="student.info.id" disabled="disabled"></app-comment>
-                {{disabled}}
+                <app-comment group="data.group.id" student="student.info.id" disabled="disabled" value="Hello"></app-comment>
             </td>
             <td ng-repeat="lesson in student.lessons track by $index" 
                 ng-click="lessonWidget.show($index)"
@@ -133,7 +132,9 @@
                 </tr>
                 <tr ng-repeat="student in sub_list">
                     <td style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
-                    <td style="border-color: #000"></td>
+                    <td style="border-color: #000" ng-init="disabled=true" ng-dblclick="disabled=!disabled">
+                        <app-comment group="data.group.id" student="student.info.id" disabled="disabled" value="Hello"></app-comment>
+                    </td>
                     <td style="border-color: #000">
                         <a href="">Удалить</a><br>
                         <a href="">В помойку</a>

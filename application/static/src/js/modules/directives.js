@@ -21,24 +21,42 @@ app.directive('ngSize', function(){
 });
 
 
-app.directive('appComment', function() {
+app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
     return {
         restrict: 'E',
         scope: {
-            group: "@",
-            student: "@",
-            disabled: "=disabled"
+            group: "=",
+            student: "=",
+            disabled: "=disabled",
+            value: "@"
         },
         template: '<textarea rows="2" cols="50" ' + 
                   'style="border: none; resize: none; background-color: inherit;" '+
                   'placeholder="Введите коментарий"'+
                   'ng-disabled="disabled"'+
+                  'ng-model="value"' + 
                   ' ></textarea>',
         replace: true,
         link: function(scope, elem, attrs) {
         },
 
-        controller: function($scope) {
+        controller: function($scope, $element) {
+            
+            function sendRequest() {
+                $http({
+                    method: "POST",
+                    url: '/save_comment',
+                    data: {
+                        group: $scope.group,
+                        student: $scope.student,
+                        text: $scope.value
+                    },
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+            }
+
             $scope.$watch('disabled', function(val) {
                 if(!val) {
                     $('body').one('click', function(event) {
@@ -48,9 +66,20 @@ app.directive('appComment', function() {
                         $scope.$apply(function() {
                             $scope.disabled = true;
                         });
-                    })
-                }
+
+                        sendRequest();
+                    });
+
+                    $element.bind('click', function(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                    });
+
+                    $timeout(function() {
+                        $element[0].focus();
+                    });
+                } 
             });
         }
     }
-});
+}]);
