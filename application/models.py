@@ -486,7 +486,7 @@ class BonusClasses(models.Model):
     def get_finance(self):
         return len(list(BonusClassList.objects.filter(group=self, attendance=True))) * self.prise
 
-    def __json__(self):
+    def __json__(self, *values):
         return dict()
 
     class Meta:
@@ -520,8 +520,8 @@ class Students(models.Model):
     org = models.BooleanField(verbose_name=u'Орг', default=False)
     is_deleted = models.BooleanField(verbose_name=u'Удален', default=False)
 
-    def __json__(self):
-        return dict(
+    def __json__(self, *values):
+        result = dict(
             id=self.pk,
             first_name=self.first_name,
             last_name=self.last_name,
@@ -530,6 +530,14 @@ class Students(models.Model):
             # e_mail=self.e_mail,
             org=self.org
         )
+
+        if len(values) > 0:
+            return dict(
+                (k, v) for k, v in result.iteritems() if k in values
+            )
+
+        else:
+            return result
 
     def __unicode__(self):
         return u'%s %s.%s' % (self.first_name, self.last_name, self.father_name[0].upper() if self.father_name else '')
@@ -572,19 +580,19 @@ class Comments(models.Model):
     Хранилице коментов
     """
 
-    add_date = models.DateTimeField(verbose_name=u'Дата добавления')
+    add_date = models.DateTimeField(verbose_name=u'Дата добавления', null=True, blank=True)
     student = models.ForeignKey(Students)
     group = models.ForeignKey(Groups, null=True, blank=True)
     bonus_class = models.ForeignKey(BonusClasses, null=True, blank=True)
     text = models.TextField(max_length=100, verbose_name=u'Текст коментария')
 
-    def __json__(self, values=None):
+    def __json__(self, *values):
         result = dict(
             pk=self.pk,
             add_date=self.add_date.strftime('%d.%m.%Y %H:%M:%S'),
-            student=self.student.__json__(),
+            student=self.student.__json__(*values),
             group=self.group.__json__() if self.group else None,
-            bonus_class=self.bonus_class.__json__() if self.bonus_class else None,
+            bonus_class=self.bonus_class.__json__(*values) if self.bonus_class else None,
             text=self.text
         )
 

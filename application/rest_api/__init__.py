@@ -14,3 +14,4 @@ from groups import (
 )
 from students import edit_student
 from auth import login, logout
+from comments import edit_comment

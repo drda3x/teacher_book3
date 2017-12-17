@@ -11,7 +11,8 @@ from application.models import (
     PassTypes,
     CanceledLessons,
     TeachersSubstitution,
-    User
+    User,
+    Comments
 )
 from auth import auth
 from traceback import format_exc
@@ -38,6 +39,8 @@ from application.common.group import (
     delete_student as delete_student_func,
     calc_group_profit
 )
+
+from application.common.comments import get_comments
 
 from itertools import takewhile, chain, groupby
 from collections import OrderedDict
@@ -189,6 +192,8 @@ def get_base_info(request):
     for _date, _teachers in groupby(subst, lambda x: x[0]):
         teachers_work[_date] = map(int, list(chain(*_teachers))[1::2])
 
+    comments = get_comments(group, students)
+
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
@@ -223,7 +228,14 @@ def get_base_info(request):
                 t.__json__()
                 for t in User.objects.filter(Q(teacher=True) | Q(assistant=True))
             ]
-        }
+        },
+        "comments": [
+            {
+                "student_id": c.student.id,
+                "text": c.text
+            }
+            for c in comments
+        ]
     }
 
     return HttpResponse(json.dumps(response))

@@ -45,7 +45,7 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
             function sendRequest() {
                 $http({
                     method: "POST",
-                    url: '/save_comment',
+                    url: '/edit_comment',
                     data: {
                         group: $scope.group,
                         student: $scope.student,

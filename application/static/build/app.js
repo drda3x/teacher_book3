@@ -104,7 +104,7 @@
                 function sendRequest() {
                     $http({
                         method: "POST",
-                        url: '/save_comment',
+                        url: '/edit_comment',
                         data: {
                             group: $scope.group,
                             student: $scope.student,
@@ -318,6 +318,18 @@
             return any($scope.data.teachers.cp_teachers, function(elem) {
                 return elem == teacher.id;
             })
+        }
+    
+        $scope.getComment = function(student_id) {
+            var comments = $scope.data.comments;
+    
+            for(var i=0, j=comments.length; i<j; i++) {
+                if(comments[i].student_id == student_id) {
+                    return comments[i].text;
+                }
+            };
+    
+            return null;
         }
     
         LessonWidget.prototype.show = function(index) {

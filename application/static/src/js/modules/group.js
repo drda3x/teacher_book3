@@ -73,6 +73,18 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         })
     }
 
+    $scope.getComment = function(student_id) {
+        var comments = $scope.data.comments;
+
+        for(var i=0, j=comments.length; i<j; i++) {
+            if(comments[i].student_id == student_id) {
+                return comments[i].text;
+            }
+        };
+
+        return null;
+    }
+
     LessonWidget.prototype.show = function(index) {
         this.elem.modal('show');
         var data = [],
