@@ -169,6 +169,8 @@
                                         name="" ng-if="student.lesson.temp_status < 0" 
                                         class="form-control">
                                     <option value="">--добавить оплату--</option>
+                                    <option value="-2">долг</option>
+                                    <option value="-1" ng-if="lessonWidget.checkClubCard(student)">оплата по клубной карте</option>
                                     <option value="{{pass_type.id}}" ng-repeat="pass_type in data.pass_types">
                                         {{pass_type.name}}
                                     </option>

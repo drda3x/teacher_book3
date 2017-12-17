@@ -225,6 +225,20 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         }, function() {
         });
     }
+
+    LessonWidget.prototype.checkClubCard = function(student_id) {
+        var rec;
+
+        for(i in $scope.data.club_cards) {
+            rec = $scope.data.club_cards[i];
+
+            if(rec.student_id == student_id && rec.start_date >= this.date && rec.end_date <= this.date) {
+                return true
+            }
+        }
+
+        return false;
+    }
     
     $scope.lessonWidget = new LessonWidget();
 

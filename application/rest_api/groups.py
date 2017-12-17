@@ -9,6 +9,7 @@ from application.models import (
     Groups,
     Lessons,
     PassTypes,
+    Passes,
     CanceledLessons,
     TeachersSubstitution,
     User,
@@ -192,6 +193,12 @@ def get_base_info(request):
     for _date, _teachers in groupby(subst, lambda x: x[0]):
         teachers_work[_date] = map(int, list(chain(*_teachers))[1::2])
 
+    club_cards = Passes.objects.filter(
+        pass_type__one_group_pass=False,
+        start_date__lte=dates[-1],
+        end_date__gte=dates[0]
+    )
+
     comments = get_comments(group, students)
 
     response = {
@@ -235,6 +242,14 @@ def get_base_info(request):
                 "text": c.text
             }
             for c in comments
+        ],
+        "club_cards": [
+            {
+                "student": cc.student.id,
+                "start_date": cc.start_date.strftime("%d.%m.%Y"),
+                "end_date": cc.end_date.strftime("%d.%m.%Y")
+            }
+            for cc in club_cards
         ]
     }
 
