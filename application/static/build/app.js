@@ -512,7 +512,7 @@
                 total *= 0.3;
             }
     
-            return total
+            return Math.round(total, 2)
         }
     
         $scope.calcTotal = function(index) {
