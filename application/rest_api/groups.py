@@ -96,7 +96,14 @@ def get_list(request):
         return dict(
             profit=profit,
             show_st=g.start_date >= now,
-            **g.__json__("id", "name", "dance_hall__station", "days", "time")
+            **g.__json__(
+                "id",
+                "name",
+                "dance_hall__station",
+                "days",
+                "time",
+                "start_date"
+            )
         )
 
     for level, groups in groupby(groups, lambda x: x.level):
