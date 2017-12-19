@@ -22,6 +22,37 @@ from itertools import groupby
 calendar = calendar_origin.Calendar()
 
 
+def get_filtered_dict(model, *keys):
+    if len(keys) == 0:
+        return model.__json__()
+
+    else:
+        keys = list(keys)
+        keys.sort()
+        result = {}
+
+        for key, sub_keys in groupby(keys, lambda k: k.split("__")[0]):
+            field_object, _model, direct, m2m = model._meta.get_field_by_name(key)
+            val = getattr(model, key)
+
+            sub_keys = (k[len(key)+2:] for k in sub_keys)
+            sub_keys = [sk for sk in sub_keys if sk != '']
+
+            if m2m:
+                result[key] = [
+                    get_filtered_dict(temp_model, *sub_keys)
+                    for temp_model in val.all()
+                ]
+            elif isinstance(field_object, models.ForeignKey):
+                result[key] = get_filtered_dict(val, *sub_keys)
+            elif isinstance(field_object, models.DateTimeField):
+                result[key] = val.strftime("%d.%m.%Y")
+            else:
+                result[key] = val
+
+    return result
+
+
 class User(UserOrigin):
 
     def __unicode__(self):
@@ -396,19 +427,7 @@ class Groups(models.Model):
         return str(self.time or '')[0:-3]
 
     def __json__(self, *fields):
-        return dict(
-            id=self.pk,
-            name=self.name,
-            start_date=self.start_date.strftime('%d.%m.%Y') if self.start_date else u'',
-            end_date=self.end_date.strftime('%d.%m.%Y') if self.end_date else u'',
-            time=self.time_repr,
-            teachers=[t.__json__() for t in self.teachers.all()],
-            is_opened=self.is_opened,
-            is_settable=self.is_settable,
-            days= '-'.join(self.days),
-            available_passes=map(lambda x: x.__json__(), self.available_passes.all()),
-            dance_hall=self.dance_hall.__json__()
-        )
+        return get_filtered_dict(self, *fields)
 
     def __unicode__(self):
         today = datetime.datetime.now().date()
