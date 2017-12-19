@@ -474,13 +474,16 @@
         }
     
         LessonWidget.prototype.checkClubCard = function(student_id) {
-            var rec;
+            var rec, d1, d2, d3;
     
             for(i in $scope.data.club_cards) {
                 rec = $scope.data.club_cards[i];
+                d1 = moment(rec.start_date, 'dd.mm.YYYY');
+                d2 = moment(rec.end_date, 'dd.mm.YYYY');
+                d3 = moment(this.date, 'dd.mm.YYYY')
     
-                if(rec.student_id == student_id && rec.start_date >= this.date && rec.end_date <= this.date) {
-                    return true
+                if(rec.student_id == student_id && d1 <= d3 && d2 >= d3) {
+                    return true;
                 }
             }
     
