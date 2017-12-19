@@ -17,8 +17,10 @@ except ImportError:
 
 from application.utils.date_api import get_count_of_weekdays_per_interval, get_week_days_names, MONTH_PARENT_FORM, WEEK, get_last_day_of_month
 from application.utils.phones import get_string_val
+from itertools import groupby
 
 calendar = calendar_origin.Calendar()
+
 
 class User(UserOrigin):
 
@@ -393,15 +395,13 @@ class Groups(models.Model):
     def time_repr(self):
         return str(self.time or '')[0:-3]
 
-    def __json__(self):
+    def __json__(self, *fields):
         return dict(
             id=self.pk,
             name=self.name,
             start_date=self.start_date.strftime('%d.%m.%Y') if self.start_date else u'',
             end_date=self.end_date.strftime('%d.%m.%Y') if self.end_date else u'',
             time=self.time_repr,
-            teacher_leader=self.teacher_leader.__json__() if self.teacher_leader else {},
-            teacher_follower=self.teacher_follower.__json__() if self.teacher_follower else {},
             teachers=[t.__json__() for t in self.teachers.all()],
             is_opened=self.is_opened,
             is_settable=self.is_settable,

@@ -204,7 +204,17 @@ def get_base_info(request):
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
-        "group": group.__json__(),
+        "group": {
+            "id": group.pk,
+            "name": group.name,
+            "start_date": group.start_date.strftime("%d.%m.%Y"),
+            "days": group.days,
+            "time": group.time.strftime("%H:%M"),
+            "dance_hall": {
+                "prise": group.dance_hall.prise,
+                "station": group.dance_hall.station
+            }
+        },
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
@@ -214,7 +224,11 @@ def get_base_info(request):
             for d in dates
         ],
         "pass_types": [
-            p.__json__()
+            {
+                "id": p.pk,
+                "name": p.name
+            }
+            #p.__json__()
             for p in pass_types
         ],
         "students": [
