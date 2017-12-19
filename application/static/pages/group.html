@@ -59,10 +59,10 @@
                 ng-click="lessonWidget.show($index)"
                 style="background-color: {{lesson.group_pass.color}}; border-color: #000">
                 <span ng-if="lesson.status == 1">
-                    {{lesson.prise / lesson.cnt}}
+                    {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
                 </span>
                 <span style="color: red" ng-if="lesson.status == 2">
-                    {{lesson.prise / lesson.lessons}}
+                    {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
                 </span>
                 <span style="color: red" ng-if="lesson.status == 4" >
                     пропуск

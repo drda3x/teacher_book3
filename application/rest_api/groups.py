@@ -93,7 +93,11 @@ def get_list(request):
         except Exception:
             profit = 0
 
-        return dict(profit=profit, show_st=g.start_date >= now, **g.__json__())
+        return dict(
+            profit=profit,
+            show_st=g.start_date >= now,
+            **g.__json__("id", "name", "dance_hall__station", "days", "time")
+        )
 
     for level, groups in groupby(groups, lambda x: x.level):
         data.append(dict(
@@ -204,17 +208,10 @@ def get_base_info(request):
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
-        "group": {
-            "id": group.pk,
-            "name": group.name,
-            "start_date": group.start_date.strftime("%d.%m.%Y"),
-            "days": group.days,
-            "time": group.time.strftime("%H:%M"),
-            "dance_hall": {
-                "prise": group.dance_hall.prise,
-                "station": group.dance_hall.station
-            }
-        },
+        "group": group.__json__(
+            "id", "name", "start_date", "days", "time",
+            "dance_hall__prise", "dance_hall__station"
+        ),
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
@@ -224,18 +221,21 @@ def get_base_info(request):
             for d in dates
         ],
         "pass_types": [
-            {
-                "id": p.pk,
-                "name": p.name
-            }
-            #p.__json__()
+            p.__json__("id", "name")
             for p in pass_types
         ],
         "students": [
             {
-                'info': student.__json__(),
+                'info': student.__json__(
+                    "id", "last_name", "first_name", "phone", "org"
+                ),
                 'lessons': [
-                    l.__json__()
+                    l.__json__(
+                        "group_pass__color",
+                        "group_pass__pass_type__lessons",
+                        "group_pass__pass_type__prise",
+                        "status"
+                    )
                     for l in lessons[student]
                 ]
             }
@@ -246,7 +246,7 @@ def get_base_info(request):
             "assistants": assistants,
             "work": teachers_work.values(),
             "list": [
-                t.__json__()
+                t.__json__("id", "first_name", "last_name", "assistant")
                 for t in User.objects.filter(Q(teacher=True) | Q(assistant=True))
             ]
         },

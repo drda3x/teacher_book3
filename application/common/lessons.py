@@ -22,7 +22,7 @@ class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
         application.models.Lessons
     """
 
-    def __json__(self):
+    def __json__(self, *args):
         return dict(
             date=self.date.strftime("%d.%m.%Y"),
             status=self.status

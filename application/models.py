@@ -23,32 +23,36 @@ calendar = calendar_origin.Calendar()
 
 
 def get_filtered_dict(model, *keys):
-    if len(keys) == 0:
-        return model.__json__()
 
-    else:
-        keys = list(keys)
-        keys.sort()
-        result = {}
+    keys = list(keys)
+    keys.sort()
+    result = {}
 
-        for key, sub_keys in groupby(keys, lambda k: k.split("__")[0]):
+    for key, sub_keys in groupby(keys, lambda k: k.split("__")[0]):
+        try:
             field_object, _model, direct, m2m = model._meta.get_field_by_name(key)
-            val = getattr(model, key)
+        except Exception:
+            field_object, m2m = None, None
+        val = getattr(model, key)
 
-            sub_keys = (k[len(key)+2:] for k in sub_keys)
-            sub_keys = [sk for sk in sub_keys if sk != '']
+        sub_keys = (k[len(key)+2:] for k in sub_keys)
+        sub_keys = [sk for sk in sub_keys if sk != '']
 
-            if m2m:
-                result[key] = [
-                    get_filtered_dict(temp_model, *sub_keys)
-                    for temp_model in val.all()
-                ]
-            elif isinstance(field_object, models.ForeignKey):
-                result[key] = get_filtered_dict(val, *sub_keys)
-            elif isinstance(field_object, models.DateTimeField):
-                result[key] = val.strftime("%d.%m.%Y")
-            else:
-                result[key] = val
+        if m2m:
+            result[key] = [
+                get_filtered_dict(temp_model, *sub_keys)
+                for temp_model in val.all()
+            ]
+        elif isinstance(field_object, models.ForeignKey):
+            result[key] = get_filtered_dict(val, *sub_keys)
+        elif isinstance(field_object, models.DateTimeField):
+            result[key] = val.strftime("%d.%m.%Y")
+        elif isinstance(val, datetime.time):
+            result[key] = val.strftime("%H:%M")
+        elif isinstance(val, (datetime.date, datetime.datetime)):
+            result[key] = val.strftime("%d.%m.%Y")
+        else:
+            result[key] = val
 
     return result
 
@@ -76,16 +80,17 @@ class User(UserOrigin):
             last_name=self.last_name
         )
 
-    def __json__(self):
-        return dict(
-            id=self.pk,
-            first_name=self.first_name,
-            last_name=self.last_name,
-            about=self.about,
-            photo=self.photo.url if self.photo else None,
-            video=self.video,
-            assistant=self.assistant
-        )
+    def __json__(self, *keys):
+        return get_filtered_dict(self, *keys)
+        #return dict(
+        #    id=self.pk,
+        #    first_name=self.first_name,
+        #    last_name=self.last_name,
+        #    about=self.about,
+        #    photo=self.photo.url if self.photo else None,
+        #    video=self.video,
+        #    assistant=self.assistant
+        #)
 
     def __repr__(self):
         return self.__unicode__()
@@ -286,7 +291,7 @@ class Groups(models.Model):
 
     @property
     def days(self):
-        return get_week_days_names(self._days.split(','))
+        return ' '.join(get_week_days_names(self._days.split(',')))
 
     @property
     def days_nums(self):
@@ -540,23 +545,7 @@ class Students(models.Model):
     is_deleted = models.BooleanField(verbose_name=u'Удален', default=False)
 
     def __json__(self, *values):
-        result = dict(
-            id=self.pk,
-            first_name=self.first_name,
-            last_name=self.last_name,
-            phone=self.str_phone,
-            raw_phone=self.phone,
-            # e_mail=self.e_mail,
-            org=self.org
-        )
-
-        if len(values) > 0:
-            return dict(
-                (k, v) for k, v in result.iteritems() if k in values
-            )
-
-        else:
-            return result
+        return get_filtered_dict(self, *values)
 
     def __unicode__(self):
         return u'%s %s.%s' % (self.first_name, self.last_name, self.father_name[0].upper() if self.father_name else '')
@@ -663,16 +652,8 @@ class PassTypes(models.Model):
             self.is_actual = True
             self.save()
 
-    def __json__(self):
-        return dict(
-            id=int(self.pk),
-            name=self.name,
-            prise=float(self.prise),
-            lessons=int(self.lessons),
-            skips=int(self.skips) if self.skips else None,
-            color=self.color,
-            oneGroupPass=self.one_group_pass
-        )
+    def __json__(self, *keys):
+        return get_filtered_dict(self, *keys)
 
     def save(self, *args, **kwargs):
 
@@ -874,14 +855,8 @@ class Lessons(models.Model):
     group_pass = models.ForeignKey(Passes, verbose_name=u'Абонемент', related_name=u'lesson_group_pass')
     status = models.IntegerField(verbose_name=u'Статус занятия', choices=[(val, key) for key, val in STATUSES.iteritems()], default=DEFAULT_STATUS)
 
-    def __json__(self):
-        return dict(
-            date=self.date.strftime("%d.%m.%Y"),
-            group=self.group.__json__(),
-            student=self.student.__json__(),
-            group_pass=self.group_pass.__json__(),
-            status=self.status
-        )
+    def __json__(self, *keys):
+        return get_filtered_dict(self, *keys)
 
     @property
     def sign(self):
