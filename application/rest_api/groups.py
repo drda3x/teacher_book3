@@ -26,6 +26,7 @@ from application.common.lessons import (
     create_new_passes,
     process_attended_lessons,
     process_not_attended_lessons,
+    process_club_cards_lessons,
     get_students_lessons,
     restore_database,
     delete_lessons as delete_lessons_func,
@@ -205,6 +206,7 @@ def get_base_info(request):
         teachers_work[_date] = map(int, list(chain(*_teachers))[1::2])
 
     club_cards = Passes.objects.filter(
+        student__in=students,
         pass_type__one_group_pass=False,
         start_date__lte=dates[-1],
         end_date__gte=dates[0]
@@ -239,6 +241,7 @@ def get_base_info(request):
                 'lessons': [
                     l.__json__(
                         "group_pass__color",
+                        "group_pass__pass_type__id",
                         "group_pass__pass_type__lessons",
                         "group_pass__pass_type__prise",
                         "status"
@@ -324,6 +327,7 @@ def process_lesson(request):
 
     if len(attended) > 0:
         process_attended_lessons(group, date, attended)
+        process_club_cards_lessons(group, date, attended)
 
     if len(not_attended) > 0:
         process_not_attended_lessons(group, date, not_attended)

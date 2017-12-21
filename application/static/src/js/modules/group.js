@@ -114,8 +114,6 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         this.teachers = $.map(this.teachers, function(val) {
             return ""+val;
         });
-
-        console.log(this.teachers);
     }
 
     LessonWidget.prototype.hide = function(lesson) {
@@ -228,14 +226,13 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
     LessonWidget.prototype.checkClubCard = function(student_id) {
         var rec, d1, d2, d3;
-
         for(i in $scope.data.club_cards) {
             rec = $scope.data.club_cards[i];
             d1 = moment(rec.start_date, 'dd.mm.YYYY');
             d2 = moment(rec.end_date, 'dd.mm.YYYY');
-            d3 = moment(this.date, 'dd.mm.YYYY')
+            d3 = moment(this.date, 'dd.mm.YYYY');
 
-            if(rec.student_id == student_id && d1 <= d3 && d2 >= d3) {
+            if(rec.student == student_id && d1 <= d3 && d2 >= d3) {
                 return true;
             }
         }

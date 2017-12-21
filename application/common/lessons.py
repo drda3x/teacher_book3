@@ -29,6 +29,27 @@ class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
         )
 
 
+class ClubCardLesson(namedtuple("ClubCardLesson", ["date", "group_pass", "status"])):
+    u"""
+        Структура для сохранения интерфейса урока для клубной карты
+        application.models.Lessons
+    """
+
+    def __json__(self, *args):
+        return dict(
+            date=self.date.strftime("%d.%m.%Y"),
+            status=0,
+            group_pass=dict(
+                pass_type=dict(
+                    id=self.group_pass.pass_type.id,
+                    lessons=self.group_pass.pass_type.lessons,
+                    prise=self.group_pass.pass_type.prise,
+                ),
+                color=self.group_pass.color
+            )
+        )
+
+
 # Структура для объединения
 # application.models.Students и application.models.PassTypes
 PassTypeStudent = namedtuple("PassTypeStudent", ["student", "pass_type"])
@@ -78,10 +99,25 @@ def get_students_lessons(group, date_from, date_to, students):
         date__range=(_dates[0], _dates[-1])
     ).exclude(status=Lessons.STATUSES['canceled'])
 
+    club_cards = Passes.objects.filter(
+        start_date__lte=date_to,
+        end_date__gte=date_from
+    )
+
     if all_is_Students:
         lessons = lessons.filter(student__in=students)
+        club_cards = club_cards.filter(student__in=students)
+        club_cards = dict(
+            (c.student, c)
+            for c in club_cards
+        )
     else:
         lessons = lessons.filter(student_id__in=students)
+        club_cards = club_cards.filter(student_id__in=students)
+        club_cards = dict(
+            (c.student.id, c)
+            for c in club_cards
+        )
 
     if isinstance(date_from, datetime):
         dates = set(d.date() for d in _dates)
@@ -94,8 +130,12 @@ def get_students_lessons(group, date_from, date_to, students):
         lessons_map[key].append(lesson)
 
     for student in students:
+        cc = club_cards.get(student)
         _dates = dates - set(l.date for l in lessons_map[student])
-        fl = [DefaultLesson(_date, -2) for _date in _dates]
+        fl = [
+            ClubCardLesson(_date, cc, 0) if cc and cc.start_date <= _date <= cc.end_date else DefaultLesson(_date, -2)
+            for _date in _dates
+        ]
 
         lessons_map[student] += fl
         lessons_map[student].sort(key=lambda x: x.date)
@@ -195,6 +235,57 @@ def process_attended_lessons(group, date, lessons):
     ).update(status=Lessons.STATUSES['attended'])
 
 
+def process_club_cards_lessons(group, date, lessons):
+    u"""
+    Функция для обработки уроков по клубным картам
+
+    args:
+        group application.models.Groups
+        date datetime.datetime
+        lessons[{
+            stid: int,
+            lesson: {
+                status: application.models.Lessons.STATUSES,
+                is_new: bool,
+                pass_type: int
+            }
+        }]
+    """
+    cards = dict(
+        (p.student.id, p) for p in Passes.objects.filter(
+            pass_type__one_group_pass=False,
+            student__in=[s['stid'] for s in lessons],
+            start_date__lte=date,
+            end_date__gte=date
+        )
+    )
+
+    all_lessons = defaultdict(list)
+    for lesson in Lessons.objects.filter(group_pass__in=cards.values()):
+        all_lessons[lesson.group_pass].append(lesson)
+
+    for lesson in lessons:
+        try:
+            card = cards[lesson['stid']]
+            existed_lessons = all_lessons[card]
+
+            if len(existed_lessons) >= card.pass_type.lessons:
+                continue
+
+            new_lesson = Lessons(
+                student=card.student,
+                group_pass=card,
+                date=date,
+                group=group,
+                status=Lessons.STATUSES['attended']
+            )
+
+            new_lesson.save()
+
+        except KeyError:
+            continue
+
+
 def process_not_attended_lessons(group, date, lessons):
     u"""
     Функция для отмечания пропусков и непосещенных занятий
@@ -281,7 +372,8 @@ def restore_database(group, date, students):
     passes = Lessons.objects.filter(
         student_id__in=[s['stid'] for s in students],
         group=group,
-        date=date
+        date=date,
+        one_group_pass=True
     ).select_related('group_pass')
 
     lessons = Lessons.objects.filter(
