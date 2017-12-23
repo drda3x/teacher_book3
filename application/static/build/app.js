@@ -332,6 +332,54 @@
             return null;
         }
     
+        $scope.checkMoveingAbility = function(student, index) {
+            return true;
+            return index >= 0 && index < $scope.data.dates.length && student.lessons[index].status == -2;
+        }
+    
+        $scope.moveLesson = function(cur_index, next_index, student) {
+            var date_from = $scope.data.dates[cur_index],
+                date_to = $scope.data.dates[next_index];
+    
+            var data = {}
+    
+            data.date_from = date_from.val;
+            data.date_to = date_to === undefined ? null : date_to.val;
+            data.stid = student.info.id;
+            data.group = $scope.data.group.id;
+    
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                data: data,
+                url: "move_lessons"
+            }).then(function(responce) {
+    //            load();
+            }, function() {})
+        }
+    
+        $scope.deleteLesson = function(cur_index, student) {
+            var data = {
+                date: $scope.data.dates[cur_index].val,
+                count: 1,
+                group: $scope.data.group.id,
+                stid: student.info.id
+            }
+    
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                data: data,
+                url: "delete_lessons"
+            }).then(function(responce) {
+    //            load();
+            }, function() {})
+        }
+    
         LessonWidget.prototype.show = function(index) {
             this.elem.modal('show');
             var data = [],

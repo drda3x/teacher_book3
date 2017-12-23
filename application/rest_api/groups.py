@@ -371,15 +371,7 @@ def delete_lessons(request):
         date = datetime.strptime(data['date'], "%d.%m.%Y")
         delete_lessons_func(date, data['count'], data['stid'], data['group'])
 
-        lessons = get_students_lessons(
-            data['group'],
-            date.replace(day=1),
-            None,
-            [data['stid']]
-        )
-
-        lessons_json = [l.__json__() for l in lessons[data['stid']]]
-        return HttpResponse(json.dumps(lessons_json))
+        return HttpResponse()
 
     except Exception:
         return HttpResponseServerError(format_exc())
@@ -401,16 +393,7 @@ def move_lessons(request):
         date_to = datetime.strptime(data['date_to'], "%d.%m.%Y")
 
         move_lessons_func(date_from, date_to, data['stid'], data['group'])
-
-        lessons = get_students_lessons(
-            data['group'],
-            date_from.replace(day=1),
-            None,
-            [data['stid']]
-        )
-
-        lessons_json = [l.__json__() for l in lessons[data['stid']]]
-        return HttpResponse(json.dumps(lessons_json))
+        return HttpResponse()
 
     except Exception:
         return HttpResponseServerError(format_exc())

@@ -373,7 +373,7 @@ def restore_database(group, date, students):
         student_id__in=[s['stid'] for s in students],
         group=group,
         date=date,
-        one_group_pass=True
+        group_pass__pass_type__one_group_pass=True
     ).select_related('group_pass')
 
     lessons = Lessons.objects.filter(
