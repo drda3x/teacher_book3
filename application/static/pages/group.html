@@ -71,14 +71,14 @@
                     <div style="font-weight: bold; font-size: 20pt;">
                         <a href="" 
                            ng-show="checkMoveingAbility(student, index-1)"
-                           ng-click="moveLesson($index, $index-1, student)" 
+                           ng-click="moveLesson($event, $index, $index-1, student)" 
                            style="float: left; display: inline-block"><</a>
                         <a href="" 
                            ng-click="deleteLesson($index, student)" 
                            style="display: inline-block; padding: 0 21%">x</a>
                         <a href="" 
                            ng-show="checkMoveingAbility(student, index+1)"
-                           ng-click="moveLesson($index, $index+1, student)" 
+                           ng-click="moveLesson($event, $index, $index+1, student)" 
                            style="float: right; display: inline-block">></a>
                     </div>
                 </span>

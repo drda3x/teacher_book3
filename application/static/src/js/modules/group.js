@@ -90,7 +90,9 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         return index >= 0 && index < $scope.data.dates.length && student.lessons[index].status == -2;
     }
 
-    $scope.moveLesson = function(cur_index, next_index, student) {
+    $scope.moveLesson = function(event, cur_index, next_index, student) {
+        event.stopPropagation();
+
         var date_from = $scope.data.dates[cur_index],
             date_to = $scope.data.dates[next_index];
 
@@ -109,7 +111,22 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             data: data,
             url: "move_lessons"
         }).then(function(responce) {
-//            load();
+            var tmp;
+
+            if(cur_index < next_index) {
+                for(var i=student.lessons.length-1; i>cur_index; i--) {
+                    tmp = student.lessons[i-1];
+                    student.lessons[i-1] = student.lessons[i];
+                    student.lessons[i] = tmp;
+                }
+            } else {
+                for(var i=next_index, j=student.lessons.length-1; i<j; i++) {
+                    tmp = student.lessons[i+1];
+                    student.lessons[i+1] = student.lessons[i];
+                    student.lessons[i] = tmp;
+                }
+            }
+
         }, function() {})
     }
 
