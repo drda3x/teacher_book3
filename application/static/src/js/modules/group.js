@@ -592,6 +592,43 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     
     $scope.studentEditWidget = new StudentEditWidget();
 
+
+    GroupMovingWidget = function() {
+        this.elem = $("#groupMoving").modal({
+            show: false
+        });
+    }
+
+    GroupMovingWidget.prototype.open = function(student) {
+        this.student = student;  
+        this.elem.modal("show");
+    }
+
+    GroupMovingWidget.prototype.save = function(date, new_group) {
+        var data = {
+            stid: this.student.info.id,
+            new_group: new_group,
+            old_group: $scope.data.group.id,
+            date: date
+        }
+
+        $http({
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            method: "POST",
+            data: data,
+            url: "/change_group"
+        }).then(
+            function() {
+                load()
+            }, function() {
+            }
+        );
+    }
+
+    $scope.groupMoving = new GroupMovingWidget();
+
     $scope.hideSidebar = function() {
         $rootScope.showSideBar = false;
     }

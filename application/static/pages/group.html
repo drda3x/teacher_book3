@@ -31,6 +31,7 @@
                         <span style="padding: 0 10px;" ng-show="menuIndex==$index">
                             <a href="" ng-click="studentEditWidget.delete($index)">Удалить</a>
                             <a href="" ng-click="studentEditWidget.trash($index)">В помойку</a>
+                            <a href="" ng-click="groupMoving.open(student)">В другую группу</a>
                         </span>
                     </div>
                 </span>
@@ -225,6 +226,64 @@
                 <div class="modal-footer" ng-show="lessonWidget.is_canceled">
                     <button class="btn" type="button" ng-click="lessonWidget.restoreLesson()">Восстановить</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="groupMoving" 
+         class="modal" 
+         role="dialog" 
+         ng-init="group" 
+         ng-init="date">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        {{groupMoving.student.info.last_name}}
+                        {{groupMoving.student.info.first_name}}
+                    </h5>
+                    <button type="button" 
+                            class="close" 
+                            data-dismiss="modal" 
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="">
+                        <div class="form-group">
+                            <label for="">Группа</label>
+                            <select id="" name="" class="form-control" ng-mode="group">
+                                <option value="-1">--выберите группу--</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Дата</label>
+                            <datepicker date-format="dd.MM.yyyy" 
+                                        date-week-start-day="1" 
+                                        date-year-title="selected title">
+                                    <input style="margin-bottom: 15px" 
+                                           type="text" 
+                                           placeholder="дата" 
+                                           class="form-control" 
+                                           ng-model="date" />
+                            </datepicker>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            ng-click="groupMoving.save(date, group)">
+                        Сохранить
+                    </button>
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            data-dismiss="modal" 
+                            ng-click="">
+                        Отмена
+                    </button>
                 </div>
             </div>
         </div>
