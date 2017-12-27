@@ -159,8 +159,20 @@ def create_new_passes(group, date, data):
                     lessons_cnt: int
                     skips_cnt: int
                 }
-            }]
+            }] or {
+                stid: int,
+                lesson: {
+                    status: application.models.Lessons.STATUSES,
+                    is_new: bool
+                    pass_type: int
+                    lessons_cnt: int
+                    skips_cnt: int
+                }
+            }
     """
+
+    if isinstance(data, dict):
+        data = [data]
 
     assert isinstance(group, Groups)
     assert isinstance(date, datetime)

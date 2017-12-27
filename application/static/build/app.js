@@ -877,7 +877,7 @@
                 url: "/change_group"
             }).then(
                 function() {
-                    load()
+                    load();
                 }, function() {
                 }
             );

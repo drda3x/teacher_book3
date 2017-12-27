@@ -629,7 +629,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             url: "/change_group"
         }).then(
             function() {
-                load()
+                load();
             }, function() {
             }
         );

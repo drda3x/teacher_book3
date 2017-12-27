@@ -13,7 +13,8 @@ from application.models import (
     CanceledLessons,
     TeachersSubstitution,
     User,
-    Comments
+    Comments,
+    Students
 )
 from auth import auth
 from traceback import format_exc
@@ -527,7 +528,7 @@ def change_group(request):
             status=Lessons.STATUSES['moved']
         ).values_list('group_pass', flat=True))
 
-        delete_lessons_func(date, len(cnt), student, old_group)
+        delete_lessons_func(date, len(to_delete), student, old_group)
         add_student_to_group(new_group, student)
 
         to_delete.sort(key=lambda l: l.date)
@@ -537,7 +538,7 @@ def change_group(request):
         # с другой стороны - вообще не понятно как сделать это
         # элегантно =))
         for group_pass, lessons in groupby(to_delete, lambda g: g.group_pass):
-            _cnt = list(lessons).count()
+            _cnt = len(list(lessons))
 
             new_pass = dict(
                 stid=student.pk,
