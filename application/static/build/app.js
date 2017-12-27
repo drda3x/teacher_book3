@@ -173,6 +173,7 @@
                 url: "/groups"
             }).then(function(response) {
                 $scope.elements = response.data;
+                $rootScope.groups = $scope.elements;
             }, function(response) {
                 if(response.status == 403) {
                     $location.path('/login')
@@ -844,6 +845,14 @@
             this.elem = $("#groupMoving").modal({
                 show: false
             });
+            
+            $scope.$watch('$root.groups', $.proxy(function() {
+                res = [];
+                for(var i in $rootScope.groups) {
+                    res = res.concat($rootScope.groups[parseInt(i)].groups)
+                }
+                this.all_groups = res;
+            }, this))
         }
     
         GroupMovingWidget.prototype.open = function(student) {
@@ -854,7 +863,7 @@
         GroupMovingWidget.prototype.save = function(date, new_group) {
             var data = {
                 stid: this.student.info.id,
-                new_group: new_group,
+                new_group: parseInt(new_group),
                 old_group: $scope.data.group.id,
                 date: date
             }

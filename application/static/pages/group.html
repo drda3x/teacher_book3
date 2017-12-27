@@ -254,8 +254,16 @@
                     <form action="">
                         <div class="form-group">
                             <label for="">Группа</label>
-                            <select id="" name="" class="form-control" ng-mode="group">
+                            <select id="" name="" class="form-control" ng-model="group">
                                 <option value="-1">--выберите группу--</option>
+                                <option value="{{g.id}}" 
+                                        ng-repeat="g in groupMoving.all_groups">
+                                
+                                <span style="font-weight: bold">
+                                    {{g.dance_hall.station}} {{g.name}} {{g.days}} {{g.time}}
+                                </span>
+
+                                </option>
                             </select>
                         </div>
                         <div class="form-group">

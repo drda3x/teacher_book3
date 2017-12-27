@@ -597,6 +597,14 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         this.elem = $("#groupMoving").modal({
             show: false
         });
+        
+        $scope.$watch('$root.groups', $.proxy(function() {
+            res = [];
+            for(var i in $rootScope.groups) {
+                res = res.concat($rootScope.groups[parseInt(i)].groups)
+            }
+            this.all_groups = res;
+        }, this))
     }
 
     GroupMovingWidget.prototype.open = function(student) {
@@ -607,7 +615,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     GroupMovingWidget.prototype.save = function(date, new_group) {
         var data = {
             stid: this.student.info.id,
-            new_group: new_group,
+            new_group: parseInt(new_group),
             old_group: $scope.data.group.id,
             date: date
         }

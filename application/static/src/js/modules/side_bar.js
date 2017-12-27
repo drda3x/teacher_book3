@@ -9,6 +9,7 @@ app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
             url: "/groups"
         }).then(function(response) {
             $scope.elements = response.data;
+            $rootScope.groups = $scope.elements;
         }, function(response) {
             if(response.status == 403) {
                 $location.path('/login')
