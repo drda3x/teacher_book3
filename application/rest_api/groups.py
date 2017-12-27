@@ -532,13 +532,16 @@ def change_group(request):
         add_student_to_group(new_group, student)
 
         to_delete.sort(key=lambda l: l.date)
-        shifted_date = date
+
+        # Привести даты в соответствие...
+        shifted_date = max(date, new_group.start_date)
 
         # Неявно =(( Жаль групбай не гарантирует последовательность(
         # с другой стороны - вообще не понятно как сделать это
         # элегантно =))
         for group_pass, lessons in groupby(to_delete, lambda g: g.group_pass):
             _cnt = len(list(lessons))
+            default_skips = group_pass.skips or group_pass.pass_type.skips or 0
 
             new_pass = dict(
                 stid=student.pk,
@@ -547,13 +550,13 @@ def change_group(request):
                     is_new=True,
                     pass_type=group_pass.pass_type.pk,
                     lessons_cnt=_cnt,
-                    skips_cnt=group_pass.skips - skips[group_pass.id]
+                    skips_cnt=default_skips - skips[group_pass.id]
                 )
             )
             create_new_passes(new_group, shifted_date, new_pass)
 
             calendar = zip(
-                get_calendar(shifted_date, group.days), range(_cnt)
+                get_calendar(shifted_date, new_group.days), range(_cnt)
             )
             shifted_date, _ = list(calendar)[-1]
 

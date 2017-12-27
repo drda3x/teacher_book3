@@ -93,6 +93,7 @@ def get_students_lessons(group, date_from, date_to, students):
             lambda x: x.month == date_from.month,
             get_calendar(date_from, group.days)
         ))
+        date_to = _dates[-1]
 
     lessons = Lessons.objects.filter(
         group=group,
