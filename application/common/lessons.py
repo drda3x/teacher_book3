@@ -156,6 +156,8 @@ def create_new_passes(group, date, data):
                     status: application.models.Lessons.STATUSES,
                     is_new: bool
                     pass_type: int
+                    lessons_cnt: int
+                    skips_cnt: int
                 }
             }]
     """
@@ -171,11 +173,22 @@ def create_new_passes(group, date, data):
 
     try:
         for student in data:
+            lessons_params = {}
+            lessons_cnt = student['lesson'].get('lessons_cnt')
+            skips_cnt = student['lesson'].get('skips_cnt')
+
+            if lessons_cnt is not None:
+                lessons_params['lessons'] = lessons_cnt
+
+            if skips_cnt is not None:
+                lessons_params['skips'] = skips_cnt
+
             p = Passes(
                 group=group,
                 start_date=date,
                 student_id=student['stid'],
-                pass_type_id=student['lesson']['pass_type']
+                pass_type_id=student['lesson']['pass_type'],
+                **lessons_params
             )
 
             p.save()

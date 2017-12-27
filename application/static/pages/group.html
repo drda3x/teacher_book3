@@ -28,7 +28,7 @@
                 <span ng-show="$index!=studentEditWidget.index">
                     <div>
                         {{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}
-                        <span style="padding: 0 10px" ng-show="menuIndex==$index">
+                        <span style="padding: 0 10px;" ng-show="menuIndex==$index">
                             <a href="" ng-click="studentEditWidget.delete($index)">Удалить</a>
                             <a href="" ng-click="studentEditWidget.trash($index)">В помойку</a>
                         </span>

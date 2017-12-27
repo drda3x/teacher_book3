@@ -39,13 +39,14 @@ from application.common.group import (
     cancel_lesson as cancel_lesson_func,
     restore_lesson as restore_lesson_func,
     delete_student as delete_student_func,
-    calc_group_profit
+    calc_group_profit,
+    add_student_to_group
 )
 
 from application.common.comments import get_comments
 
 from itertools import takewhile, chain, groupby
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 
 
 @auth
@@ -498,6 +499,62 @@ def delete_student(request):
     try:
         data = json.loads(request.body)
         delete_student_func(data['group'], data['stid'])
+
+        return HttpResponse()
+
+    except Exception:
+        return HttpResponseServerError(format_exc())
+
+
+@auth
+def change_group(request):
+    try:
+        data = json.loads(request.body)
+        student = Students.objects.get(pk=data['stid'])
+        old_group = data['old_group']
+        new_group = Groups.objects.get(pk=data['new_group'])
+        date = datetime.strptime(data['date'], "%d.%m.%Y")
+
+        to_delete = list(Lessons.objects.filter(
+            group_id=old_group,
+            student=student,
+            date__gte=date
+        ).select_related("group_pass__pass_type"))
+
+        skips = Counter(Lessons.objects.filter(
+            group_id=old_group,
+            student=student,
+            status=Lessons.STATUSES['moved']
+        ).values_list('group_pass', flat=True))
+
+        delete_lessons_func(date, len(cnt), student, old_group)
+        add_student_to_group(new_group, student)
+
+        to_delete.sort(key=lambda l: l.date)
+        shifted_date = date
+
+        # Неявно =(( Жаль групбай не гарантирует последовательность(
+        # с другой стороны - вообще не понятно как сделать это
+        # элегантно =))
+        for group_pass, lessons in groupby(to_delete, lambda g: g.group_pass):
+            _cnt = list(lessons).count()
+
+            new_pass = dict(
+                stid=student.pk,
+                lesson=dict(
+                    status=Lessons.STATUSES['not_processed'],
+                    is_new=True,
+                    pass_type=group_pass.pass_type.pk,
+                    lessons_cnt=_cnt,
+                    skips_cnt=group_pass.skips - skips[group_pass.id]
+                )
+            )
+            create_new_passes(new_group, shifted_date, new_pass)
+
+            calendar = zip(
+                get_calendar(shifted_date, group.days), range(_cnt)
+            )
+            shifted_date, _ = list(calendar)[-1]
 
         return HttpResponse()
 
