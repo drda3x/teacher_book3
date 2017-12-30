@@ -9,32 +9,45 @@ from application.models import (
     Groups,
     Lessons,
     PassTypes,
-    CanceledLessons
+    Passes,
+    CanceledLessons,
+    TeachersSubstitution,
+    User,
+    Comments,
+    Students
 )
 from auth import auth
 from traceback import format_exc
 import json
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 from application.common.date import get_calendar, MONTH_RUS
 from application.common.lessons import (
     create_new_passes,
     process_attended_lessons,
     process_not_attended_lessons,
+    process_club_cards_lessons,
     get_students_lessons,
     restore_database,
     delete_lessons as delete_lessons_func,
-    move_lessons as move_lessons_func
+    move_lessons as move_lessons_func,
+    set_substitution
 )
 
 from application.common.group import (
     get_students,
     cancel_lesson as cancel_lesson_func,
     restore_lesson as restore_lesson_func,
-    delete_student as delete_student_func
+    delete_student as delete_student_func,
+    calc_group_profit,
+    add_student_to_group
 )
 
-from itertools import takewhile, chain
+from application.common.comments import get_comments
+
+from itertools import takewhile, chain, groupby
+from collections import OrderedDict, Counter
 
 
 @auth
@@ -49,15 +62,58 @@ def get_list(request):
         django.http.response.HttpResponse
     """
 
-    groups = Groups.objects.all()
+    if request.user.is_superuser:
+        groups = Groups.objects.all()
+
+    else:
+        groups = Groups.objects.filter(teachers=request.user)
+
     data = []
+    groups = sorted(groups, key=lambda x: x.level.id)
     now = datetime.now().date()
 
-    for group in groups:
-        js = group.__json__()
-        js['show_date'] = group.start_date >= now
+    def get_info(g):
+        calendar = get_calendar(now, g.days, "backward")
+        days = 3
 
-        data.append(js)
+        try:
+            if request.user.is_superuser:
+                profit = calc_group_profit(g, [calendar.next() for i in range(days)])
+                _, profit = zip(*profit)
+
+                teachers = len(g.teachers.exclude(assistant=True))
+                assistants = len(g.teachers.all()) - teachers
+                assistant_sal = 500 * assistants * days
+                good_profit = 1000 * teachers * days - assistant_sal
+                normal_profit = 650 * teachers * days - assistant_sal
+
+                profit = sum(profit)
+                profit = 1 if profit >= good_profit else \
+                        -1 if profit < normal_profit else 0
+            else:
+                profit = 0
+
+        except Exception:
+            profit = 0
+
+        return dict(
+            profit=profit,
+            show_st=g.start_date >= now,
+            **g.__json__(
+                "id",
+                "name",
+                "dance_hall__station",
+                "days",
+                "time",
+                "start_date"
+            )
+        )
+
+    for level, groups in groupby(groups, lambda x: x.level):
+        data.append(dict(
+            label=level.name,
+            groups=map(get_info, groups)
+        ))
 
     return HttpResponse(json.dumps(data))
 
@@ -122,31 +178,105 @@ def get_base_info(request):
        for i in month
     ]
 
+    profit = calc_group_profit(group, dates)
+    teachers = len(group.teachers.exclude(assistant=True))
+    assistants = len(group.teachers.all()) - teachers
+    assist_sal = 500 * assistants
+    normal_profit = 650 * teachers
+    good_profit = 1000 * teachers
+
+    _profit = {}
+    for dt, val in profit:
+        if val is not None:
+            val -= assist_sal
+            _profit[dt] = 1 if val >= good_profit else 0 \
+                if val >= normal_profit else -1
+
+        else:
+            _profit[dt] = 0
+    profit = _profit
+
+    subst = TeachersSubstitution.objects.filter(
+        group=group,
+        date__in=dates
+    ).values_list("date", "teachers").order_by("date")
+
+    _t = group.teachers.all().values_list("pk", flat=True)
+    teachers_work = OrderedDict(( (d, map(int, _t)) for d in dates ))
+
+    for _date, _teachers in groupby(subst, lambda x: x[0]):
+        teachers_work[_date] = map(int, list(chain(*_teachers))[1::2])
+
+    club_cards = Passes.objects.filter(
+        student__in=students,
+        pass_type__one_group_pass=False,
+        start_date__lte=dates[-1],
+        end_date__gte=dates[0]
+    )
+
+    comments = get_comments(group, students)
+
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
-        "group": group.__json__(),
+        "group": group.__json__(
+            "id", "name", "start_date", "days", "time",
+            "dance_hall__prise", "dance_hall__station"
+        ),
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
-                canceled=d in canceled_dates
+                canceled=d in canceled_dates,
+                profit=profit[d]
             )
             for d in dates
         ],
         "pass_types": [
-            p.__json__()
+            p.__json__("id", "name")
             for p in pass_types
         ],
         "students": [
             {
-                'info': student.__json__(),
+                'info': student.__json__(
+                    "id", "last_name", "first_name", "phone", "org"
+                ),
                 'lessons': [
-                    l.__json__()
+                    l.__json__(
+                        "group_pass__color",
+                        "group_pass__pass_type__id",
+                        "group_pass__pass_type__lessons",
+                        "group_pass__pass_type__prise",
+                        "status"
+                    )
                     for l in lessons[student]
                 ]
             }
 
             for student in students
+        ],
+        "teachers": {
+            "cnt": teachers + assistants,
+            "assistants": assistants,
+            "work": teachers_work.values(),
+            "list": [
+                t.__json__("id", "first_name", "last_name", "assistant")
+                for t in User.objects.filter(Q(teacher=True) | Q(assistant=True))
+            ]
+        },
+        "comments": [
+            {
+                "student_id": c.student.id,
+                "text": c.text
+            }
+            for c in comments
+        ],
+        "club_cards": [
+            {
+                "student": cc.student.id,
+                "start_date": cc.start_date.strftime("%d.%m.%Y"),
+                "end_date": cc.end_date.strftime("%d.%m.%Y")
+            }
+            for cc in club_cards
         ]
     }
 
@@ -200,6 +330,7 @@ def process_lesson(request):
 
     if len(attended) > 0:
         process_attended_lessons(group, date, attended)
+        process_club_cards_lessons(group, date, attended)
 
     if len(not_attended) > 0:
         process_not_attended_lessons(group, date, not_attended)
@@ -222,6 +353,9 @@ def process_lesson(request):
     for st, ls in new_lessons.iteritems():
         new_lessons_json[str(st)] = [l.__json__() for l in ls]
 
+    teachers = map(int, data['teachers'])
+    set_substitution(date, group, teachers)
+
     return HttpResponse(json.dumps(new_lessons_json))
 
 
@@ -240,15 +374,7 @@ def delete_lessons(request):
         date = datetime.strptime(data['date'], "%d.%m.%Y")
         delete_lessons_func(date, data['count'], data['stid'], data['group'])
 
-        lessons = get_students_lessons(
-            data['group'],
-            date.replace(day=1),
-            None,
-            [data['stid']]
-        )
-
-        lessons_json = [l.__json__() for l in lessons[data['stid']]]
-        return HttpResponse(json.dumps(lessons_json))
+        return HttpResponse()
 
     except Exception:
         return HttpResponseServerError(format_exc())
@@ -270,16 +396,7 @@ def move_lessons(request):
         date_to = datetime.strptime(data['date_to'], "%d.%m.%Y")
 
         move_lessons_func(date_from, date_to, data['stid'], data['group'])
-
-        lessons = get_students_lessons(
-            data['group'],
-            date_from.replace(day=1),
-            None,
-            [data['stid']]
-        )
-
-        lessons_json = [l.__json__() for l in lessons[data['stid']]]
-        return HttpResponse(json.dumps(lessons_json))
+        return HttpResponse()
 
     except Exception:
         return HttpResponseServerError(format_exc())
@@ -384,6 +501,65 @@ def delete_student(request):
     try:
         data = json.loads(request.body)
         delete_student_func(data['group'], data['stid'])
+
+        return HttpResponse()
+
+    except Exception:
+        return HttpResponseServerError(format_exc())
+
+
+@auth
+def change_group(request):
+    try:
+        data = json.loads(request.body)
+        student = Students.objects.get(pk=data['stid'])
+        old_group = data['old_group']
+        new_group = Groups.objects.get(pk=data['new_group'])
+        date = datetime.strptime(data['date'], "%d.%m.%Y")
+
+        to_delete = list(Lessons.objects.filter(
+            group_id=old_group,
+            student=student,
+            date__gte=date
+        ).select_related("group_pass__pass_type"))
+
+        skips = Counter(Lessons.objects.filter(
+            group_id=old_group,
+            student=student,
+            status=Lessons.STATUSES['moved']
+        ).values_list('group_pass', flat=True))
+
+        delete_lessons_func(date, len(to_delete), student, old_group)
+        add_student_to_group(new_group, student)
+
+        to_delete.sort(key=lambda l: l.date)
+
+        # Привести даты в соответствие...
+        shifted_date = max(date, new_group.start_date)
+
+        # Неявно =(( Жаль групбай не гарантирует последовательность(
+        # с другой стороны - вообще не понятно как сделать это
+        # элегантно =))
+        for group_pass, lessons in groupby(to_delete, lambda g: g.group_pass):
+            _cnt = len(list(lessons))
+            default_skips = group_pass.skips or group_pass.pass_type.skips or 0
+
+            new_pass = dict(
+                stid=student.pk,
+                lesson=dict(
+                    status=Lessons.STATUSES['not_processed'],
+                    is_new=True,
+                    pass_type=group_pass.pass_type.pk,
+                    lessons_cnt=_cnt,
+                    skips_cnt=default_skips - skips[group_pass.id]
+                )
+            )
+            create_new_passes(new_group, shifted_date, new_pass)
+
+            calendar = zip(
+                get_calendar(shifted_date, new_group.days), range(_cnt)
+            )
+            shifted_date, _ = list(calendar)[-1]
 
         return HttpResponse()
 

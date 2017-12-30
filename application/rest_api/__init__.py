@@ -10,7 +10,9 @@ from groups import (
     move_lessons,
     cancel_lesson,
     restore_lesson,
-    delete_student
+    delete_student,
+    change_group
 )
 from students import edit_student
 from auth import login, logout
+from comments import edit_comment

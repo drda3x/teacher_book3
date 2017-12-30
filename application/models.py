@@ -17,8 +17,45 @@ except ImportError:
 
 from application.utils.date_api import get_count_of_weekdays_per_interval, get_week_days_names, MONTH_PARENT_FORM, WEEK, get_last_day_of_month
 from application.utils.phones import get_string_val
+from itertools import groupby
 
 calendar = calendar_origin.Calendar()
+
+
+def get_filtered_dict(model, *keys):
+
+    keys = list(keys)
+    keys.sort()
+    result = {}
+
+    for key, sub_keys in groupby(keys, lambda k: k.split("__")[0]):
+        try:
+            field_object, _model, direct, m2m = model._meta.get_field_by_name(key)
+        except Exception:
+            field_object, m2m = None, None
+        val = getattr(model, key)
+
+        sub_keys = (k[len(key)+2:] for k in sub_keys)
+        sub_keys = [sk for sk in sub_keys if sk != '']
+
+        if m2m:
+            result[key] = [
+                get_filtered_dict(temp_model, *sub_keys)
+                for temp_model in val.all()
+            ]
+        elif isinstance(field_object, models.ForeignKey):
+            result[key] = get_filtered_dict(val, *sub_keys)
+        elif isinstance(field_object, models.DateTimeField):
+            result[key] = val.strftime("%d.%m.%Y")
+        elif isinstance(val, datetime.time):
+            result[key] = val.strftime("%H:%M")
+        elif isinstance(val, (datetime.date, datetime.datetime)):
+            result[key] = val.strftime("%d.%m.%Y")
+        else:
+            result[key] = val
+
+    return result
+
 
 class User(UserOrigin):
 
@@ -43,15 +80,17 @@ class User(UserOrigin):
             last_name=self.last_name
         )
 
-    def __json__(self):
-        return dict(
-            id=self.pk,
-            first_name=self.first_name,
-            last_name=self.last_name,
-            about=self.about,
-            photo=self.photo.url if self.photo else None,
-            video=self.video
-        )
+    def __json__(self, *keys):
+        return get_filtered_dict(self, *keys)
+        #return dict(
+        #    id=self.pk,
+        #    first_name=self.first_name,
+        #    last_name=self.last_name,
+        #    about=self.about,
+        #    photo=self.photo.url if self.photo else None,
+        #    video=self.video,
+        #    assistant=self.assistant
+        #)
 
     def __repr__(self):
         return self.__unicode__()
@@ -252,7 +291,7 @@ class Groups(models.Model):
 
     @property
     def days(self):
-        return get_week_days_names(self._days.split(','))
+        return ' '.join(get_week_days_names(self._days.split(',')))
 
     @property
     def days_nums(self):
@@ -392,22 +431,8 @@ class Groups(models.Model):
     def time_repr(self):
         return str(self.time or '')[0:-3]
 
-    def __json__(self):
-        return dict(
-            id=self.pk,
-            name=self.name,
-            start_date=self.start_date.strftime('%d.%m.%Y') if self.start_date else u'',
-            end_date=self.end_date.strftime('%d.%m.%Y') if self.end_date else u'',
-            time=self.time_repr,
-            teacher_leader=self.teacher_leader.__json__() if self.teacher_leader else {},
-            teacher_follower=self.teacher_follower.__json__() if self.teacher_follower else {},
-            teachers=[t.__json__() for t in self.teachers.all()],
-            is_opened=self.is_opened,
-            is_settable=self.is_settable,
-            days= '-'.join(self.days),
-            available_passes=map(lambda x: x.__json__(), self.available_passes.all()),
-            dance_hall=self.dance_hall.__json__()
-        )
+    def __json__(self, *fields):
+        return get_filtered_dict(self, *fields)
 
     def __unicode__(self):
         today = datetime.datetime.now().date()
@@ -485,7 +510,7 @@ class BonusClasses(models.Model):
     def get_finance(self):
         return len(list(BonusClassList.objects.filter(group=self, attendance=True))) * self.prise
 
-    def __json__(self):
+    def __json__(self, *values):
         return dict()
 
     class Meta:
@@ -519,16 +544,8 @@ class Students(models.Model):
     org = models.BooleanField(verbose_name=u'Орг', default=False)
     is_deleted = models.BooleanField(verbose_name=u'Удален', default=False)
 
-    def __json__(self):
-        return dict(
-            id=self.pk,
-            first_name=self.first_name,
-            last_name=self.last_name,
-            phone=self.str_phone,
-            raw_phone=self.phone,
-            # e_mail=self.e_mail,
-            org=self.org
-        )
+    def __json__(self, *values):
+        return get_filtered_dict(self, *values)
 
     def __unicode__(self):
         return u'%s %s.%s' % (self.first_name, self.last_name, self.father_name[0].upper() if self.father_name else '')
@@ -571,19 +588,19 @@ class Comments(models.Model):
     Хранилице коментов
     """
 
-    add_date = models.DateTimeField(verbose_name=u'Дата добавления')
+    add_date = models.DateTimeField(verbose_name=u'Дата добавления', null=True, blank=True)
     student = models.ForeignKey(Students)
     group = models.ForeignKey(Groups, null=True, blank=True)
     bonus_class = models.ForeignKey(BonusClasses, null=True, blank=True)
     text = models.TextField(max_length=100, verbose_name=u'Текст коментария')
 
-    def __json__(self, values=None):
+    def __json__(self, *values):
         result = dict(
             pk=self.pk,
             add_date=self.add_date.strftime('%d.%m.%Y %H:%M:%S'),
-            student=self.student.__json__(),
+            student=self.student.__json__(*values),
             group=self.group.__json__() if self.group else None,
-            bonus_class=self.bonus_class.__json__() if self.bonus_class else None,
+            bonus_class=self.bonus_class.__json__(*values) if self.bonus_class else None,
             text=self.text
         )
 
@@ -635,16 +652,8 @@ class PassTypes(models.Model):
             self.is_actual = True
             self.save()
 
-    def __json__(self):
-        return dict(
-            id=int(self.pk),
-            name=self.name,
-            prise=float(self.prise),
-            lessons=int(self.lessons),
-            skips=int(self.skips) if self.skips else None,
-            color=self.color,
-            oneGroupPass=self.one_group_pass
-        )
+    def __json__(self, *keys):
+        return get_filtered_dict(self, *keys)
 
     def save(self, *args, **kwargs):
 
@@ -846,14 +855,8 @@ class Lessons(models.Model):
     group_pass = models.ForeignKey(Passes, verbose_name=u'Абонемент', related_name=u'lesson_group_pass')
     status = models.IntegerField(verbose_name=u'Статус занятия', choices=[(val, key) for key, val in STATUSES.iteritems()], default=DEFAULT_STATUS)
 
-    def __json__(self):
-        return dict(
-            date=self.date.strftime("%d.%m.%Y"),
-            group=self.group.__json__(),
-            student=self.student.__json__(),
-            group_pass=self.group_pass.__json__(),
-            status=self.status
-        )
+    def __json__(self, *keys):
+        return get_filtered_dict(self, *keys)
 
     @property
     def sign(self):

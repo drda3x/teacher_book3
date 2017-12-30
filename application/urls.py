@@ -32,5 +32,7 @@ urlpatterns = [
     url(r'^cancel_lesson', rest_api.cancel_lesson),
     url(r'^restore_lesson', rest_api.restore_lesson),
     url(r'^delete_student', rest_api.delete_student),
+    url(r'^edit_comment', rest_api.edit_comment),
+    url(r'^change_group', rest_api.change_group),
     url(r'^$', views.index, name="index"),
 ]

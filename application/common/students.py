@@ -52,7 +52,7 @@ def edit_student(stid, phone, first_name, last_name, org_status):
             first_name=first_name,
             last_name=last_name,
             phone=phone,
-            org=org_status
+            org=org_status or False
         )
 
         student.save()

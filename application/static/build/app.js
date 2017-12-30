@@ -77,10 +77,78 @@
                 })
             }
         }
-    })
+    });
+    
+    
+    app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
+        return {
+            restrict: 'E',
+            scope: {
+                group: "=",
+                student: "=",
+                disabled: "=disabled",
+                value: "@"
+            },
+            template: '<textarea rows="2" cols="50" ' + 
+                      'style="border: none; resize: none; background-color: inherit;" '+
+                      'placeholder="{{placeholder}}"'+
+                      'ng-disabled="disabled"'+
+                      'ng-model="value"' + 
+                      ' ></textarea>',
+            replace: true,
+            link: function(scope, elem, attrs) {
+            },
+    
+            controller: function($scope, $element) {
+                
+                function sendRequest() {
+                    $http({
+                        method: "POST",
+                        url: '/edit_comment',
+                        data: {
+                            group: $scope.group,
+                            student: $scope.student,
+                            text: $scope.value
+                        },
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                }
+    
+                $scope.$watch('disabled', function(val) {
+                    if(!val) {
+                        $('body').one('click', function(event) {
+                            event.stopPropagation();
+                            event.preventDefault();
+    
+                            $scope.$apply(function() {
+                                $scope.disabled = true;
+                            });
+    
+                            sendRequest();
+                        });
+    
+                        $element.bind('click', function(event) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                        });
+    
+                        $timeout(function() {
+                            $scope.placeholder = "Введите коментарий"
+                            $element[0].focus();
+                        });
+                    } else {
+                        $scope.placeholder = ""
+                    }
+                });
+            }
+        }
+    }]);
     app.controller('navBarCtrl', function($scope, $rootScope) {
         $scope.header = null;
         $scope.header2 = null;
+        $scope.user = null;
     
         $scope.$watch('$root.header', function() {
             $scope.header = $rootScope.header;
@@ -88,10 +156,14 @@
     
         $scope.$watch('$root.header2', function() {
             $scope.header2 = $rootScope.header2;
-        })
+        });
+    
+        $scope.$watch('$root.user', function() {
+            $scope.user = $rootScope.user;
+        });
     });
     app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
-        $scope.groups = [];
+        $scope.elements = [];
         $scope.active = null;
         $scope.showSideBar = true;
     
@@ -100,7 +172,8 @@
                 method: "GET",
                 url: "/groups"
             }).then(function(response) {
-                $scope.groups = response.data;
+                $scope.elements = response.data;
+                $rootScope.groups = $scope.elements;
             }, function(response) {
                 if(response.status == 403) {
                     $location.path('/login')
@@ -148,6 +221,7 @@
             }).then(function(response) {
                 $location.path('/');
                 $rootScope.showSideBar = true;
+                $rootScope.user = response.data;
             }, function(response) {
                 console.log("ERROR")
             }); 
@@ -164,6 +238,7 @@
                 $rootScope.showSideBar = false;
                 $rootScope.header = null;
                 $rootScope.header2 = null;
+                $rootScope.user = null;
                 $location.path('/login');
             }, function(response) {
             });
@@ -215,14 +290,112 @@
                 $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
     
                 fillSubLists();
+                getAllTeachers();
             }, function(response) {
             });
+        }
+    
+        function getAllTeachers() {
+            var teachers = {};
+    
+            for(var i=0, j=$scope.data.teachers.work.length; i<j; i++) {
+                var list = $scope.data.teachers.work[i];
+    
+                for(var k=0, m=list.length; k<m; k++) {
+                    teachers[list[k]] = true;
+                }
+            }
+            
+            $scope.data.teachers.cp_teachers = Object.keys(teachers);
         }
     
         function LessonWidget() {
             this.elem = $("#lessonWidget").modal({
                 show: false
+            });
+        }
+    
+        $scope.checkTeacher = function(teacher) {
+            return any($scope.data.teachers.cp_teachers, function(elem) {
+                return elem == teacher.id;
             })
+        }
+    
+        $scope.getComment = function(student_id) {
+            var comments = $scope.data.comments;
+    
+            for(var i=0, j=comments.length; i<j; i++) {
+                if(comments[i].student_id == student_id) {
+                    return comments[i].text;
+                }
+            };
+    
+            return null;
+        }
+    
+        $scope.checkMoveingAbility = function(student, index) {
+            return true;
+            return index >= 0 && index < $scope.data.dates.length && student.lessons[index].status == -2;
+        }
+    
+        $scope.moveLesson = function(event, cur_index, next_index, student) {
+            event.stopPropagation();
+    
+            var date_from = $scope.data.dates[cur_index],
+                date_to = $scope.data.dates[next_index];
+    
+            var data = {}
+    
+            data.date_from = date_from.val;
+            data.date_to = date_to === undefined ? null : date_to.val;
+            data.stid = student.info.id;
+            data.group = $scope.data.group.id;
+    
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                data: data,
+                url: "move_lessons"
+            }).then(function(responce) {
+                var tmp;
+    
+                if(cur_index < next_index) {
+                    for(var i=student.lessons.length-1; i>cur_index; i--) {
+                        tmp = student.lessons[i-1];
+                        student.lessons[i-1] = student.lessons[i];
+                        student.lessons[i] = tmp;
+                    }
+                } else {
+                    for(var i=next_index, j=student.lessons.length-1; i<j; i++) {
+                        tmp = student.lessons[i+1];
+                        student.lessons[i+1] = student.lessons[i];
+                        student.lessons[i] = tmp;
+                    }
+                }
+    
+            }, function() {})
+        }
+    
+        $scope.deleteLesson = function(cur_index, student) {
+            var data = {
+                date: $scope.data.dates[cur_index].val,
+                count: 1,
+                group: $scope.data.group.id,
+                stid: student.info.id
+            }
+    
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                data: data,
+                url: "delete_lessons"
+            }).then(function(responce) {
+    //            load();
+            }, function() {})
         }
     
         LessonWidget.prototype.show = function(index) {
@@ -245,6 +418,15 @@
             this.index = index;
             this.date = $scope.data.dates[index].val;
             this.is_canceled = $scope.data.dates[index].canceled;
+            this.windowHeight = window.innerHeight;
+    
+            this.teachers = $.grep($scope.data.teachers.work, function(val, i) {
+                return i == index;
+            })[0];
+    
+            this.teachers = $.map(this.teachers, function(val) {
+                return ""+val;
+            });
         }
     
         LessonWidget.prototype.hide = function(lesson) {
@@ -262,7 +444,8 @@
                 group: $scope.data.group.id,
                 date: this.date,
                 set_attendance: attendance,
-                students: []
+                students: [],
+                teachers: this.teachers
             };
     
             $.map(this.data, function(elem) {
@@ -353,6 +536,22 @@
             }, function() {
             });
         }
+    
+        LessonWidget.prototype.checkClubCard = function(student_id) {
+            var rec, d1, d2, d3;
+            for(i in $scope.data.club_cards) {
+                rec = $scope.data.club_cards[i];
+                d1 = moment(rec.start_date, 'dd.mm.YYYY');
+                d2 = moment(rec.end_date, 'dd.mm.YYYY');
+                d3 = moment(this.date, 'dd.mm.YYYY');
+    
+                if(rec.student == student_id && d1 <= d3 && d2 >= d3) {
+                    return true;
+                }
+            }
+    
+            return false;
+        }
         
         $scope.lessonWidget = new LessonWidget();
     
@@ -379,7 +578,7 @@
                 total *= 0.3;
             }
     
-            return total
+            return Math.round(total, 2)
         }
     
         $scope.calcTotal = function(index) {
@@ -391,6 +590,75 @@
     
             return total;
         }
+    
+        $scope.calcTeacherSalary = function(teacher, index) {
+            var cpt = $scope.data.teachers.work[index];
+            var assist_sal = 500;
+    
+            function has_work_today(tid) {
+                return any(cpt, function(val) {
+                    return val == tid;
+                });
+            }
+    
+            if (has_work_today(teacher.id)) {
+                if(teacher.assistant) {
+                    return isNaN($scope.calcTotal(index)) ? '-' : assist_sal;
+                } else {
+                    var assists = $.grep($scope.data.teachers.list, function(t) {
+                        return has_work_today(t.id) && t.assistant;
+                    });
+                    var sal = ($scope.calcTotal(index) - assist_sal * assists.length) / (cpt.length - assists.length);
+                    return isNaN(sal) ? '-' : sal < 0 ? 0 : sal;
+                }
+            } else {
+                return '-';
+            }
+        };
+    
+        $scope.totals = {
+            calcTotal: function() {
+                try {
+                    return $scope.data.dates.reduce(function(sum, cv, index) {
+                        var total = $scope.calcTotal(index);
+                        return sum + (total || 0)
+                    }, 0);
+                } catch(e) {
+                    return 0;
+                }
+            },
+    
+            calcDanceHall: function() {
+                //TODO Не надо считать дни, в которые были отмены занятий
+                try {
+                    return $scope.data.group.dance_hall.prise * $scope.data.dates.length;
+                } catch(e) {
+                    return 0;
+                }
+            },
+    
+            calcClubTax: function() {
+                var sum = (this.calcTotal() - this.calcDanceHall()) * 0.3;
+                return sum > 0 ? sum : 0;
+            },
+    
+            calcProfit: function() {
+                var sum = this.calcTotal() - this.calcDanceHall() - this.calcClubTax();
+                return sum;
+            },
+    
+            calcTeacherSalary: function(teacher) {
+                try {
+                    return $scope.data.dates.reduce(function(sum, cv, index) {
+                        var total = parseFloat($scope.calcTeacherSalary(teacher, index));
+                        return sum + (total || 0)
+                    }, 0);
+                } catch(e) {
+                    return 0;
+                }
+            }
+        };
+    
     
         function StudentEditWidget() {
             this.window = $('#studentEdit').modal({
@@ -571,6 +839,51 @@
         }
         
         $scope.studentEditWidget = new StudentEditWidget();
+    
+    
+        GroupMovingWidget = function() {
+            this.elem = $("#groupMoving").modal({
+                show: false
+            });
+            
+            $scope.$watch('$root.groups', $.proxy(function() {
+                res = [];
+                for(var i in $rootScope.groups) {
+                    res = res.concat($rootScope.groups[parseInt(i)].groups)
+                }
+                this.all_groups = res;
+            }, this))
+        }
+    
+        GroupMovingWidget.prototype.open = function(student) {
+            this.student = student;  
+            this.elem.modal("show");
+        }
+    
+        GroupMovingWidget.prototype.save = function(date, new_group) {
+            var data = {
+                stid: this.student.info.id,
+                new_group: parseInt(new_group),
+                old_group: $scope.data.group.id,
+                date: date
+            }
+    
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                data: data,
+                url: "/change_group"
+            }).then(
+                function() {
+                    load();
+                }, function() {
+                }
+            );
+        }
+    
+        $scope.groupMoving = new GroupMovingWidget();
     
         $scope.hideSidebar = function() {
             $rootScope.showSideBar = false;

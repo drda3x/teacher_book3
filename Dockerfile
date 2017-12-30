@@ -18,8 +18,9 @@ RUN pip install pytz
 
 RUN curl -sL https://deb.nodesource.com/setup_8.x 
 RUN apt-get install -y nodejs-legacy npm
+
 RUN npm install -g bower
-RUN npm install -g gulp && npm install gulp gulp-concat gulp-bower-files
+RUN npm install -g gulp
 
 RUN apt-get install -y git
 

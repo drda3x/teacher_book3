@@ -11,7 +11,7 @@ from application.models import (
 )
 from application.common.date import get_calendar
 from django.db.models import Max
-from datetime import timedelta
+from datetime import timedelta, datetime, date as date_cls
 from itertools import groupby
 
 
@@ -166,3 +166,38 @@ def restore_lesson(group, date):
     CanceledLessons.objects.get(group=group, date=date).delete()
     Lessons.objects.filter(pk__in=to_delete).delete()
     today_lessons.update(status=Lessons.STATUSES['not_processed'])
+
+
+def calc_group_profit(group, dates):
+    u"""
+    Функция для расчета эффективности группы за выбраный временной
+    промежуток
+
+    args:
+        group application.models.Groups or int
+        date_range [datetime.datetime]
+
+    return zip(datetime.datetime, bool or None)
+    """
+
+    assert isinstance(group, (Groups, int))
+    assert all(isinstance(d, (datetime, date_cls)) for d in dates)
+
+    if isinstance(group, int):
+        params = dict(group_id=group)
+    else:
+        params = dict(group=group)
+
+    params['date__in'] = dates
+    lessons = sorted(
+        Lessons.objects.filter(**params).exclude(status=Lessons.STATUSES['not_processed']),
+        key=lambda l: l.date
+    )
+
+    vals = dict(zip(dates, [None] * len(dates)))
+    for date, lessons in groupby(lessons, lambda l: l.date):
+        vals[date] = sum(l.prise() for l in lessons) - group.dance_hall.prise
+        vals[date] -= vals[date] * 0.3
+        vals[date] = max(0, vals[date])
+
+    return vals.iteritems()

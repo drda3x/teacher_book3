@@ -13,6 +13,7 @@
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
     "gulp-concat-css": "^2.3.0",
-    "gulp-rigger": "^0.5.8"
+    "gulp-rigger": "^0.5.8",
+    "moment": "^2.20.0"
   }
 }

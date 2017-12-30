@@ -12,7 +12,12 @@
             <th style="border-color: #000; width: 1%">#</th>
             <th style="border-color: #000; width: 20%">ФИО, Телефон</th>
             <th style="border-color: #000; width: 30%">Коментарии</th>
-            <th style="border-color: #000" ng-repeat="date in data.dates" ng-click="lessonWidget.show($index)">{{date.val}}</th>
+            <th style="border-color: #000" 
+                ng-repeat="date in data.dates" 
+                ng-class="{'text-danger': date.profit==-1, 'text-success': date.profit==1}"
+                ng-click="lessonWidget.show($index)">
+                {{date.val}}
+            </th>
         </tr>
         <tr ng-repeat="student in main_list">
             <td style="border-color: #000">{{$index + 1}}</td>
@@ -23,9 +28,10 @@
                 <span ng-show="$index!=studentEditWidget.index">
                     <div>
                         {{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}
-                        <span style="padding: 0 10px" ng-show="menuIndex==$index">
+                        <span style="padding: 0 10px;" ng-show="menuIndex==$index">
                             <a href="" ng-click="studentEditWidget.delete($index)">Удалить</a>
                             <a href="" ng-click="studentEditWidget.trash($index)">В помойку</a>
+                            <a href="" ng-click="groupMoving.open(student)">В другую группу</a>
                         </span>
                     </div>
                 </span>
@@ -47,7 +53,9 @@
                            ng-model="studentEditWidget.data.phone" />
                 </span>
             </td>
-            <td style="border-color: #000" ></td>
+            <td style="border-color: #000;" ng-init="disabled=true" ng-dblclick="disabled=!disabled" >
+                <app-comment group="data.group.id" student="student.info.id" disabled="disabled" value="{{getComment(student.info.id)}}"></app-comment>
+            </td>
             <td ng-repeat="lesson in student.lessons track by $index" 
                 ng-click="lessonWidget.show($index)"
                 style="background-color: {{lesson.group_pass.color}}; border-color: #000">
@@ -59,6 +67,21 @@
                 </span>
                 <span style="color: red" ng-if="lesson.status == 4" >
                     пропуск
+                </span>
+                <span ng-if="lesson.status == 0">
+                    <div style="font-weight: bold; font-size: 20pt;">
+                        <a href="" 
+                           ng-show="checkMoveingAbility(student, index-1)"
+                           ng-click="moveLesson($event, $index, $index-1, student)" 
+                           style="float: left; display: inline-block"><</a>
+                        <a href="" 
+                           ng-click="deleteLesson($index, student)" 
+                           style="display: inline-block; padding: 0 21%">x</a>
+                        <a href="" 
+                           ng-show="checkMoveingAbility(student, index+1)"
+                           ng-click="moveLesson($event, $index, $index+1, student)" 
+                           style="float: right; display: inline-block">></a>
+                    </div>
                 </span>
             </td>
         </tr>
@@ -82,11 +105,37 @@
             <td style="border-color: #000" colspan="3">ИТОГО за занятие</td>
             <td style="border-color: #000" ng-repeat="date in data.dates">{{calcTotal($index)}}</td>
         </tr>
+        <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
+            <td colspan="3" style="border-color: #000">{{teacher.last_name}} {{teacher.first_name}}</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">{{ calcTeacherSalary(teacher, $index) }}</td>
+        </tr>
     </table>
      
     <div class="row">
         <div class="col-sm-5">
             <h5>Финансы</h5>
+            <table class="table">
+                <tr>
+                    <td>Итого за месяц</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcTotal()}}</td>
+                </tr>
+                <tr>
+                    <td>Аренда зала</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcDanceHall()}}</td>
+                </tr>
+                <tr>
+                    <td>% Клуба</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcClubTax()}}</td>
+                </tr>
+                <tr>
+                    <td>Чистая прибыль</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcProfit()}}</td>
+                </tr>
+                <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
+                    <td>{{teacher.last_name}} {{teacher.first_name}} - ЗП</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcTeacherSalary(teacher)}}</td>
+                </tr>
+            </table>
 
         </div>
         <div class="col-sm-7">
@@ -99,7 +148,9 @@
                 </tr>
                 <tr ng-repeat="student in sub_list">
                     <td style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}</td>
-                    <td style="border-color: #000"></td>
+                    <td style="border-color: #000" ng-init="disabled=true" ng-dblclick="disabled=!disabled">
+                        <app-comment group="data.group.id" student="student.info.id" disabled="disabled" value="{{getComment(student.info.id)}}"></app-comment>
+                    </td>
                     <td style="border-color: #000">
                         <a href="">Удалить</a><br>
                         <a href="">В помойку</a>
@@ -120,18 +171,22 @@
                     <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" ng-show="!lessonWidget.is_canceled">
+                <div class="modal-body"
+                     ng-show="!lessonWidget.is_canceled"
+                     style="overflow-y: scroll; height: {{lessonWidget.windowHeight-315}}px;">
                     <table class="table table-bordered">
                         <tr ng-repeat="student in lessonWidget.data">
                             <td style="width: 50%">{{student.info.last_name}} {{student.info.first_name}}</td>
                             <td ng-click="lessonWidget.process_student(student.lesson)" 
                                 style="background-color: {{student.lesson.group_pass.color}}">
-
+                                
                                 <select id="" 
                                         ng-model="student.lesson.temp_pass"
                                         name="" ng-if="student.lesson.temp_status < 0" 
                                         class="form-control">
                                     <option value="">--добавить оплату--</option>
+                                    <option value="-2">долг</option>
+                                    <option value="-1" ng-if="lessonWidget.checkClubCard(student.info.id)">оплата по клубной карте</option>
                                     <option value="{{pass_type.id}}" ng-repeat="pass_type in data.pass_types">
                                         {{pass_type.name}}
                                     </option>
@@ -143,6 +198,21 @@
                         </tr>
                     </table>
                 </div>
+                <form class="modal-body form-inline" action="">
+                    <div class="form-group mx-sm-3" 
+                         ng-init="t_index = $index"
+                         ng-repeat="n in [].constructor(data.teachers.cnt) track by $index">
+                        <select style="margin-bottom: 10px" 
+                                class="form-control" 
+                                id="" 
+                                name="" 
+                                ng-model="lessonWidget.teachers[t_index]">
+                            <option value="{{teacher.id}}" ng-repeat="teacher in data.teachers.list">
+                                {{teacher.last_name}} {{teacher.first_name}}
+                            </option>
+                        </select>
+                    </div>
+                </form>
                 <div class="modal-footer" ng-show="!lessonWidget.is_canceled">
                     <div>
                         <button class="btn" type="button" ng-click="lessonWidget.cancelLesson()">Отменить занятие</button>
@@ -156,6 +226,72 @@
                 <div class="modal-footer" ng-show="lessonWidget.is_canceled">
                     <button class="btn" type="button" ng-click="lessonWidget.restoreLesson()">Восстановить</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="groupMoving" 
+         class="modal" 
+         role="dialog" 
+         ng-init="group" 
+         ng-init="date">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        {{groupMoving.student.info.last_name}}
+                        {{groupMoving.student.info.first_name}}
+                    </h5>
+                    <button type="button" 
+                            class="close" 
+                            data-dismiss="modal" 
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="">
+                        <div class="form-group">
+                            <label for="">Группа</label>
+                            <select id="" name="" class="form-control" ng-model="group">
+                                <option value="-1">--выберите группу--</option>
+                                <option value="{{g.id}}" 
+                                        ng-repeat="g in groupMoving.all_groups">
+                                
+                                <span style="font-weight: bold">
+                                    {{g.dance_hall.station}} {{g.name}} {{g.days}} {{g.time}}
+                                </span>
+
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="">Дата</label>
+                            <datepicker date-format="dd.MM.yyyy" 
+                                        date-week-start-day="1" 
+                                        date-year-title="selected title">
+                                    <input style="margin-bottom: 15px" 
+                                           type="text" 
+                                           placeholder="дата" 
+                                           class="form-control" 
+                                           ng-model="date" />
+                            </datepicker>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            ng-click="groupMoving.save(date, group)">
+                        Сохранить
+                    </button>
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            data-dismiss="modal" 
+                            ng-click="">
+                        Отмена
+                    </button>
                 </div>
             </div>
         </div>
