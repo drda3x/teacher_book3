@@ -226,6 +226,9 @@ def get_base_info(request):
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
+                day=d.strftime('%d'),
+                month=d.strftime('%m'),
+                year=d.strftime('%Y'),
                 canceled=d in canceled_dates,
                 profit=profit[d]
             )
