@@ -398,6 +398,18 @@
             }, function() {})
         }
     
+        $scope.canEditLessons = false;
+        $scope.setEditState = function(event) {
+            event.stopPropagation();
+            $scope.canEditLessons = true;
+    
+            $('body').click(function() {
+                $scope.$apply(function() {
+                   $scope.canEditLessons = false;
+                });
+            });
+        }
+    
         LessonWidget.prototype.show = function(index) {
             this.elem.modal('show');
             var data = [],
@@ -603,16 +615,16 @@
     
             if (has_work_today(teacher.id)) {
                 if(teacher.assistant) {
-                    return isNaN($scope.calcTotal(index)) ? '-' : assist_sal;
+                    return assist_sal;
                 } else {
                     var assists = $.grep($scope.data.teachers.list, function(t) {
                         return has_work_today(t.id) && t.assistant;
                     });
                     var sal = ($scope.calcTotal(index) - assist_sal * assists.length) / (cpt.length - assists.length);
-                    return isNaN(sal) ? '-' : sal < 0 ? 0 : sal;
+                    return sal;
                 }
             } else {
-                return '-';
+                return null;
             }
         };
     

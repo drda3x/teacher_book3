@@ -12,7 +12,7 @@
             <th style="border-color: #000; width: 1%">#</th>
             <th style="border-color: #000; width: 20%">ФИО, Телефон</th>
             <th style="border-color: #000; width: 30%">Коментарии</th>
-            <th style="border-color: #000" 
+            <th style="border-color: #000; text-align: center" 
                 ng-repeat="date in data.dates" 
                 ng-class="{'text-danger': date.profit==-1, 'text-success': date.profit==1}"
                 ng-click="lessonWidget.show($index)">
@@ -29,11 +29,13 @@
                 <span ng-show="$index!=studentEditWidget.index">
                     <div>
                         {{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}
-                        <span style="padding: 0 10px;" ng-show="menuIndex==$index">
-                            <a href="" ng-click="studentEditWidget.delete($index)">Удалить</a>
-                            <a href="" ng-click="studentEditWidget.trash($index)">В помойку</a>
-                            <a href="" ng-click="groupMoving.open(student)">В другую группу</a>
-                        </span>
+                        <ul style="padding: 10px; display: block; position: absolute; background-color: #fff; border: 1px solid #000;" 
+                            ng-show="menuIndex==$index">
+                            <li><a href="" ng-click="studentEditWidget.delete($index)">Удалить</a></li>
+                            <li><a href="" ng-click="studentEditWidget.trash($index)">В помойку</a</li>
+                            <li><a href="" ng-click="groupMoving.open(student)">В другую группу</a</li>
+                            <li><a href="" ng-click="setEditState($event)">Редактирование занятий</a></li>
+                        </ul>
                     </div>
                 </span>
                 <span class="student-edit-widget" ng-show="$index==studentEditWidget.index">
@@ -69,8 +71,8 @@
                 <span style="color: red" ng-if="lesson.status == 4" >
                     пропуск
                 </span>
-                <span ng-if="lesson.status == 0">
-                    <div style="font-weight: bold; font-size: 20pt;">
+                <span ng-if="lesson.status == 0" ng-show="canEditLessons == true">
+                    <div style="font-weight: bold;">
                         <a href="" 
                            ng-show="checkMoveingAbility(student, index-1)"
                            ng-click="moveLesson($event, $index, $index-1, student)" 
@@ -100,15 +102,15 @@
         </tr>
         <tr>
             <td style="border-color: #000" colspan="3">% Клуба</td>
-            <td style="border-color: #000" ng-repeat="date in data.dates">{{calcClub($index)}}</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">{{calcClub($index) | number}}</td>
         </tr>
         <tr>
             <td style="border-color: #000" colspan="3">ИТОГО за занятие</td>
-            <td style="border-color: #000" ng-repeat="date in data.dates">{{calcTotal($index)}}</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">{{calcTotal($index) | number}}</td>
         </tr>
         <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
             <td colspan="3" style="border-color: #000">{{teacher.last_name}} {{teacher.first_name}}</td>
-            <td style="border-color: #000" ng-repeat="date in data.dates">{{ calcTeacherSalary(teacher, $index) }}</td>
+            <td style="border-color: #000" ng-repeat="date in data.dates">{{ calcTeacherSalary(teacher, $index) | number }}</td>
         </tr>
     </table>
      
@@ -118,23 +120,23 @@
             <table class="table">
                 <tr>
                     <td>Итого за месяц</td>
-                    <td style="text-align: right; font-weight: bold;">{{totals.calcTotal()}}</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcTotal() | number}}</td>
                 </tr>
                 <tr>
                     <td>Аренда зала</td>
-                    <td style="text-align: right; font-weight: bold;">{{totals.calcDanceHall()}}</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcDanceHall() | number}}</td>
                 </tr>
                 <tr>
                     <td>% Клуба</td>
-                    <td style="text-align: right; font-weight: bold;">{{totals.calcClubTax()}}</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcClubTax() | number}}</td>
                 </tr>
                 <tr>
                     <td>Чистая прибыль</td>
-                    <td style="text-align: right; font-weight: bold;">{{totals.calcProfit()}}</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcProfit() | number}}</td>
                 </tr>
                 <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
                     <td>{{teacher.last_name}} {{teacher.first_name}} - ЗП</td>
-                    <td style="text-align: right; font-weight: bold;">{{totals.calcTeacherSalary(teacher)}}</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcTeacherSalary(teacher) | number}}</td>
                 </tr>
             </table>
 
