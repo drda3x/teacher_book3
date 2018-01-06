@@ -29,13 +29,23 @@ def edit_comment(request):
     try:
         data = json.loads(request.body)
         date = datetime.datetime.now()
-        comment, _ = Comments.objects.get_or_create(
-            group_id=data['group'],
-            student_id=data['student']
-        )
 
-        comment.text = data['text']
-        comment.add_date = date
+        try:
+            comment = Comments.objects.get(
+                group_id=data['group'],
+                student_id=data['student']
+            )
+
+            comment.text = data['text']
+            comment.add_date = date
+
+        except Comments.DoesNotExist:
+            comment = Comments(
+                group_id=data['group'],
+                student_id=data['student'],
+                add_date=date,
+                text=data['text']
+            )
 
         if not comment.text:
             comment.delete()
