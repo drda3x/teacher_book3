@@ -64,12 +64,18 @@
                 style="background-color: {{lesson.group_pass.color}}; border-color: #000">
                 <span ng-if="lesson.status == 1">
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
+                    <a href="" 
+                        ng-click="deleteLesson($event, $index, student)" 
+                        style="display: inline-block; padding: 0 21%">x</a>
                 </span>
                 <span style="color: red" ng-if="lesson.status == 2">
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
                 </span>
                 <span style="color: red" ng-if="lesson.status == 4" >
                     пропуск
+                </span>
+                <span style="color: red" ng-if="lesson.status == -1">
+                    долг
                 </span>
                 <span ng-if="lesson.status == 0" ng-show="canEditLessons == true">
                     <div style="font-weight: bold;">
@@ -78,7 +84,7 @@
                            ng-click="moveLesson($event, $index, $index-1, student)" 
                            style="float: left; display: inline-block"><</a>
                         <a href="" 
-                           ng-click="deleteLesson($index, student)" 
+                           ng-click="deleteLesson($event, $index, student)" 
                            style="display: inline-block; padding: 0 21%">x</a>
                         <a href="" 
                            ng-show="checkMoveingAbility(student, index+1)"

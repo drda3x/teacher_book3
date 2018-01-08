@@ -19,7 +19,6 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             }
         })
     }
-    
 
     function load() {
         $scope.data = {};
@@ -130,7 +129,9 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         }, function() {})
     }
 
-    $scope.deleteLesson = function(cur_index, student) {
+    $scope.deleteLesson = function(event, cur_index, student) {
+        event.stopPropagation(); 
+
         var data = {
             date: $scope.data.dates[cur_index].val,
             count: 1,

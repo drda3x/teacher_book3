@@ -3,16 +3,18 @@
 
 
 from collections import namedtuple, Counter, defaultdict
+from django.db.models import Q
 from date import get_calendar
 from datetime import datetime, timedelta
-from itertools import takewhile
+from itertools import takewhile, groupby
 from application.models import (
     User,
     Groups,
     Passes,
     Lessons,
     Students,
-    TeachersSubstitution
+    TeachersSubstitution,
+    Debts
 )
 
 
@@ -61,7 +63,7 @@ class LessonsCrossException(Exception):
 
 def get_students_lessons(group, date_from, date_to, students):
     u"""
-        Функция для получения списка уроков для заданного
+        Функция для получения списка уроков и долгов для заданного
         списка учеников
 
         args:
@@ -105,6 +107,11 @@ def get_students_lessons(group, date_from, date_to, students):
         end_date__gte=date_from
     )
 
+    all_debts = Debts.objects.filter(
+        date__in=_dates,
+        group=group
+    )
+
     if all_is_Students:
         lessons = lessons.filter(student__in=students)
         club_cards = club_cards.filter(student__in=students)
@@ -112,6 +119,8 @@ def get_students_lessons(group, date_from, date_to, students):
             (c.student, c)
             for c in club_cards
         )
+        all_debts = all_debts.filter(student__in=students)
+
     else:
         lessons = lessons.filter(student_id__in=students)
         club_cards = club_cards.filter(student_id__in=students)
@@ -119,26 +128,69 @@ def get_students_lessons(group, date_from, date_to, students):
             (c.student.id, c)
             for c in club_cards
         )
+        all_debts = all_debts.filter(student_id__in=students)
+
+    all_debts_list = all_debts.values_list('student', 'date')
 
     if isinstance(date_from, datetime):
         dates = set(d.date() for d in _dates)
     else:
         dates = set(d for d in _dates)
 
+    #lessons = list(lessons)
+    #lessons.sort(key=lambda x: (x.student, x.date))
+    #lessons = dict(
+    #    (s.id if all_is_Students else s, list(l)) for s, l in groupby(lessons, lambda l: l.student)
+    #)
+
+    #all_lessons = [DefaultLesson(d, s, -2) for s in students for d in dates]
     lessons_map = defaultdict(list)
+
+    ## s - student, sl - student_lessons
+    #for s, sl in groupby(all_lessons, lambda l: l.student):
+    #    cc = club_cards.get(s)
+    #    paid_lessons = lessons.get(s, [])
+
+    #    stid = s if isinstance(s, int) else s.id
+    #    debt_dates = [d for d in dates if (stid, d) in all_debts_list]
+    #    empty_dates = dates - set(l.date for l in paid_lessons) - set(debt_dates)
+
+    #    cover_by_club_card = lambda d: cc is not None and cc.start_date <= d <= cc.end_date
+    #    is_debt = lambda d: d in debt_dates
+
+    #    empty_lessons = [
+    #        ClubCardLesson(d, cc, 0) if cover_by_club_card(d) \
+    #        else DefaultLesson(d, s, -1) if is_debt(d) \
+    #        else DefaultLesson(d, s, -2)
+    #    ]
+    #    print len(paid_lessons), len(empty_lessons)
+
+    #    lessons_map[s] = paid_lessons + empty_lessons
+    #    lessons_map[s].sort(key=lambda l: l.date)
+
     for lesson in lessons:
         key = lesson.student if all_is_Students else lesson.student.id
         lessons_map[key].append(lesson)
 
     for student in students:
         cc = club_cards.get(student)
-        _dates = dates - set(l.date for l in lessons_map[student])
+
+        if all_is_Students:
+            debts_days = [d for d in dates if (student.id, d) in all_debts_list]
+        else:
+            debts_days = [d for d in dates if (student, d) in all_debts_list]
+
+        _dates = dates - set(l.date for l in lessons_map[student]) - set(debts_days)
+
         fl = [
             ClubCardLesson(_date, cc, 0) if cc and cc.start_date <= _date <= cc.end_date else DefaultLesson(_date, -2)
             for _date in _dates
         ]
 
+        dl = [DefaultLesson(_date, -1) for _date in debts_days]
+
         lessons_map[student] += fl
+        lessons_map[student] += dl
         lessons_map[student].sort(key=lambda x: x.date)
 
     return lessons_map
@@ -462,6 +514,12 @@ def restore_database(group, date, students):
                     group_pass=p.group_pass
                 ).save()
 
+    q_objs = Q(student=lessons[0].student, date=lessons[0].date)
+    for lesson in lessons[1:]:
+        q_objs != Q(student=lesson.student, date=lesson.date)
+
+    Debts.objects.filter(q_objs).delete()
+
 
 def delete_lessons(date_from, count, student_id, group_id):
 
@@ -533,3 +591,41 @@ def set_substitution(date, group, teachers):
 
         ts.teachers.clear()
         ts.teachers.add(*teachers)
+
+
+
+def create_debts(date, group, debts):
+    u"""
+    Функция для создания долгов
+
+    args:
+        date datetime.datetime
+        group application.models.Groups or int
+        debts [
+            stid: int,
+            lesson: {
+                status: application.models.lessons.statuses,
+                is_new: bool
+                pass_type: int
+            }
+        ]
+    """
+
+    assert isinstance(date, datetime)
+    assert isinstance(group, (Groups, int))
+
+    group_param = {}
+    if isinstance(group, int):
+        group_param['group_id'] = group
+    else:
+        group_param['group'] = group
+
+    for debt in debts:
+        new_debt = Debts(
+            date=date,
+            student_id=debt['stid'],
+            val=0,
+            **group_param
+        )
+        new_debt.save()
+

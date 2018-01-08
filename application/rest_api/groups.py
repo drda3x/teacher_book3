@@ -14,7 +14,8 @@ from application.models import (
     TeachersSubstitution,
     User,
     Comments,
-    Students
+    Students,
+    Debts
 )
 from auth import auth
 from traceback import format_exc
@@ -32,7 +33,8 @@ from application.common.lessons import (
     restore_database,
     delete_lessons as delete_lessons_func,
     move_lessons as move_lessons_func,
-    set_substitution
+    set_substitution,
+    create_debts
 )
 
 from application.common.group import (
@@ -325,6 +327,13 @@ def process_lesson(request):
     new_passes = [
         s for s in data['students']
         if s['lesson']['is_new'] is True
+        and s['lesson']['pass_type'] > 0
+    ]
+
+    debts = [
+        s for s in data['students']
+        if s['lesson']['is_new'] is True
+        and s['lesson']['pass_type'] == -2
     ]
 
     if len(new_passes) > 0:
@@ -337,6 +346,9 @@ def process_lesson(request):
 
     if len(not_attended) > 0:
         process_not_attended_lessons(group, date, not_attended)
+
+    if len(debts) > 0:
+        create_debts(date, group, debts)
 
     if len(attended) + len(not_attended):
         restore_database(group, date, chain(attended, not_attended))
