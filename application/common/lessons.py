@@ -14,7 +14,8 @@ from application.models import (
     Lessons,
     Students,
     TeachersSubstitution,
-    Debts
+    Debts,
+    PassTypes
 )
 
 
@@ -196,7 +197,7 @@ def get_students_lessons(group, date_from, date_to, students):
     return lessons_map
 
 
-def create_new_passes(group, date, data):
+def create_new_passes(user, group, date, data):
     u"""
         Функция для создания и сохранения абонементов в БД
 
@@ -248,11 +249,19 @@ def create_new_passes(group, date, data):
             if skips_cnt is not None:
                 lessons_params['skips'] = skips_cnt
 
+            cc_passes = PassTypes.objects.filter(
+                one_group_pass=False
+            ).values_list("id", flat=True)
+
+            if student['lesson']['pass_type'] in cc_passes:
+                lessons_params['end_date'] = date + timedelta(days=30)
+
             p = Passes(
                 group=group,
                 start_date=date,
                 student_id=student['stid'],
                 pass_type_id=student['lesson']['pass_type'],
+                opener=user,
                 **lessons_params
             )
 
@@ -350,7 +359,7 @@ def process_club_cards_lessons(group, date, lessons):
             if len(existed_lessons) >= card.pass_type.lessons:
                 continue
 
-            new_lesson = Lessons(
+            new_lesson, created = Lessons.objects.get_or_create(
                 student=card.student,
                 group_pass=card,
                 date=date,
@@ -514,11 +523,15 @@ def restore_database(group, date, students):
                     group_pass=p.group_pass
                 ).save()
 
-    q_objs = Q(student=lessons[0].student, date=lessons[0].date)
-    for lesson in lessons[1:]:
-        q_objs != Q(student=lesson.student, date=lesson.date)
+    q_objs = None
+    for lesson in lessons:
+        if q_objs is None:
+            q_objs = Q(student=lessons.student, date=lessons.date)
+        else:
+            q_objs != Q(student=lesson.student, date=lesson.date)
 
-    Debts.objects.filter(q_objs).delete()
+    if q_objs is not None:
+        Debts.objects.filter(q_objs).delete()
 
 
 def delete_lessons(date_from, count, student_id, group_id):

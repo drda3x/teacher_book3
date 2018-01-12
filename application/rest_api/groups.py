@@ -337,7 +337,7 @@ def process_lesson(request):
     ]
 
     if len(new_passes) > 0:
-        create_new_passes(group, date, new_passes)
+        create_new_passes(request.user, group, date, new_passes)
         attended += new_passes
 
     if len(attended) > 0:
@@ -569,7 +569,7 @@ def change_group(request):
                     skips_cnt=default_skips - skips[group_pass.id]
                 )
             )
-            create_new_passes(new_group, shifted_date, new_pass)
+            create_new_passes(request.user, new_group, shifted_date, new_pass)
 
             calendar = zip(
                 get_calendar(shifted_date, new_group.days), range(_cnt)
