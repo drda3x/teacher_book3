@@ -387,6 +387,10 @@
                 stid: student.info.id
             }
     
+            if(!confirm("Подтвердите удаление занятия")) {
+                return;
+            }
+    
             $http({
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
@@ -395,7 +399,7 @@
                 data: data,
                 url: "delete_lessons"
             }).then(function(responce) {
-    //            load();
+                load();
             }, function() {})
         }
     

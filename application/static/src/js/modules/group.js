@@ -139,6 +139,10 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             stid: student.info.id
         }
 
+        if(!confirm("Подтвердите удаление занятия")) {
+            return;
+        }
+
         $http({
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
@@ -147,7 +151,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             data: data,
             url: "delete_lessons"
         }).then(function(responce) {
-//            load();
+            load();
         }, function() {})
     }
 
