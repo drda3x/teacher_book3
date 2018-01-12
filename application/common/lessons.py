@@ -526,7 +526,7 @@ def restore_database(group, date, students):
     q_objs = None
     for lesson in lessons:
         if q_objs is None:
-            q_objs = Q(student=lessons.student, date=lessons.date)
+            q_objs = Q(student=lesson.student, date=lesson.date)
         else:
             q_objs != Q(student=lesson.student, date=lesson.date)
 

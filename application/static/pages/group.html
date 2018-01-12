@@ -61,12 +61,12 @@
             </td>
             <td ng-repeat="lesson in student.lessons track by $index" 
                 ng-click="lessonWidget.show($index)"
-                style="background-color: {{lesson.group_pass.color}}; border-color: #000">
+                style="background-color: {{lesson.group_pass.color}}; border-color: #000; vertical-align: middle;">
                 <span ng-if="lesson.status == 1">
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
-                    <a href="" 
+                    <!--a href="" 
                         ng-click="deleteLesson($event, $index, student)" 
-                        style="display: inline-block; padding: 0 21%">x</a>
+                        style="display: inline-block;">x</a-->
                 </span>
                 <span style="color: red" ng-if="lesson.status == 2">
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
@@ -85,7 +85,7 @@
                            style="float: left; display: inline-block"><</a>
                         <a href="" 
                            ng-click="deleteLesson($event, $index, student)" 
-                           style="display: inline-block; padding: 0 21%">x</a>
+                           style="display: inline-block;">x</a>
                         <a href="" 
                            ng-show="checkMoveingAbility(student, index+1)"
                            ng-click="moveLesson($event, $index, $index+1, student)" 
