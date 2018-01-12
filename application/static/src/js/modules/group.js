@@ -586,6 +586,10 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     StudentEditWidget.prototype.delete = function(index) {
         var self = this;
 
+        if(!confirm("Подтвердите удаление ученика из группы")) {
+            return;
+        }
+
         $http({
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
