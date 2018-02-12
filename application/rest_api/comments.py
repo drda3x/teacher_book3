@@ -12,6 +12,8 @@ from django.http.response import (
 )
 from traceback import format_exc
 import datetime
+from application.settings import TIME_ZONE
+from pytz import timezone
 
 
 @auth
@@ -28,7 +30,7 @@ def edit_comment(request):
 
     try:
         data = json.loads(request.body)
-        date = datetime.datetime.now()
+        date = datetime.datetime.now(timezone(TIME_ZONE))
 
         try:
             comment = Comments.objects.get(
@@ -48,11 +50,17 @@ def edit_comment(request):
             )
 
         if not comment.text:
-            comment.delete()
+            if comment.id is not None:
+                comment.delete()
         else:
             comment.save()
 
-        return HttpResponse()
+        response = dict(
+            status="OK",
+            time=date.strftime('%d.%m.%Y %H:%M')
+        )
+
+        return HttpResponse(json.dumps(response))
 
     except Exception:
         return HttpResponseServerError(format_exc())

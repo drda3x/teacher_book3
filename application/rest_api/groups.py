@@ -50,6 +50,8 @@ from application.common.comments import get_comments
 
 from itertools import takewhile, chain, groupby
 from collections import OrderedDict, Counter
+from application.settings import TIME_ZONE
+from pytz import timezone, utc
 
 
 @auth
@@ -271,7 +273,8 @@ def get_base_info(request):
         "comments": [
             {
                 "student_id": c.student.id,
-                "text": c.text
+                "text": c.text,
+                "time": c.add_date.replace(tzinfo=utc).astimezone(timezone(TIME_ZONE)).strftime('%d.%m.%Y %H:%M')
             }
             for c in comments
         ],

@@ -28,14 +28,21 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
             group: "=",
             student: "=",
             disabled: "=disabled",
-            value: "@"
+            text: "@",
+            time: "@"
         },
-        template: '<textarea rows="2" cols="50" ' + 
+        template: '<div>' + 
+                  '<span ng-show="showTime()" class="bg-info text-white" '+
+                    'style="font-size: 10pt; font-weight: bold; padding: 0 3px; border-radius: 5px">'+
+                    '{{time}}'+
+                  '</span>'+
+                  '<textarea rows="{{rows}}" cols="50" ' + 
                   'style="border: none; resize: none; background-color: inherit;" '+
                   'placeholder="{{placeholder}}"'+
                   'ng-disabled="disabled"'+
-                  'ng-model="value"' + 
-                  ' ></textarea>',
+                  'ng-model="text"' + 
+                  ' ></textarea>' +
+                  '</div>',
         replace: true,
         link: function(scope, elem, attrs) {
         },
@@ -49,12 +56,22 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
                     data: {
                         group: $scope.group,
                         student: $scope.student,
-                        text: $scope.value
+                        text: $scope.text
                     },
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
                     }
-                })
+                }).then(
+                    function(response) {
+                        $scope.time = response.data.time;
+                        getRowsSize();
+                    },
+                    function() {}
+                )
+            }
+
+            function getRowsSize() {
+                $scope.rows = $scope.text.length > 40 ? 2 : 1;
             }
 
             $scope.$watch('disabled', function(val) {
@@ -83,6 +100,12 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
                     $scope.placeholder = ""
                 }
             });
+          
+            $scope.showTime = function() {
+                return $scope.time != '' && $scope.time != undefined && $scope.text != '' && $scope.text != undefined;
+            }
+            
+            $timeout(getRowsSize, 500);
         }
     }
 }]);
