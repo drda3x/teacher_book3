@@ -22,6 +22,9 @@ RUN apt-get install -y nodejs-legacy npm
 RUN npm install -g bower
 RUN npm install -g gulp
 
-RUN apt-get install -y git
+RUN mkdir /app
+WORKDIR /app/application/static
 
-CMD ["bash"]
+EXPOSE 8000 
+
+CMD python /app/manage.py runserver 0.0.0.0:8000 & gulp watch
