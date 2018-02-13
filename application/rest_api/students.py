@@ -36,7 +36,7 @@ def edit_student(request):
             data['phone'],
             data['name'],
             data['last_name'],
-            data['org_status']
+            data.get('org_status', False)
         )
     except Exception:
         from traceback import format_exc
@@ -49,12 +49,18 @@ def edit_student(request):
 
     lessons = get_students_lessons(
         group, date, None, [student]
-    )
+    )[student]
 
     response = {
-        'info': student.__json__(),
+        'info': student.__json__("first_name", "last_name", "phone", "id"),
         'lessons': [
-            l.__json__()
+            l.__json__(
+                "group_pass__color",
+                "group_pass__pass_type__id",
+                "group_pass__pass_type__lessons",
+                "group_pass__pass_type__prise",
+                "status"
+            )
             for l in lessons
         ]
     }

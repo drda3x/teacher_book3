@@ -454,6 +454,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
                 cnt: null
             }
         }
+
+        this.opened = false;
     }   
 
     StudentEditWidget.prototype.setTab = function(newTabName) {
@@ -489,6 +491,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     }
     
     StudentEditWidget.prototype.show = function(index, arr) {
+        this.opened = true;
         this.clear();
         this.index = index;
 
@@ -512,6 +515,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     }
 
     StudentEditWidget.prototype.clear = function() {
+        this.opened = false;
         this.data.phone = '';
         this.data.name = '';
         this.data.last_name = '';

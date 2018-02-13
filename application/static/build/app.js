@@ -725,6 +725,8 @@
                     cnt: null
                 }
             }
+    
+            this.opened = false;
         }   
     
         StudentEditWidget.prototype.setTab = function(newTabName) {
@@ -760,6 +762,7 @@
         }
         
         StudentEditWidget.prototype.show = function(index, arr) {
+            this.opened = true;
             this.clear();
             this.index = index;
     
@@ -783,6 +786,7 @@
         }
     
         StudentEditWidget.prototype.clear = function() {
+            this.opened = false;
             this.data.phone = '';
             this.data.name = '';
             this.data.last_name = '';

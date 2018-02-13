@@ -545,6 +545,9 @@ class Students(models.Model):
     is_deleted = models.BooleanField(verbose_name=u'Удален', default=False)
 
     def __json__(self, *values):
+        if len(values) == 0:
+            raise Exception("Values list should not be empty")
+
         return get_filtered_dict(self, *values)
 
     def __unicode__(self):

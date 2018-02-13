@@ -27,17 +27,6 @@
                 ng-mouseenter="menuIndex=$index"
                 ng-mouseleave="menuIndex=null"
                 ng-dblclick="studentEditWidget.show($index, main_list)">
-                <span ng-show="$index!=studentEditWidget.index">
-                    <div>
-                        {{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}
-                        <ul style="padding: 10px; display: block; position: absolute; background-color: #fff; border: 1px solid #000;" 
-                            ng-show="menuIndex==$index">
-                            <li><a href="" ng-click="studentEditWidget.delete($index)">Удалить</a></li>
-                            <li><a href="" ng-click="studentEditWidget.trash($index)">В помойку</a</li>
-                            <li><a href="" ng-click="groupMoving.open(student)">В другую группу</a</li>
-                        </ul>
-                    </div>
-                </span>
                 <span class="student-edit-widget" ng-show="$index==studentEditWidget.index">
                     <input type="text" 
                            ng-size="studentEditWidget.data.last_name.length" 
@@ -54,6 +43,17 @@
                            placeholder="Телефон"
                            default-size="7"
                            ng-model="studentEditWidget.data.phone" />
+                </span>
+                <span ng-show="$index!=studentEditWidget.index && !studentEditWidget.opened">
+                    <div>
+                        {{student.info.last_name}} {{student.info.first_name}}<br>{{student.info.phone}}
+                        <ul style="padding: 10px; display: block; position: absolute; background-color: #fff; border: 1px solid #000;" 
+                            ng-show="menuIndex==$index && !studentEditWidget.opened">
+                            <li><a href="" ng-click="studentEditWidget.delete($index)">Удалить</a></li>
+                            <li><a href="" ng-click="studentEditWidget.trash($index)">В помойку</a</li>
+                            <li><a href="" ng-click="groupMoving.open(student)">В другую группу</a</li>
+                        </ul>
+                    </div>
                 </span>
             </td>
             <td style="border-color: #000;" ng-init="disabled=true" ng-dblclick="disabled=!disabled" >
