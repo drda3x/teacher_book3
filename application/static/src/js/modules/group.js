@@ -91,6 +91,20 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         return null;
     }
 
+    $scope.formatPhone = function(phone) {
+        if(phone.length < 10) {
+            return phone
+        }
+
+        var new_phone = phone.split('');
+        new_phone.splice(1, 0, '(')
+        new_phone.splice(5, 0, ')')
+        new_phone.splice(9, 0, '-')
+        new_phone.splice(12, 0, '-')
+
+        return "+" + new_phone.join('')
+    }
+
     $scope.checkMoveingAbility = function(student, index) {
         return true;
         return index >= 0 && index < $scope.data.dates.length && student.lessons[index].status == -2;
