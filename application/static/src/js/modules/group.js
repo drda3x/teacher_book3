@@ -39,6 +39,13 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             var group = $scope.data.group;
             $rootScope.header = group.name;
             $rootScope.header2 = group.dance_hall.station + " " + group.days + " " + group.time;
+            $rootScope.header3 = (function(teachers) {
+                tmp = teachers.map(function(elem) {
+                    return elem.last_name + " " + elem.first_name;
+                })
+
+                return tmp.join('-')
+            })($scope.data.teachers.persons);
 
             fillSubLists();
             getAllTeachers();

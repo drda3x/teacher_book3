@@ -11,6 +11,10 @@ app.controller('navBarCtrl', function($scope, $rootScope) {
         $scope.header2 = $rootScope.header2;
     });
 
+    $scope.$watch('$root.header3', function() {
+        $scope.header3 = $rootScope.header3;
+    });
+
     $scope.$watch('$root.user', function() {
         $scope.user = $rootScope.user;
     });

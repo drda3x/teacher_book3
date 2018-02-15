@@ -32,6 +32,7 @@ app.controller('authCtrl', function($scope, $http, $location, $window, $rootScop
             $rootScope.showSideBar = false;
             $rootScope.header = null;
             $rootScope.header2 = null;
+            $rootScope.header3 = null;
             $rootScope.user = null;
             $location.path('/login');
         }, function(response) {

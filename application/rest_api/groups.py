@@ -205,7 +205,8 @@ def get_base_info(request):
         date__in=dates
     ).values_list("date", "teachers").order_by("date")
 
-    _t = group.teachers.all().values_list("pk", flat=True)
+    gt = group.teachers.all()
+    _t = gt.values_list("pk", flat=True)
     teachers_work = OrderedDict(( (d, map(int, _t)) for d in dates ))
 
     for _date, _teachers in groupby(subst, lambda x: x[0]):
@@ -262,6 +263,10 @@ def get_base_info(request):
             for student in students
         ],
         "teachers": {
+            "persons": [
+                t.__json__("last_name", "first_name")
+                for t in gt
+            ],
             "cnt": teachers + assistants,
             "assistants": assistants,
             "work": teachers_work.values(),
