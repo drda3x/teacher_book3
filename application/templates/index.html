@@ -12,17 +12,17 @@
         {% csrf_token %}
         {% verbatim %}
 
-        <nav style="margin-bottom: 5px;" 
+        <nav style="margin-bottom: 5px; background-color: #f8f8f8 !important; border-bottom: 1px solid #d4d4d4" 
              ng-controller="navBarCtrl"
              class="navbar navbar-dark bg-primary">
-            <a class="navbar-brand" href="/">ШТ "Динамика". Электронный журнал</a>
-            <span class="navbar-text" style="padding-top: 0; padding-bottom: 0;">{{header2}} {{header}}<br>{{header3}}</span>
+            <a class="navbar-brand" href="/" style="color:#777777">ШТ "Динамика". Электронный журнал</a>
+            <span class="navbar-text" style="padding-top: 0; padding-bottom: 0; color: #777">{{header2}} {{header}}<br>{{header3}}</span>
             <ul class="nav justify-content-end" ng-controller="authCtrl">
                 <li class="nav-item" ng-show="user != null">
-                    <span class="navbar-text" style="padding: 0">{{user.last_name}} {{user.first_name}}</span>
+                    <span class="navbar-text" style="padding: 0; color: #777">{{user.last_name}} {{user.first_name}}</span>
                 </li>
                 <li style="margin-left: 10px">
-                    <a class="nav-link" href="#" style="color: #fff; text-align: right; padding: 0" ng-click="logout()">Выход</a>
+                    <a class="nav-link" href="#" style="color: #777; text-align: right; padding: 0" ng-click="logout()">Выход</a>
                 </li>
             </ul>
         </nav>
@@ -38,6 +38,7 @@
                                 {{level.label}}
                             </a>
                             <a class="list-group-item" 
+                               style="color: #000"
                                href="/#/group/{{group.id}}" 
                                ng-class="{active: active==group.id}"
                                ng-show="show"
