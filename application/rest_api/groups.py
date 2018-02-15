@@ -213,7 +213,11 @@ def get_base_info(request):
     teachers_work = OrderedDict(( (d, map(int, _t)) for d in dates ))
 
     for _date, _teachers in groupby(subst, lambda x: x[0]):
-        teachers_work[_date] = map(int, list(chain(*_teachers))[1::2])
+        teachers_ids = map(int, list(chain(*_teachers))[1::2])
+
+        # Графа "не было"
+        teachers_ids = teachers_ids + [-1] * len(_t)
+        teachers_work[_date] = teachers_ids[:len(_t)]
 
     club_cards = Passes.objects.filter(
         student__in=students,

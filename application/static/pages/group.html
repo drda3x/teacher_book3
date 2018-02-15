@@ -217,6 +217,7 @@
                                 id="" 
                                 name="" 
                                 ng-model="lessonWidget.teachers[t_index]">
+                            <option value="-1">--не было--</option>
                             <option value="{{teacher.id}}" ng-repeat="teacher in data.teachers.list">
                                 {{teacher.last_name}} {{teacher.first_name}}
                             </option>
