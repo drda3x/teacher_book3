@@ -135,11 +135,21 @@
     
                 $scope.$watch('disabled', function(val) {
                     if(!val) {
+                         var metaKeyState = false;
     
                         // Как по другому вызвать сохранение и сброс события клика - не знаю((
                         $element.bind('keydown', function(event) {
-                            if(event.key == "Enter" && event.shiftKey) {
+                            console.log(event);
+                            if(event.key == "Enter" && (event.shiftKey || metaKeyState)) {
                                 $('body').trigger('click');
+                            } else if(event.keyCode == 91) {
+                                metaKeyState = true;
+                            }
+                        });
+    
+                        $element.bind('keyup', function(event) {
+                            if(event.keyCode == 91) {
+                                metaKeyState = false;
                             }
                         });
     
@@ -165,6 +175,7 @@
                         });
                     } else {
                         $scope.placeholder = ""
+                        $element.off('keydown');
                         $element.off('keyup');
                     }
                 });
