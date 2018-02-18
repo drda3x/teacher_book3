@@ -81,8 +81,10 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
                     // Как по другому вызвать сохранение и сброс события клика - не знаю((
                     $element.bind('keydown', function(event) {
                         console.log(event);
-                        if(event.key == "Enter" && (event.shiftKey || metaKeyState)) {
-                            $('body').trigger('click');
+                        if(event.key == "Enter") {
+                            if(!(event.shiftKey || metaKeyState)) {
+                                $('body').trigger('click');
+                            }
                         } else if(event.keyCode == 91) {
                             metaKeyState = true;
                         }
