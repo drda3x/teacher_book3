@@ -76,6 +76,14 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
 
             $scope.$watch('disabled', function(val) {
                 if(!val) {
+
+                    // Как по другому вызвать сохранение и сброс события клика - не знаю((
+                    $element.bind('keydown', function(event) {
+                        if(event.key == "Enter" && event.shiftKey) {
+                            $('body').trigger('click');
+                        }
+                    });
+
                     $('body').one('click', function(event) {
                         event.stopPropagation();
                         event.preventDefault();
@@ -98,6 +106,7 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
                     });
                 } else {
                     $scope.placeholder = ""
+                    $element.off('keyup');
                 }
             });
           

@@ -135,6 +135,14 @@
     
                 $scope.$watch('disabled', function(val) {
                     if(!val) {
+    
+                        // Как по другому вызвать сохранение и сброс события клика - не знаю((
+                        $element.bind('keydown', function(event) {
+                            if(event.key == "Enter" && event.shiftKey) {
+                                $('body').trigger('click');
+                            }
+                        });
+    
                         $('body').one('click', function(event) {
                             event.stopPropagation();
                             event.preventDefault();
@@ -157,6 +165,7 @@
                         });
                     } else {
                         $scope.placeholder = ""
+                        $element.off('keyup');
                     }
                 });
               
