@@ -533,6 +533,11 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         $('.student-edit-widget').click(function(e) {
             e.stopPropagation();
         });
+        $('.student-edit-widget').on('keypress', $.proxy(function(event) {
+            if(event.originalEvent.code == "Enter") {
+                this.save();
+            }
+        }, this));
     }
 
     StudentEditWidget.prototype.clear = function() {
@@ -555,6 +560,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         };
 
         $('.student-edit-widget').off('click');
+        $('.student-edit-widget').off('keypress');
     }
 
     StudentEditWidget.prototype.save = function() {
