@@ -122,7 +122,27 @@
     </table>
      
     <div class="row">
-        <div class="col-sm-5">
+        <div class="col-md">
+            <h5>Ученики не посещанющие занятия</h5>
+            <table class="table table-bordered table-stripped table-hovered">
+                <tr>
+                    <th style="border-color: #000; width: 30%">Фамилия, Имя<br>Телефон</th>
+                    <th style="border-color: #000">Коментарии</th>
+                    <th style="border-color: #000; width: 15%"></th>
+                </tr>
+                <tr ng-repeat="student in sub_list">
+                    <td style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{formatPhone(student.info.phone)}}</td>
+                    <td style="border-color: #000" ng-init="disabled=true" ng-dblclick="disabled=!disabled">
+                        <app-comment group="data.group.id" student="student.info.id" ng-init="comment=getComment(student.info.id)" disabled="disabled" text="{{comment.text}}" time="{{comment.time}}"></app-comment>
+                    </td>
+                    <td style="border-color: #000">
+                        <a href="">Удалить</a><br>
+                        <a href="">В помойку</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-md">
             <h5>Финансы</h5>
             <table class="table">
                 <tr>
@@ -144,27 +164,6 @@
                 <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
                     <td>{{teacher.last_name}} {{teacher.first_name}} - ЗП</td>
                     <td style="text-align: right; font-weight: bold;">{{totals.calcTeacherSalary(teacher) | number}}</td>
-                </tr>
-            </table>
-
-        </div>
-        <div class="col-sm-7">
-            <h5>Ученики не посещанющие занятия</h5>
-            <table class="table table-bordered table-stripped table-hovered">
-                <tr>
-                    <th style="border-color: #000; width: 30%">Фамилия, Имя<br>Телефон</th>
-                    <th style="border-color: #000">Коментарии</th>
-                    <th style="border-color: #000; width: 15%"></th>
-                </tr>
-                <tr ng-repeat="student in sub_list">
-                    <td style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{formatPhone(student.info.phone)}}</td>
-                    <td style="border-color: #000" ng-init="disabled=true" ng-dblclick="disabled=!disabled">
-                        <app-comment group="data.group.id" student="student.info.id" ng-init="comment=getComment(student.info.id)" disabled="disabled" text="{{comment.text}}" time="{{comment.time}}"></app-comment>
-                    </td>
-                    <td style="border-color: #000">
-                        <a href="">Удалить</a><br>
-                        <a href="">В помойку</a>
-                    </td>
                 </tr>
             </table>
         </div>
