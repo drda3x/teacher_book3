@@ -33,10 +33,10 @@ def edit_comment(request):
         date = datetime.datetime.now(timezone(TIME_ZONE))
 
         try:
-            comment = Comments.objects.get(
+            comment = Comments.objects.filter(
                 group_id=data['group'],
                 student_id=data['student']
-            )
+            ).last()
 
             comment.text = data['text']
             comment.add_date = date
