@@ -91,22 +91,26 @@
                 time: "@"
             },
             template: '<div>' + 
-                      '<span ng-show="showTime()" class="bg-info text-white" '+
-                        'style="font-size: 10pt; font-weight: bold; padding: 0 3px; border-radius: 5px">'+
+                      '<span ng-show="showTime() && !edit_text" class="bg-info text-white" '+
+                        'style="font-size: 10pt; font-weight: bold; padding: 0 3px; border-radius: 5px; display: block; max-width: 111px">'+
                         '{{time}}'+
                       '</span>'+
-                      '<textarea rows="{{rows}}" cols="50" ' + 
-                      'style="border: none; resize: none; background-color: inherit;" '+
+                      '<textarea rows="1" cols="50" ' + 
+                      'style="border: none; resize: none; background-color: inherit; overflow: hidden" '+
                       'placeholder="{{placeholder}}"'+
-                      'ng-disabled="disabled"'+
-                      'ng-model="text"' + 
+                      'ng-show="edit_text"' +
+                      'ng-model="raw_text"' + 
                       ' ></textarea>' +
+                      '<div ng-hide="edit_text" ng-dblclick="goEdit()">' +
+                      '<span>{{text}}</span>' +
+                      '</div>' +
                       '</div>',
             replace: true,
             link: function(scope, elem, attrs) {
             },
     
             controller: function($scope, $element) {
+                $scope.edit_text = false;
                 
                 function sendRequest() {
                     $http({
@@ -123,17 +127,64 @@
                     }).then(
                         function(response) {
                             $scope.time = response.data.time;
-                            getRowsSize();
+                            hideExcess();
                         },
                         function() {}
                     )
                 }
     
-                function getRowsSize() {
-                    $scope.rows = $scope.text.length > 40 ? 2 : 1;
+                function hideExcess() {
+                    $scope.raw_text = $scope.text;
+                    var maxLen = 50;
+                    if($scope.text.length > 50) {
+                        $scope.text = $scope.text.slice(0, 50);
+                        $scope.text += '...'
+                    }
                 }
     
-                $scope.$watch('disabled', function(val) {
+                $scope.goEdit = function() {
+                    $scope.edit_text = true;
+                    var metaKeyState = false;
+    
+                    // Как по другому вызвать сохранение и сброс события клика - не знаю((
+                    $element.bind('keydown', function(event) {
+                        console.log(event);
+                        if(event.key == "Enter") {
+                            if(!(event.shiftKey || metaKeyState)) {
+                                $('body').trigger('click');
+                            }
+                        } else if(event.keyCode == 91) {
+                            metaKeyState = true;
+                        }
+                    });
+    
+                    $element.bind('keyup', function(event) {
+                        if(event.keyCode == 91) {
+                            metaKeyState = false;
+                        }
+                    });
+    
+                    $('body').one('click', function(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+    
+                        $scope.$apply(function() {
+                            $scope.edit_text = false;
+                        });
+    
+                        sendRequest();
+                        $element.off('keydown');
+                        $element.off('keyup');
+    
+                    });
+    
+                    $element.bind('click', function(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                    });
+                }
+    
+                $scope.$watch('edit_text', function(val) {
                     if(!val) {
                          var metaKeyState = false;
     
@@ -160,7 +211,7 @@
                             event.preventDefault();
     
                             $scope.$apply(function() {
-                                $scope.disabled = true;
+                                $scope.edit_text = false;
                             });
     
                             sendRequest();
@@ -171,10 +222,12 @@
                             event.preventDefault();
                         });
     
+                        /*
                         $timeout(function() {
                             $scope.placeholder = "Введите коментарий"
                             $element[0].focus();
                         });
+                        */
                     } else {
                         $scope.placeholder = ""
                         $element.off('keydown');
@@ -186,7 +239,7 @@
                     return $scope.time != '' && $scope.time != undefined && $scope.text != '' && $scope.text != undefined;
                 }
                 
-                $timeout(getRowsSize, 500);
+                $timeout(hideExcess, 200);
             }
         }
     }]);
