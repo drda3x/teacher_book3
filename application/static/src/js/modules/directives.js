@@ -21,7 +21,7 @@ app.directive('ngSize', function(){
 });
 
 
-app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
+app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, $http, $window) {
     return {
         restrict: 'E',
         scope: {
@@ -42,15 +42,16 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
                   'ng-show="edit_text"' +
                   'ng-model="raw_text"' + 
                   ' ></textarea>' +
-                  '<div ng-hide="edit_text" ng-dblclick="goEdit()">' +
-                  '<span>{{text}}</span>' +
+                  '<div class="text" ng-hide="edit_text" ng-dblclick="goEdit()" style="max-height: 23px; max-width:95%; margin-bottom: -5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">'+
+                      '<span>{{text}}</span>' +
                   '</div>' +
+                  '<div style="display: inline-block" ng-show="display_short">...</div>' +
                   '</div>',
         replace: true,
         link: function(scope, elem, attrs) {
         },
 
-        controller: function($scope, $element) {
+        controller: function($scope, $element, $window) {
             $scope.edit_text = false;
             
             function sendRequest() {
@@ -75,12 +76,9 @@ app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
             }
 
             function hideExcess() {
-                $scope.raw_text = $scope.text;
-                var maxLen = 50;
-                if($scope.text.length > 50) {
-                    $scope.text = $scope.text.slice(0, 50);
-                    $scope.text += '...'
-                }
+                var w = angular.element($element[0])[0]
+                $scope.display_short = $scope.text.length * 8 > w.offsetWidth; 
+                $scope.display_short = false;
             }
 
             $scope.goEdit = function() {
