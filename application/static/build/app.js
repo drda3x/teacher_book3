@@ -351,6 +351,10 @@
             });
         }
     
+        $scope.getSellColor = function(status, lesson_color) {
+            return status == 4 ? "inherit" : lesson_color
+        }
+    
         function getAllTeachers() {
             var teachers = {};
     
