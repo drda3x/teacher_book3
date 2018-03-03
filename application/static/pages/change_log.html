@@ -1,0 +1,7 @@
+<h3>История изменений и обновлений</h3>
+<div ng-controller="changeLogCtrl">
+    <div ng-repeat="change in changes" style="margin: 10px">
+        <div><strong>{{change.date}}</strong></div>
+        <div>{{change.text}}</div>
+    </div>
+</div>

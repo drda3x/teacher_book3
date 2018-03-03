@@ -100,6 +100,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = '/home/da3x/freelance/angular_pet/application/static'
 
+CHANGES_FILE_PATH = ''
 
 try:
     from settings_local import *

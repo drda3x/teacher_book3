@@ -42,7 +42,7 @@
     .config(function($routeProvider) {
         $routeProvider
             .when('/', {
-                templateUrl: "/static/pages/page1.html"
+                templateUrl: "/static/pages/change_log.html"
             })
             .when('/login', {
                 templateUrl: "/static/pages/login.html",
@@ -57,6 +57,19 @@
                 controller: "groupCtrl"
             })
     });
+    
+    // Контроллер для страницы просмотра изменений в системе
+    app.controller("changeLogCtrl", function($scope, $http){
+        $scope.changes = [];
+    
+        $http({
+            method: "GET",
+            url: '/view_changes',
+        }).then(function(response) {
+            $scope.changes = response.data;
+        }, function(response) {
+        });
+    })
     
     // Директива для задания динамического
     // размера input'ов
