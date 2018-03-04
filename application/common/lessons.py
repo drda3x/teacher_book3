@@ -138,36 +138,7 @@ def get_students_lessons(group, date_from, date_to, students):
     else:
         dates = set(d for d in _dates)
 
-    #lessons = list(lessons)
-    #lessons.sort(key=lambda x: (x.student, x.date))
-    #lessons = dict(
-    #    (s.id if all_is_Students else s, list(l)) for s, l in groupby(lessons, lambda l: l.student)
-    #)
-
-    #all_lessons = [DefaultLesson(d, s, -2) for s in students for d in dates]
     lessons_map = defaultdict(list)
-
-    ## s - student, sl - student_lessons
-    #for s, sl in groupby(all_lessons, lambda l: l.student):
-    #    cc = club_cards.get(s)
-    #    paid_lessons = lessons.get(s, [])
-
-    #    stid = s if isinstance(s, int) else s.id
-    #    debt_dates = [d for d in dates if (stid, d) in all_debts_list]
-    #    empty_dates = dates - set(l.date for l in paid_lessons) - set(debt_dates)
-
-    #    cover_by_club_card = lambda d: cc is not None and cc.start_date <= d <= cc.end_date
-    #    is_debt = lambda d: d in debt_dates
-
-    #    empty_lessons = [
-    #        ClubCardLesson(d, cc, 0) if cover_by_club_card(d) \
-    #        else DefaultLesson(d, s, -1) if is_debt(d) \
-    #        else DefaultLesson(d, s, -2)
-    #    ]
-    #    print len(paid_lessons), len(empty_lessons)
-
-    #    lessons_map[s] = paid_lessons + empty_lessons
-    #    lessons_map[s].sort(key=lambda l: l.date)
 
     for lesson in lessons:
         key = lesson.student if all_is_Students else lesson.student.id
@@ -175,6 +146,9 @@ def get_students_lessons(group, date_from, date_to, students):
 
     for student in students:
         cc = club_cards.get(student)
+        # Убираем клубные карты. Вообще-то тут надо было бы
+        # выпилить весь запрос...
+        cc = None
 
         if all_is_Students:
             debts_days = [d for d in dates if (student.id, d) in all_debts_list]
