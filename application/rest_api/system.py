@@ -27,6 +27,6 @@ def view_changes(request):
                     "text": comment
                 })
     except IOError:
-        return HttpResponseServerError("No changes file")
+        return HttpResponseServerError()
 
     return HttpResponse(json.dumps(result))
