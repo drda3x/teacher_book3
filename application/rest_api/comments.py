@@ -35,7 +35,7 @@ def edit_comment(request):
         comment = Comments.objects.filter(
             group_id=data['group'],
             student_id=data['student']
-        ).last()
+        ).order_by("add_date").last()
 
         if comment is not None:
             comment.text = data['text']

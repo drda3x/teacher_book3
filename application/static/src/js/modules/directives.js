@@ -61,7 +61,7 @@ app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, 
                     data: {
                         group: $scope.group,
                         student: $scope.student,
-                        text: $scope.text
+                        text: $scope.raw_text
                     },
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
@@ -69,6 +69,7 @@ app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, 
                 }).then(
                     function(response) {
                         $scope.time = response.data.time;
+                        $scope.text = $scope.raw_text;
                         hideExcess();
                     },
                     function() {}
@@ -83,11 +84,17 @@ app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, 
 
             $scope.goEdit = function() {
                 $scope.edit_text = true;
+                $scope.raw_text = $scope.text;
+
                 var metaKeyState = false;
+                var $inputElement = $($element.find('textarea'));
+
+                $timeout(function() {
+                    $inputElement.focus()
+                }, 100)
 
                 // Как по другому вызвать сохранение и сброс события клика - не знаю((
-                $element.bind('keydown', function(event) {
-                    console.log(event);
+                $inputElement.bind('keydown', function(event) {
                     if(event.key == "Enter") {
                         if(!(event.shiftKey || metaKeyState)) {
                             $('body').trigger('click');
@@ -97,7 +104,7 @@ app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, 
                     }
                 });
 
-                $element.bind('keyup', function(event) {
+                $inputElement.bind('keyup', function(event) {
                     if(event.keyCode == 91) {
                         metaKeyState = false;
                     }
@@ -123,8 +130,8 @@ app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, 
                 });
             }
 
-            $scope.$watch('edit_text', function(val) {
-                if(!val) {
+            $scope.$watch('edit_text', function(val, prev_val) {
+                if(!val && prev_val) {
                      var metaKeyState = false;
 
                     // Как по другому вызвать сохранение и сброс события клика - не знаю((
@@ -153,7 +160,7 @@ app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, 
                             $scope.edit_text = false;
                         });
 
-                        sendRequest();
+                    //    sendRequest();
                     });
 
                     $element.bind('click', function(event) {

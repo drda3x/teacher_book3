@@ -27,4 +27,4 @@ def get_comments(group, students):
     params.update(g_params[type(group)])
     params.update(s_params[type(students)])
 
-    return Comments.objects.filter(**params)
+    return Comments.objects.filter(**params).order_by("-add_date")
