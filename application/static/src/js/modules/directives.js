@@ -32,20 +32,36 @@ app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, 
             time: "@"
         },
         template: '<div>' + 
-                  '<span ng-show="showTime() && !edit_text" class="bg-info text-white" '+
+                  '<span ng-show="showTime()" class="bg-info text-white" '+
                     'style="font-size: 10pt; font-weight: bold; padding: 0 3px; border-radius: 5px; display: block; max-width: 111px">'+
                     '{{time}}'+
                   '</span>'+
-                  '<textarea rows="1" cols="50" ' + 
-                  'style="border: none; resize: none; background-color: inherit; overflow: hidden" '+
-                  'placeholder="{{placeholder}}"'+
-                  'ng-show="edit_text"' +
-                  'ng-model="raw_text"' + 
-                  ' ></textarea>' +
-                  '<div class="text" ng-hide="edit_text" ng-dblclick="goEdit()" style="max-height: 23px; max-width:95%; margin-bottom: -5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">'+
-                      '<span>{{text}}</span>' +
+                  '<div class="text" ' +
+                    'ng-hide="edit_text || showFullText" ' +
+                    'style="max-height: 23px; max-width:95%; ' +
+                    ' margin-bottom: -5px; overflow: hidden; ' + 
+                    ' text-overflow: ellipsis; white-space: nowrap" ' +
+                    ' >'+
+                      '<span ng-mouseover="showFullText=true">{{text}}</span>' +
                   '</div>' +
-                  '<div style="display: inline-block" ng-show="display_short">...</div>' +
+                  '<div style="position: absolute; ' + 
+                              'border: 1px solid #000; ' + 
+                              'max-width: 377px; ' + 
+                              'background-color: #fff; ' + 
+                              'cursor: pointer;'+
+                              'padding: 3px" ' + 
+                        'ng-show="showFullText || edit_text"' + 
+                        'ng-dblclick="goEdit()" '+
+                        'ng-mouseover="showFullText=true"' + 
+                        'ng-mouseout="showFullText=false">' +
+                    '<span ng-hide="edit_text">{{text}}</span>' +
+                    '<textarea rows="2" cols="50" ' + 
+                        'style="border: none; resize: none; background-color: inherit; overflow: hidden" '+
+                        'placeholder="{{placeholder}}"'+
+                        'ng-show="edit_text"' +
+                        'ng-model="raw_text"' + 
+                    '></textarea>' +
+                  '</div>' +
                   '</div>',
         replace: true,
         link: function(scope, elem, attrs) {
