@@ -41,7 +41,7 @@ var app = angular.module('app', ['ngRoute', '720kb.datepicker'])
 .config(function($routeProvider) {
     $routeProvider
         .when('/', {
-            templateUrl: "/static/pages/page1.html"
+            templateUrl: "/static/pages/change_log.html"
         })
         .when('/login', {
             templateUrl: "/static/pages/login.html",

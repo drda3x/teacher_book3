@@ -53,6 +53,10 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         });
     }
 
+    $scope.getSellColor = function(status, lesson_color) {
+        return status == 4 ? "inherit" : lesson_color
+    }
+
     function getAllTeachers() {
         var teachers = {};
 
@@ -382,7 +386,9 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     }
 
     $scope.calcTeacherSalary = function(teacher, index) {
-        var cpt = $scope.data.teachers.work[index];
+        var cpt = $.grep($scope.data.teachers.work[index], function(t) {
+            return t > 0
+        });
         var assist_sal = 500;
 
         function has_work_today(tid) {
@@ -410,7 +416,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         calcTotal: function() {
             try {
                 return $scope.data.dates.reduce(function(sum, cv, index) {
-                    var total = $scope.calcTotal(index);
+                    var total = $scope.calcLesson(index);
                     return sum + (total || 0)
                 }, 0);
             } catch(e) {

@@ -42,7 +42,7 @@
     .config(function($routeProvider) {
         $routeProvider
             .when('/', {
-                templateUrl: "/static/pages/page1.html"
+                templateUrl: "/static/pages/change_log.html"
             })
             .when('/login', {
                 templateUrl: "/static/pages/login.html",
@@ -57,6 +57,19 @@
                 controller: "groupCtrl"
             })
     });
+    
+    // Контроллер для страницы просмотра изменений в системе
+    app.controller("changeLogCtrl", function($scope, $http){
+        $scope.changes = [];
+    
+        $http({
+            method: "GET",
+            url: '/view_changes',
+        }).then(function(response) {
+            $scope.changes = response.data;
+        }, function(response) {
+        });
+    })
     
     // Директива для задания динамического
     // размера input'ов
@@ -402,6 +415,10 @@
             });
         }
     
+        $scope.getSellColor = function(status, lesson_color) {
+            return status == 4 ? "inherit" : lesson_color
+        }
+    
         function getAllTeachers() {
             var teachers = {};
     
@@ -731,7 +748,9 @@
         }
     
         $scope.calcTeacherSalary = function(teacher, index) {
-            var cpt = $scope.data.teachers.work[index];
+            var cpt = $.grep($scope.data.teachers.work[index], function(t) {
+                return t > 0
+            });
             var assist_sal = 500;
     
             function has_work_today(tid) {
@@ -759,7 +778,7 @@
             calcTotal: function() {
                 try {
                     return $scope.data.dates.reduce(function(sum, cv, index) {
-                        var total = $scope.calcTotal(index);
+                        var total = $scope.calcLesson(index);
                         return sum + (total || 0)
                     }, 0);
                 } catch(e) {
