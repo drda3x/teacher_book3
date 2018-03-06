@@ -103,7 +103,7 @@
                 text: "@",
                 time: "@"
             },
-            template: '<div>' + 
+            template: '<div style="">' + 
                       '<span ng-show="showTime()" class="bg-info text-white" '+
                         'style="font-size: 10pt; font-weight: bold; padding: 0 3px; border-radius: 5px; display: block; max-width: 111px">'+
                         '{{time}}'+
@@ -116,6 +116,9 @@
                         ' >'+
                           '<span ng-mouseover="showFullText=true"'+
                           '>{{text}}</span>' +
+                      '</div>' +
+                      '<div style="padding: 14px;" ng-if="text.length==0" ng-show="!edit_text && !showFullText"> ' +
+                        '<a href="" style="color: #000;" ng-click="goEdit()">Добавить коментарий</a>' +
                       '</div>' +
                       '<div style="position: absolute; ' + 
                                   'border: 1px solid #000; ' + 
