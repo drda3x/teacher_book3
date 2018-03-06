@@ -110,11 +110,12 @@
                       '</span>'+
                       '<div class="text" ' +
                         'ng-hide="edit_text || showFullText" ' +
-                        'style="max-height: 23px; max-width:95%; ' +
+                        'style="max-height: 23px; width: 300px; ' +
                         ' margin-bottom: -5px; overflow: hidden; ' + 
                         ' text-overflow: ellipsis; white-space: nowrap" ' +
                         ' >'+
-                          '<span ng-mouseover="showFullText=true">{{text}}</span>' +
+                          '<span ng-mouseover="showFullText=true"'+
+                          '>{{text}}</span>' +
                       '</div>' +
                       '<div style="position: absolute; ' + 
                                   'border: 1px solid #000; ' + 
