@@ -881,17 +881,18 @@ class Lessons(models.Model):
     def prise(self):
         return self.group_pass.one_lesson_prise
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        now = datetime.datetime.now().date()
-        try:
-            compared_date = self.date.date()
-        except AttributeError:
-            compared_date = self.date
+    # DEPRECATED
+    #def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+    #    now = datetime.datetime.now().date()
+    #    try:
+    #        compared_date = self.date.date()
+    #    except AttributeError:
+    #        compared_date = self.date
 
-        if compared_date > now:
-            self.status = Lessons.STATUSES['not_processed']
+    #    if compared_date > now:
+    #        self.status = Lessons.STATUSES['not_processed']
 
-        super(Lessons, self).save(force_insert, force_update, using, update_fields)
+    #    super(Lessons, self).save(force_insert, force_update, using, update_fields)
 
     @cached_property
     def is_first_in_pass(self):
