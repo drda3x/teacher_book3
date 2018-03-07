@@ -715,7 +715,7 @@
             }).then(function(response) {
                 $scope.data.students = response.data;
                 fillSubLists();
-                $scope.data.dates[self.index].canceled = true; 
+                $scope.data.dates[self.index].canceled = false; 
             }, function() {
             });
         }

@@ -464,9 +464,17 @@ def cancel_lesson(request):
 
         lessons_json = [
             {
-                'info': st.__json__(),
+                'info': st.__json__(
+                    "id", "last_name", "first_name", "phone", "org"
+                ),
                 'lessons': [
-                    l.__json__()
+                    l.__json__(
+                        "group_pass__color",
+                        "group_pass__pass_type__id",
+                        "group_pass__pass_type__lessons",
+                        "group_pass__pass_type__prise",
+                        "status"
+                    )
                     for l in students_lessons[st]
                 ]
             }
@@ -512,9 +520,17 @@ def restore_lesson(request):
 
         lessons_json = [
             {
-                'info': st.__json__(),
+                'info': st.__json__(
+                    "id", "last_name", "first_name", "phone", "org"
+                ),
                 'lessons': [
-                    l.__json__()
+                    l.__json__(
+                        "group_pass__color",
+                        "group_pass__pass_type__id",
+                        "group_pass__pass_type__lessons",
+                        "group_pass__pass_type__prise",
+                        "status"
+                    )
                     for l in students_lessons[st]
                 ]
             }
