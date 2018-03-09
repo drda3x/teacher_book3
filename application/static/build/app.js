@@ -93,7 +93,7 @@
     });
     
     
-    app.directive('appComment', ["$timeout", "$http", function($timeout, $http) {
+    app.directive('appComment', ["$timeout", "$http", "$window", function($timeout, $http, $window) {
         return {
             restrict: 'E',
             scope: {
@@ -103,23 +103,48 @@
                 text: "@",
                 time: "@"
             },
-            template: '<div>' + 
+            template: '<div style="">' + 
                       '<span ng-show="showTime()" class="bg-info text-white" '+
-                        'style="font-size: 10pt; font-weight: bold; padding: 0 3px; border-radius: 5px">'+
+                        'style="font-size: 10pt; font-weight: bold; padding: 0 3px; border-radius: 5px; display: block; max-width: 111px">'+
                         '{{time}}'+
                       '</span>'+
-                      '<textarea rows="{{rows}}" cols="50" ' + 
-                      'style="border: none; resize: none; background-color: inherit;" '+
-                      'placeholder="{{placeholder}}"'+
-                      'ng-disabled="disabled"'+
-                      'ng-model="text"' + 
-                      ' ></textarea>' +
+                      '<div class="text" ' +
+                        'ng-hide="edit_text || showFullText" ' +
+                        'style="max-height: 23px; width: 300px; ' +
+                        ' margin-bottom: -5px; overflow: hidden; ' + 
+                        ' text-overflow: ellipsis; white-space: nowrap" ' +
+                        ' >'+
+                          '<span ng-mouseover="showFullText=true"'+
+                          '>{{text}}</span>' +
+                      '</div>' +
+                      '<div style="padding: 14px;" ng-if="text.length==0" ng-show="!edit_text && !showFullText"> ' +
+                        '<a href="" style="color: #000;" ng-click="goEdit()">Добавить коментарий</a>' +
+                      '</div>' +
+                      '<div style="position: absolute; ' + 
+                                  'border: 1px solid #000; ' + 
+                                  'max-width: 377px; ' + 
+                                  'background-color: #fff; ' + 
+                                  'cursor: pointer;'+
+                                  'padding: 3px" ' + 
+                            'ng-show="showFullText || edit_text"' + 
+                            'ng-dblclick="goEdit()" '+
+                            'ng-mouseover="showFullText=true"' + 
+                            'ng-mouseout="showFullText=false">' +
+                        '<span ng-hide="edit_text">{{text}}</span>' +
+                        '<textarea rows="2" cols="50" ' + 
+                            'style="border: none; resize: none; background-color: inherit; overflow: hidden" '+
+                            'placeholder="{{placeholder}}"'+
+                            'ng-show="edit_text"' +
+                            'ng-model="raw_text"' + 
+                        '></textarea>' +
+                      '</div>' +
                       '</div>',
             replace: true,
             link: function(scope, elem, attrs) {
             },
     
-            controller: function($scope, $element) {
+            controller: function($scope, $element, $window) {
+                $scope.edit_text = false;
                 
                 function sendRequest() {
                     $http({
@@ -128,7 +153,7 @@
                         data: {
                             group: $scope.group,
                             student: $scope.student,
-                            text: $scope.text
+                            text: $scope.raw_text
                         },
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken')
@@ -136,18 +161,69 @@
                     }).then(
                         function(response) {
                             $scope.time = response.data.time;
-                            getRowsSize();
+                            $scope.text = $scope.raw_text;
+                            hideExcess();
                         },
                         function() {}
                     )
                 }
     
-                function getRowsSize() {
-                    $scope.rows = $scope.text.length > 40 ? 2 : 1;
+                function hideExcess() {
+                    var w = angular.element($element[0])[0]
+                    $scope.display_short = $scope.text.length * 8 > w.offsetWidth; 
+                    $scope.display_short = false;
                 }
     
-                $scope.$watch('disabled', function(val) {
-                    if(!val) {
+                $scope.goEdit = function() {
+                    $scope.edit_text = true;
+                    $scope.raw_text = $scope.text;
+    
+                    var metaKeyState = false;
+                    var $inputElement = $($element.find('textarea'));
+    
+                    $timeout(function() {
+                        $inputElement.focus()
+                    }, 100)
+    
+                    // Как по другому вызвать сохранение и сброс события клика - не знаю((
+                    $inputElement.bind('keydown', function(event) {
+                        if(event.key == "Enter") {
+                            if(!(event.shiftKey || metaKeyState)) {
+                                $('body').trigger('click');
+                            }
+                        } else if(event.keyCode == 91) {
+                            metaKeyState = true;
+                        }
+                    });
+    
+                    $inputElement.bind('keyup', function(event) {
+                        if(event.keyCode == 91) {
+                            metaKeyState = false;
+                        }
+                    });
+    
+                    $('body').one('click', function(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+    
+                        $scope.$apply(function() {
+                            $scope.edit_text = false;
+                        });
+    
+                        sendRequest();
+                        $element.off('keydown');
+                        $element.off('keyup');
+    
+                    });
+    
+                    $element.bind('click', function(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                    });
+                }
+    
+                $scope.$watch('edit_text', function(val, prev_val) {
+                    if(!val && prev_val) {
                          var metaKeyState = false;
     
                         // Как по другому вызвать сохранение и сброс события клика - не знаю((
@@ -173,10 +249,10 @@
                             event.preventDefault();
     
                             $scope.$apply(function() {
-                                $scope.disabled = true;
+                                $scope.edit_text = false;
                             });
     
-                            sendRequest();
+                        //    sendRequest();
                         });
     
                         $element.bind('click', function(event) {
@@ -184,10 +260,12 @@
                             event.preventDefault();
                         });
     
+                        /*
                         $timeout(function() {
                             $scope.placeholder = "Введите коментарий"
                             $element[0].focus();
                         });
+                        */
                     } else {
                         $scope.placeholder = ""
                         $element.off('keydown');
@@ -199,7 +277,7 @@
                     return $scope.time != '' && $scope.time != undefined && $scope.text != '' && $scope.text != undefined;
                 }
                 
-                $timeout(getRowsSize, 500);
+                $timeout(hideExcess, 200);
             }
         }
     }]);
@@ -648,7 +726,7 @@
             }).then(function(response) {
                 $scope.data.students = response.data;
                 fillSubLists();
-                $scope.data.dates[self.index].canceled = true; 
+                $scope.data.dates[self.index].canceled = false; 
             }, function() {
             });
         }

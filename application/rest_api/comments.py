@@ -32,16 +32,16 @@ def edit_comment(request):
         data = json.loads(request.body)
         date = datetime.datetime.now(timezone(TIME_ZONE))
 
-        try:
-            comment = Comments.objects.get(
-                group_id=data['group'],
-                student_id=data['student']
-            )
+        comment = Comments.objects.filter(
+            group_id=data['group'],
+            student_id=data['student']
+        ).order_by("add_date").last()
 
+        if comment is not None:
             comment.text = data['text']
             comment.add_date = date
 
-        except Comments.DoesNotExist:
+        else:
             comment = Comments(
                 group_id=data['group'],
                 student_id=data['student'],

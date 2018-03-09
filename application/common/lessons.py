@@ -15,7 +15,8 @@ from application.models import (
     Students,
     TeachersSubstitution,
     Debts,
-    PassTypes
+    PassTypes,
+    CanceledLessons
 )
 
 
@@ -209,6 +210,11 @@ def create_new_passes(user, group, date, data):
     existed_lessons = Lessons.objects.filter(group=group, date__gte=date) \
         .values_list("student", "date")
 
+    canceled_lessons = CanceledLessons.objects.filter(
+        date__gte=date,
+        group=group
+    ).values_list("date", flat=True)
+
     to_delete = []
 
     try:
@@ -243,9 +249,11 @@ def create_new_passes(user, group, date, data):
             to_delete.append(p)
 
             cnt = p.lessons if p.one_group_pass else 1
-            dl = zip(get_calendar(date, group.days), range(cnt))
+            cal = get_calendar(date, group.days)
 
-            for _date, _ in dl:
+            while cnt > 0:
+                _date = cal.next()
+                is_canceled = _date.date() in canceled_lessons
 
                 if (student['stid'], _date.date()) in existed_lessons:
                     raise LessonsCrossException(
@@ -256,11 +264,15 @@ def create_new_passes(user, group, date, data):
                     date=_date,
                     student_id=student['stid'],
                     group=group,
-                    group_pass=p
+                    group_pass=p,
+                    status=Lessons.STATUSES['canceled'] if is_canceled else Lessons.STATUSES['not_processed']
                 )
 
                 _l.save()
                 to_delete.append(_l)
+
+                if not is_canceled:
+                    cnt -= 1
 
     except LessonsCrossException as e:
         for elem in to_delete:
@@ -429,7 +441,6 @@ def restore_database(group, date, students):
             }
         }]
     """
-
     passes = Lessons.objects.filter(
         student_id__in=[s['stid'] for s in students],
         group=group,
@@ -478,7 +489,7 @@ def restore_database(group, date, students):
 
         to_check = [
             l for l in my_lessons
-            if l.status != Lessons.STATUSES['moved']
+            if l.status not in (Lessons.STATUSES['moved'], Lessons.STATUSES['canceled'])
         ]
         delta = len(to_check) - p.group_pass.lessons_origin
 

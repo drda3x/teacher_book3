@@ -325,6 +325,7 @@ def process_lesson(request):
 
     group = Groups.objects.get(pk=data['group'])
     date = datetime.strptime(data['date'], '%d.%m.%Y')
+    today = datetime.now()
 
     attended = [
         s
@@ -356,14 +357,14 @@ def process_lesson(request):
         create_new_passes(request.user, group, date, new_passes)
         attended += new_passes
 
-    if len(attended) > 0:
+    if len(attended) > 0 and date <= today:
         process_attended_lessons(group, date, attended)
         process_club_cards_lessons(group, date, attended)
 
-    if len(not_attended) > 0:
+    if len(not_attended) > 0 and date <= today:
         process_not_attended_lessons(group, date, not_attended)
 
-    if len(debts) > 0:
+    if len(debts) > 0 and date <= today:
         create_debts(date, group, debts)
 
     if len(attended) + len(not_attended):
@@ -464,9 +465,17 @@ def cancel_lesson(request):
 
         lessons_json = [
             {
-                'info': st.__json__(),
+                'info': st.__json__(
+                    "id", "last_name", "first_name", "phone", "org"
+                ),
                 'lessons': [
-                    l.__json__()
+                    l.__json__(
+                        "group_pass__color",
+                        "group_pass__pass_type__id",
+                        "group_pass__pass_type__lessons",
+                        "group_pass__pass_type__prise",
+                        "status"
+                    )
                     for l in students_lessons[st]
                 ]
             }
@@ -512,9 +521,17 @@ def restore_lesson(request):
 
         lessons_json = [
             {
-                'info': st.__json__(),
+                'info': st.__json__(
+                    "id", "last_name", "first_name", "phone", "org"
+                ),
                 'lessons': [
-                    l.__json__()
+                    l.__json__(
+                        "group_pass__color",
+                        "group_pass__pass_type__id",
+                        "group_pass__pass_type__lessons",
+                        "group_pass__pass_type__prise",
+                        "status"
+                    )
                     for l in students_lessons[st]
                 ]
             }

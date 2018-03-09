@@ -10,9 +10,9 @@
     </div>
     <table class="table table-sm table-bordered table-striped table-hover" style="cursor: pointer" ng-init="menuIndex">
         <tr>
-            <th style="border-color: #000; width: 1%">#</th>
-            <th style="border-color: #000; width: 20%">ФИО, Телефон</th>
-            <th style="border-color: #000; width: 30%">Коментарии</th>
+            <th style="border-color: #000;">#</th>
+            <th style="border-color: #000;">ФИО, Телефон</th>
+            <th style="border-color: #000; max-width: 300px">Коментарии</th>
             <th style="border-color: #000; text-align: center" 
                 ng-repeat="date in data.dates" 
                 ng-class="{'text-danger': date.profit==-1, 'text-success': date.profit==1}"
@@ -56,12 +56,12 @@
                     </div>
                 </span>
             </td>
-            <td style="border-color: #000;" ng-init="disabled=true" ng-dblclick="disabled=!disabled" >
+            <td style="border-color: #000; width: 350px" ng-init="disabled=true" ng-dblclick="disabled=!disabled" >
                 <app-comment group="data.group.id" ng-init="comment=getComment(student.info.id)" student="student.info.id" disabled="disabled" text="{{comment.text}}" time="{{comment.time}}"></app-comment>
             </td>
             <td ng-repeat="lesson in student.lessons track by $index" 
                 ng-click="lessonWidget.show($index)"
-                style="background-color: {{getSellColor(lesson.status, lesson.group_pass.color)}}; border-color: #000; vertical-align: middle;">
+                style="background-color: {{getSellColor(lesson.status, lesson.group_pass.color)}}; border-color: #000; vertical-align: middle; width: 70px">
                 <span ng-if="lesson.status == 1">
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
                     <img src="static/img/delete.png" 
@@ -73,7 +73,7 @@
                     {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
                 </span>
                 <span style="color: #000; font-weight: bold" ng-if="lesson.status == 4" >
-                    пропуск
+                    ПР
                 </span>
                 <span style="color: red" ng-if="lesson.status == -1">
                     долг
@@ -126,13 +126,13 @@
             <h5>Ученики не посещающие занятия</h5>
             <table class="table table-bordered table-stripped table-hovered">
                 <tr>
-                    <th style="border-color: #000; width: 30%">Фамилия, Имя<br>Телефон</th>
-                    <th style="border-color: #000">Коментарии</th>
-                    <th style="border-color: #000; width: 15%"></th>
+                    <th style="border-color: #000;">Фамилия, Имя<br>Телефон</th>
+                    <th style="border-color: #000; max-width: 300px">Коментарии</th>
+                    <th style="border-color: #000;"></th>
                 </tr>
                 <tr ng-repeat="student in sub_list">
                     <td style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{formatPhone(student.info.phone)}}</td>
-                    <td style="border-color: #000" ng-init="disabled=true" ng-dblclick="disabled=!disabled">
+                    <td style="border-color: #000; max-width: 300px" ng-init="disabled=true" ng-dblclick="disabled=!disabled">
                         <app-comment group="data.group.id" student="student.info.id" ng-init="comment=getComment(student.info.id)" disabled="disabled" text="{{comment.text}}" time="{{comment.time}}"></app-comment>
                     </td>
                     <td style="border-color: #000">
