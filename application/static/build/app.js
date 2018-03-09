@@ -553,24 +553,28 @@
                 teachers: this.teachers
             };
     
-            $.map(this.data, function(elem) {
+            $.map(this.data, $.proxy(function(elem) {
                 var d = {};
                 d.stid = elem.info.id;
                 d.lesson = {}; 
-    
-                d.lesson.is_new = elem.lesson.temp_pass != null;
+                
+                d.lesson.is_new = elem.lesson.temp_pass != null && elem.lesson.temp_pass != "-1";
     
                 if(attendance && elem.lesson.temp_status == 0) {
                     elem.lesson.temp_status = 2;
                 }
                 
-                var check_status = elem.lesson.temp_status == elem.lesson.status;
+                var cc = this.checkClubCard(d.stid);
+                var check_status = elem.lesson.temp_status == elem.lesson.status && !(cc && elem.lesson.temp_pass == '-1');
+    
                 if(!d.lesson.is_new && check_status) {
                     return
                 }
     
                 d.lesson.pass_type = (function () {
-                    if(d.lesson.is_new) {
+                    if(cc) {
+                        return cc.id;                    
+                    } else if(d.lesson.is_new) {
                         return parseInt(elem.lesson.temp_pass);
                     } else if (elem.lesson.temp_status != -2) {
                         return elem.lesson.group_pass.pass_type.id
@@ -579,10 +583,17 @@
                     }
                 })()
     
-                d.lesson.status = elem.lesson.temp_pass == null ? elem.lesson.temp_status : 1;
+                d.lesson.status = (function() {
+                    if (cc != null || elem.lesson.temp_pass != null) {
+                        return 1;
+                    } else if (elem.lesson.temp_pass == null) {
+                        return elem.lesson.temp_status;
+                    }
+                })()
     
                 data.students.push(d);
-            });
+    
+            }, this));
             
             this.hide();
             $http({
@@ -651,11 +662,11 @@
                 d3 = moment(this.date, 'dd.mm.YYYY');
     
                 if(rec.student == student_id && d1 <= d3 && d2 >= d3) {
-                    return true;
+                    return rec.id;
                 }
             }
     
-            return false;
+            return null;
         }
         
         $scope.lessonWidget = new LessonWidget();

@@ -292,6 +292,7 @@ def get_base_info(request):
         ],
         "club_cards": [
             {
+                "id": cc.pass_type.id,
                 "student": cc.student.id,
                 "start_date": cc.start_date.strftime("%d.%m.%Y"),
                 "end_date": cc.end_date.strftime("%d.%m.%Y")
