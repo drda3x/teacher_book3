@@ -73,7 +73,7 @@ def get_list(request):
         groups = Groups.objects.filter(teachers=request.user)
 
     data = []
-    groups = sorted(groups, key=lambda x: x.level.id)
+    groups = sorted(groups, key=lambda x: x.level.sort_num)
     now = datetime.now().date()
 
     def get_info(g):
