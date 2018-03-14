@@ -45,7 +45,7 @@
                            ng-model="studentEditWidget.data.phone" />
                 </span>
                 <span ng-show="$index!=studentEditWidget.index && !studentEditWidget.opened">
-                    <div>
+                    <div ng-class="{isNew: student.info.is_new}">
                         {{student.info.last_name}} {{student.info.first_name}}<br>{{formatPhone(student.info.phone)}}
                         <ul style="padding: 10px; display: block; position: absolute; background-color: #fff; border: 1px solid #000;" 
                             ng-show="menuIndex==$index && !studentEditWidget.opened">

@@ -6,6 +6,7 @@ from django.http.response import (
     HttpResponseServerError,
 )
 from application.models import (
+    GroupList,
     Groups,
     Lessons,
     PassTypes,
@@ -168,6 +169,19 @@ def get_base_info(request):
     ).values_list("date", flat=True)
 
     students = get_students(group).order_by('last_name', 'first_name')
+    add_dates = dict(GroupList.objects.filter(
+            group=group,
+            student__in=students
+        ).values_list("student__id", "last_update")
+    )
+
+    # now date
+    now_date = datetime.now().date()
+
+    # two weeks ago
+    twa = now_date - timedelta(days=14)
+
+    check_is_new = lambda stid: add_dates.get(student.id, twa) > twa
     lessons = get_students_lessons(group, dates[0], dates[-1], students)
 
     pass_types = PassTypes.objects.filter(
@@ -252,9 +266,11 @@ def get_base_info(request):
         ],
         "students": [
             {
-                'info': student.__json__(
-                    "id", "last_name", "first_name", "phone", "org"
-                ),
+                'info': dict(
+                    is_new=check_is_new(student.id),
+                    **student.__json__(
+                        "id", "last_name", "first_name", "phone", "org"
+                    )),
                 'lessons': [
                     l.__json__(
                         "group_pass__color",

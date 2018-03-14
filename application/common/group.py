@@ -31,10 +31,12 @@ def add_student_to_group(group, student):
             group_list.save()
 
     except GroupList.DoesNotExist:
+        now = datetime.now()
         group_list = GroupList(
             student=student,
             group=group,
-            active=True
+            active=True,
+            last_update=now
         )
 
         group_list.save()

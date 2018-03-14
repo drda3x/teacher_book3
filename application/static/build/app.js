@@ -401,7 +401,7 @@
                     return lesson.status != -2;
                 })
     
-                if(passed) {
+                if(student.info.is_new || passed) {
                     $scope.main_list.push(student);
                 } else {
                     $scope.sub_list.push(student);
