@@ -709,6 +709,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     $scope.hideSidebar = function() {
         $rootScope.showSideBar = false;
     }
+
+    $timeout($scope.hideSidebar, 100);
     
     $scope.showSidebar = function() {
         $rootScope.showSideBar = true;
