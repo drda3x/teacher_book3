@@ -181,7 +181,10 @@ def get_base_info(request):
     # two weeks ago
     twa = now_date - timedelta(days=14)
 
-    check_is_new = lambda stid: add_dates.get(student.id, twa) > twa
+    # is new group
+    ing = group.start_date > twa
+
+    check_is_new = lambda stid: ing or add_dates.get(student.id, twa) > twa
     lessons = get_students_lessons(group, dates[0], dates[-1], students)
 
     pass_types = PassTypes.objects.filter(
