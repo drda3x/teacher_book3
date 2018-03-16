@@ -22,6 +22,9 @@ def add_student_to_group(group, student):
     args:
         group application.models.Groups
         student application.models.Students
+
+    return:
+        just_added_state boolean
     """
     try:
         group_list = GroupList.objects.get(student=student, group=group)
@@ -29,6 +32,8 @@ def add_student_to_group(group, student):
         if not group_list.active:
             group_list.active = True
             group_list.save()
+
+        return False
 
     except GroupList.DoesNotExist:
         now = datetime.now()
@@ -40,6 +45,8 @@ def add_student_to_group(group, student):
         )
 
         group_list.save()
+
+        return True
 
 
 def delete_student(group, student):

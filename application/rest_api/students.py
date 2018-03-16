@@ -45,14 +45,17 @@ def edit_student(request):
     date = datetime.strptime(data['date'], '%d.%m.%Y')
     group = Groups.objects.get(pk=data['group'])
 
-    add_student_to_group(group, student)
+    just_added = add_student_to_group(group, student)
 
     lessons = get_students_lessons(
         group, date, None, [student]
     )[student]
 
     response = {
-        'info': student.__json__("first_name", "last_name", "phone", "id"),
+        'info': dict(
+            is_new=just_added,
+            **student.__json__("first_name", "last_name", "phone", "id")
+        ),
         'lessons': [
             l.__json__(
                 "group_pass__color",

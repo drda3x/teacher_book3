@@ -131,7 +131,7 @@
                     <th style="border-color: #000;"></th>
                 </tr>
                 <tr ng-repeat="student in sub_list">
-                    <td style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{formatPhone(student.info.phone)}}</td>
+                    <td  ng-class="{isNew: student.info.is_new}" style="border-color: #000">{{student.info.last_name}} {{student.info.first_name}}<br>{{formatPhone(student.info.phone)}}</td>
                     <td style="border-color: #000; max-width: 300px" ng-init="disabled=true" ng-dblclick="disabled=!disabled">
                         <app-comment group="data.group.id" student="student.info.id" ng-init="comment=getComment(student.info.id)" disabled="disabled" text="{{comment.text}}" time="{{comment.time}}"></app-comment>
                     </td>

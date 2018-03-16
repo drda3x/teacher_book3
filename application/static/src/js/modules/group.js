@@ -5,19 +5,25 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     $scope.selected_month = null;
 
     function fillSubLists() {
+        var has_started = moment($scope.data.group.start_date, "DD.MM.YYYY") < moment();
         $scope.main_list = [];
         $scope.sub_list = [];
-        $.map($scope.data.students, function(student) {
-            var passed = any(student.lessons, function(lesson) {
-                return lesson.status != -2;
-            })
+        
+        if (!has_started) {
+            $scope.main_list = $.map($scope.data.students, function(e) {return e});
+        } else {
+            $.map($scope.data.students, function(student) {
+                var passed = any(student.lessons, function(lesson) {
+                    return lesson.status != -2;
+                });
 
-            if(student.info.is_new || passed) {
-                $scope.main_list.push(student);
-            } else {
-                $scope.sub_list.push(student);
-            }
-        })
+                if(passed) {
+                    $scope.main_list.push(student);
+                } else {
+                    $scope.sub_list.push(student);
+                }
+            })
+        }
     }
 
     function load() {
@@ -507,7 +513,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
                 first_name: null,
                 last_name: null,
                 phone: null,
-                org: false
+                org: false,
+                is_new: true
             },
             lessons: $.map($scope.data.dates, function(date) {
                 return {
@@ -611,6 +618,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
                 var is_new_student = student == null;
 
                 if(is_new_student) {
+                    // костыльььь
+                    response.data.info.is_new = true;
                     $scope.data.students.push(response.data);
                     fillSubLists();
                 } else {
