@@ -59,8 +59,12 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         });
     }
 
-    $scope.getSellColor = function(status, lesson_color) {
-        return status == 4 ? "inherit" : lesson_color
+    $scope.getSellColor = function(status, lesson_color, index) {
+        if($scope.data.dates[index].canceled) {
+            return "#b1b3b1";
+        } else {
+            return status == 4 ? "inherit" : lesson_color;
+        }
     }
 
     function getAllTeachers() {
