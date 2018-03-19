@@ -407,6 +407,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             return t > 0
         });
         var assist_sal = 500;
+        var lesson_canceled = $scope.data.dates[index].canceled;
 
         function has_work_today(tid) {
             return any(cpt, function(val) {
@@ -414,7 +415,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             });
         }
 
-        if (has_work_today(teacher.id)) {
+        if (!lesson_canceled && has_work_today(teacher.id)) {
             if(teacher.assistant) {
                 return assist_sal;
             } else {
