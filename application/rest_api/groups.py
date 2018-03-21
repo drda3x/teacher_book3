@@ -31,6 +31,7 @@ from application.common.lessons import (
     process_not_attended_lessons,
     process_club_cards_lessons,
     get_students_lessons,
+    get_lessons_out_of_range,
     restore_database,
     delete_lessons as delete_lessons_func,
     move_lessons as move_lessons_func,
@@ -186,6 +187,7 @@ def get_base_info(request):
 
     check_is_new = lambda stid: ing or add_dates.get(student.id, twa) > twa
     lessons = get_students_lessons(group, dates[0], dates[-1], students)
+    lessons_ofr = get_lessons_out_of_range(lessons.itervalues(), dates[-1])
 
     pass_types = PassTypes.objects.filter(
         pk__in=group.available_passes.all()
@@ -287,6 +289,13 @@ def get_base_info(request):
             }
 
             for student in students
+        ],
+        "out_of_range_lessons": [
+            l.__json__(
+                "group_pass__pass_type__prise",
+                "group_pass__pass_type__lessons"
+            )
+            for l in lessons_ofr
         ],
         "teachers": {
             "persons": [

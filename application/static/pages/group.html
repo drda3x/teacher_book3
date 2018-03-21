@@ -165,6 +165,10 @@
                     <td>{{teacher.last_name}} {{teacher.first_name}} - ЗП</td>
                     <td style="text-align: right; font-weight: bold;">{{totals.calcTeacherSalary(teacher) | number}}</td>
                 </tr>
+                <tr>
+                    <td>На следующий месяц</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcNextMonth()}}</td>
+                </tr>
             </table>
         </div>
     </div>

@@ -863,6 +863,14 @@
                 } catch(e) {
                     return 0;
                 }
+            },
+    
+            calcNextMonth: function() {
+                var next_month_sum = $scope.data.out_of_range_lessons.reduce(function(total, lesson) {
+                    return total + lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons;
+                }, 0);
+    
+                return next_month_sum;
             }
         };
     
