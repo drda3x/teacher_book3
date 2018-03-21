@@ -412,6 +412,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         });
         var assist_sal = 500;
         var lesson_canceled = $scope.data.dates[index].canceled;
+        var lesson_moment = moment($scope.data.dates[index].val, "DD.MM.YYYY"),
+            happen = lesson_moment <= moment();
 
         function has_work_today(tid) {
             return any(cpt, function(val) {
@@ -419,7 +421,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             });
         }
 
-        if (!lesson_canceled && has_work_today(teacher.id)) {
+        if (!lesson_canceled && happen && has_work_today(teacher.id)) {
             if(teacher.assistant) {
                 return assist_sal;
             } else {
@@ -477,11 +479,15 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         },
 
         calcNextMonth: function() {
-            var next_month_sum = $scope.data.out_of_range_lessons.reduce(function(total, lesson) {
-                return total + lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons;
-            }, 0);
+            try {
+                var next_month_sum = $scope.data.out_of_range_lessons.reduce(function(total, lesson) {
+                    return total + lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons;
+                }, 0);
 
-            return next_month_sum;
+                return next_month_sum;
+            } catch(e) {
+                return 0;
+            }
         }
     };
 
