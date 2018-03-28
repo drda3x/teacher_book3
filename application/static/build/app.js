@@ -1048,7 +1048,7 @@
             this.menuIndex = index;
         }
     
-        StudentEditWidget.prototype.delete = function(index) {
+        StudentEditWidget.prototype.delete = function(index, arr) {
             var self = this;
     
             if(!confirm("Подтвердите удаление ученика из группы")) {
@@ -1063,10 +1063,10 @@
                 url: "/delete_student",
                 data: {
                     group: $scope.data.group.id,
-                    stid: $scope.main_list[index].info.id
+                    stid: arr[index].info.id
                 }
             }).then(function() {
-                self.remove(index, $scope.main_list);
+                self.remove(index, arr);
             }, function() {
     
             });

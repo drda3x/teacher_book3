@@ -49,7 +49,7 @@
                         {{student.info.last_name}} {{student.info.first_name}}<br>{{formatPhone(student.info.phone)}}
                         <ul style="padding: 10px; display: block; position: absolute; background-color: #fff; border: 1px solid #000;" 
                             ng-show="menuIndex==$index && !studentEditWidget.opened">
-                            <li><a href="" ng-click="studentEditWidget.delete($index)">Удалить</a></li>
+                            <li><a href="" ng-click="studentEditWidget.delete($index, main_list)">Удалить</a></li>
                             <li><a href="" ng-click="studentEditWidget.trash($index)">В помойку</a</li>
                             <li><a href="" ng-click="groupMoving.open(student)">В другую группу</a</li>
                         </ul>
@@ -136,7 +136,7 @@
                         <app-comment group="data.group.id" student="student.info.id" ng-init="comment=getComment(student.info.id)" disabled="disabled" text="{{comment.text}}" time="{{comment.time}}"></app-comment>
                     </td>
                     <td style="border-color: #000">
-                        <a href="">Удалить</a><br>
+                        <a href="" ng-click="studentEditWidget.delete($index, sub_list)">Удалить</a><br>
                         <a href="">В помойку</a>
                     </td>
                 </tr>
