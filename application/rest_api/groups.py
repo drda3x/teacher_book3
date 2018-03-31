@@ -193,10 +193,12 @@ def get_base_info(request):
         pk__in=group.available_passes.all()
     )
 
+
     now = datetime.now().replace(day=15).date()
     month_min = max(group.start_date.replace(day=15), (now - timedelta(days=90)))
+
     month = takewhile(
-        lambda x: x <= (now + timedelta(days=30)),
+        lambda x: x.month <= (now + timedelta(days=30)).month,
         (month_min + timedelta(days=i) for i in range(0, 150, 30))
     )
     month_list = [
