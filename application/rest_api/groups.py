@@ -187,7 +187,7 @@ def get_base_info(request):
 
     check_is_new = lambda stid: ing or add_dates.get(student.id, twa) > twa
     lessons = get_students_lessons(group, dates[0], dates[-1], students)
-    lessons_ofr = get_lessons_out_of_range(lessons.itervalues(), dates[-1])
+    lessons_ofr = get_lessons_out_of_range(lessons.itervalues(), dates[-1], group)
 
     pass_types = PassTypes.objects.filter(
         pk__in=group.available_passes.all()

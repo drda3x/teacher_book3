@@ -172,11 +172,12 @@ def get_students_lessons(group, date_from, date_to, students):
     return lessons_map
 
 
-def get_lessons_out_of_range(all_lessons, date_from):
+def get_lessons_out_of_range(all_lessons, date_from, group):
     u"""
        Функция для получения уроков, за которые было заплачено
        в текущем месяце, но даты которых выходят за рамки текущего месяца
     """
+
 
     passes = set((
         ll.group_pass for sl in all_lessons for ll in sl
@@ -184,7 +185,7 @@ def get_lessons_out_of_range(all_lessons, date_from):
     ))
 
     lessons_out_of_range = Lessons.objects.filter(
-        date__gt=date_from, group_pass__in=passes
+        date__gt=date_from, group=group
     )
 
     return lessons_out_of_range
