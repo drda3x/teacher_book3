@@ -172,7 +172,7 @@ def restore_lesson(group, date):
         for k, g in groupby(lessons, lambda x: x.student)
     ]
 
-    CanceledLessons.objects.get(group=group, date=date).delete()
+    CanceledLessons.objects.filter(group=group, date=date).delete()
     Lessons.objects.filter(pk__in=to_delete).delete()
     today_lessons.update(status=Lessons.STATUSES['not_processed'])
 
