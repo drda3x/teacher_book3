@@ -1106,6 +1106,8 @@
                 date: date
             }
     
+            var self = this;
+    
             $http({
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
@@ -1116,9 +1118,14 @@
             }).then(
                 function() {
                     load();
+                    self.close();
                 }, function() {
                 }
             );
+        }
+    
+        GroupMovingWidget.prototype.close = function() {
+            this.elem.modal("hide");
         }
     
         $scope.groupMoving = new GroupMovingWidget();

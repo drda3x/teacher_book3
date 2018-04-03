@@ -117,6 +117,9 @@ def cancel_lesson(group, date):
     if isinstance(group, int):
         group = Groups.objects.get(pk=group)
 
+    if CanceledLessons.objects.filter(group=group, date=date).exists():
+        return
+
     today_lessons = Lessons.objects.filter(
         group=group,
         date=date
@@ -157,6 +160,9 @@ def restore_lesson(group, date):
     if isinstance(group, int):
         group = Groups.objects.get(pk=group)
 
+    if not CanceledLessons.objects.filter(date=date, group=group).exists():
+        return
+
     today_lessons = Lessons.objects.filter(
         group=group,
         date=date,
@@ -172,7 +178,7 @@ def restore_lesson(group, date):
         for k, g in groupby(lessons, lambda x: x.student)
     ]
 
-    CanceledLessons.objects.get(group=group, date=date).delete()
+    CanceledLessons.objects.filter(group=group, date=date).delete()
     Lessons.objects.filter(pk__in=to_delete).delete()
     today_lessons.update(status=Lessons.STATUSES['not_processed'])
 

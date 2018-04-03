@@ -717,6 +717,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             date: date
         }
 
+        var self = this;
+
         $http({
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
@@ -727,9 +729,14 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         }).then(
             function() {
                 load();
+                self.close();
             }, function() {
             }
         );
+    }
+
+    GroupMovingWidget.prototype.close = function() {
+        this.elem.modal("hide");
     }
 
     $scope.groupMoving = new GroupMovingWidget();
