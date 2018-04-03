@@ -838,9 +838,11 @@
             },
     
             calcDanceHall: function() {
-                //TODO Не надо считать дни, в которые были отмены занятий
                 try {
-                    return $scope.data.group.dance_hall.prise * $scope.data.dates.length;
+                    var noCanceled = $scope.data.dates.filter(function(e) {
+                        return !e.canceled;
+                    });
+                    return $scope.data.group.dance_hall.prise * noCanceled.length;
                 } catch(e) {
                     return 0;
                 }

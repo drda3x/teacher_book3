@@ -187,16 +187,18 @@ def get_base_info(request):
 
     check_is_new = lambda stid: ing or add_dates.get(student.id, twa) > twa
     lessons = get_students_lessons(group, dates[0], dates[-1], students)
-    lessons_ofr = get_lessons_out_of_range(lessons.itervalues(), dates[-1])
+    lessons_ofr = get_lessons_out_of_range(lessons.itervalues(), dates[-1], group)
 
     pass_types = PassTypes.objects.filter(
         pk__in=group.available_passes.all()
     )
 
+
     now = datetime.now().replace(day=15).date()
     month_min = max(group.start_date.replace(day=15), (now - timedelta(days=90)))
+
     month = takewhile(
-        lambda x: x <= (now + timedelta(days=30)),
+        lambda x: x.month <= (now + timedelta(days=30)).month,
         (month_min + timedelta(days=i) for i in range(0, 150, 30))
     )
     month_list = [
