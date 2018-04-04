@@ -2,6 +2,15 @@ app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope, $ti
     $scope.elements = [];
     $scope.active = null;
 
+    function checkUrl() {
+        var path = $location.path().split('/'),
+            category = path[1],
+            id = parseInt(path[2]);
+        
+        $scope.active = id;
+        $scope.showSideBar = category === '';
+    }
+
     $scope.load = function() {
         $http({
             method: "GET",
@@ -16,14 +25,7 @@ app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope, $ti
         })
     }
 
-    $scope.$on('$locationChangeSuccess', function() {
-        var path = $location.path().split('/'),
-            category = path[1],
-            id = parseInt(path[2]);
-        
-        $scope.active = id;
-        $scope.showSideBar = category !== 'login';
-    });
+    $scope.$on('$locationChangeSuccess', checkUrl);
 
     $scope.$watch('$root.showSideBar', function(val) {
         if(val == undefined) {
@@ -40,6 +42,6 @@ app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope, $ti
     $scope.load();
 
     $timeout(function() {
-        $scope.showSideBar = false;
+        checkUrl();
     }, 100)
 });
