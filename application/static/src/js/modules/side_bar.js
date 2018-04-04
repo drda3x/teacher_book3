@@ -8,7 +8,8 @@ app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope, $ti
             id = parseInt(path[2]);
         
         $scope.active = id;
-        $scope.showSideBar = category === '';
+        $scope.showSideBar = category !== 'login';
+        $rootScope.showSideBar = $scope.showSideBar;
     }
 
     $scope.load = function() {

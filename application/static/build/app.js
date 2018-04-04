@@ -312,7 +312,8 @@
                 id = parseInt(path[2]);
             
             $scope.active = id;
-            $scope.showSideBar = category === '';
+            $scope.showSideBar = category !== 'login';
+            $rootScope.showSideBar = $scope.showSideBar;
         }
     
         $scope.load = function() {
@@ -1141,7 +1142,7 @@
             $rootScope.showSideBar = false;
         }
     
-        $timeout($scope.hideSidebar, 100);
+        //$timeout($scope.showSidebar, 100);
         
         $scope.showSidebar = function() {
             $rootScope.showSideBar = true;
