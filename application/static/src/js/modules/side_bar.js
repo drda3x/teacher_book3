@@ -1,7 +1,6 @@
-app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
+app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope, $timeout) {
     $scope.elements = [];
     $scope.active = null;
-    $scope.showSideBar = true;
 
     $scope.load = function() {
         $http({
@@ -39,4 +38,8 @@ app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
     })
 
     $scope.load();
+
+    $timeout(function() {
+        $scope.showSideBar = false;
+    }, 100)
 });

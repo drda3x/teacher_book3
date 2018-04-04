@@ -302,10 +302,9 @@
             $scope.user = $rootScope.user;
         });
     });
-    app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
+    app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope, $timeout) {
         $scope.elements = [];
         $scope.active = null;
-        $scope.showSideBar = true;
     
         $scope.load = function() {
             $http({
@@ -343,6 +342,10 @@
         })
     
         $scope.load();
+    
+        $timeout(function() {
+            $scope.showSideBar = false;
+        }, 100)
     });
     
     app.controller('authCtrl', function($scope, $http, $location, $window, $rootScope) {
