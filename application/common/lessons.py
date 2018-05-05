@@ -186,7 +186,7 @@ def get_lessons_out_of_range(all_lessons, date_from, group):
 
     lessons_out_of_range = Lessons.objects.filter(
         date__gt=date_from, group=group
-    )
+    ).exclude(status=Lessons.STATUSES['canceled'])
 
     return lessons_out_of_range
 
