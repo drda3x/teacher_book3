@@ -613,7 +613,9 @@ def change_group(request):
         to_delete.sort(key=lambda l: l.date)
 
         # Привести даты в соответствие...
-        shifted_date = max(date, new_group.start_date)
+
+        group_start_date = datetime.combine(new_group.start_date, datetime.min.time())
+        shifted_date = max(date, group_start_date)
 
         # Неявно =(( Жаль групбай не гарантирует последовательность(
         # с другой стороны - вообще не понятно как сделать это

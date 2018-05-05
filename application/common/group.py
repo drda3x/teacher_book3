@@ -117,6 +117,9 @@ def cancel_lesson(group, date):
     if isinstance(group, int):
         group = Groups.objects.get(pk=group)
 
+    if CanceledLessons.objects.filter(group=group, date=date).exists():
+        return
+
     today_lessons = Lessons.objects.filter(
         group=group,
         date=date
@@ -156,6 +159,9 @@ def restore_lesson(group, date):
 
     if isinstance(group, int):
         group = Groups.objects.get(pk=group)
+
+    if not CanceledLessons.objects.filter(date=date, group=group).exists():
+        return
 
     today_lessons = Lessons.objects.filter(
         group=group,

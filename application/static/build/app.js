@@ -302,10 +302,19 @@
             $scope.user = $rootScope.user;
         });
     });
-    app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope) {
+    app.controller('sideBarCtrl', function($scope, $http, $location, $rootScope, $timeout) {
         $scope.elements = [];
         $scope.active = null;
-        $scope.showSideBar = true;
+    
+        function checkUrl() {
+            var path = $location.path().split('/'),
+                category = path[1],
+                id = parseInt(path[2]);
+            
+            $scope.active = id;
+            $scope.showSideBar = category !== 'login';
+            $rootScope.showSideBar = $scope.showSideBar;
+        }
     
         $scope.load = function() {
             $http({
@@ -321,14 +330,7 @@
             })
         }
     
-        $scope.$on('$locationChangeSuccess', function() {
-            var path = $location.path().split('/'),
-                category = path[1],
-                id = parseInt(path[2]);
-            
-            $scope.active = id;
-            $scope.showSideBar = category !== 'login';
-        });
+        $scope.$on('$locationChangeSuccess', checkUrl);
     
         $scope.$watch('$root.showSideBar', function(val) {
             if(val == undefined) {
@@ -343,6 +345,10 @@
         })
     
         $scope.load();
+    
+        $timeout(function() {
+            checkUrl();
+        }, 100)
     });
     
     app.controller('authCtrl', function($scope, $http, $location, $window, $rootScope) {
@@ -1108,6 +1114,8 @@
                 date: date
             }
     
+            var self = this;
+    
             $http({
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken')
@@ -1118,9 +1126,14 @@
             }).then(
                 function() {
                     load();
+                    self.close();
                 }, function() {
                 }
             );
+        }
+    
+        GroupMovingWidget.prototype.close = function() {
+            this.elem.modal("hide");
         }
     
         $scope.groupMoving = new GroupMovingWidget();
@@ -1129,7 +1142,7 @@
             $rootScope.showSideBar = false;
         }
     
-        $timeout($scope.hideSidebar, 100);
+        //$timeout($scope.showSidebar, 100);
         
         $scope.showSidebar = function() {
             $rootScope.showSideBar = true;
