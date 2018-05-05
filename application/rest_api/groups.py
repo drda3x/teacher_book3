@@ -67,12 +67,14 @@ def get_list(request):
     return:
         django.http.response.HttpResponse
     """
-
+    MAX_CLOSED_GROUPS = 5
     if request.user.is_superuser:
         groups = Groups.objects.all()
+        closed_groups = Groups.closed.order_by("-end_date")[:MAX_CLOSED_GROUPS]
 
     else:
         groups = Groups.objects.filter(teachers=request.user)
+        closed_groups = Groups.closed.filter(teachers=request.user).order_by("-end_date")[:MAX_CLOSED_GROUPS]
 
     data = []
     groups = sorted(groups, key=lambda x: x.level.sort_num)
@@ -121,6 +123,11 @@ def get_list(request):
             groups=map(get_info, groups)
         ))
 
+    data.append(dict(
+        label="Закрытые группы",
+        groups=map(get_info, closed_groups)
+    ))
+
     return HttpResponse(json.dumps(data))
 
 
@@ -142,7 +149,12 @@ def get_base_info(request):
     path.append(datetime.now())
 
     group_id, raw_date = path[:2]
-    group = Groups.objects.get(pk=int(group_id))
+
+    try:
+        group = Groups.objects.get(pk=int(group_id))
+
+    except Groups.DoesNotExist:
+        group = Groups.closed.get(pk=int(group_id))
 
     date = raw_date
     if isinstance(date, (str, unicode)):
@@ -153,8 +165,13 @@ def get_base_info(request):
     if group.end_date is not None:
         try:
             last_group_lesson = Lessons.objects.filter(group=group).order_by('date').last().date
+            print "a"
         except AttributeError:
             last_group_lesson = group.end_date
+            print "b"
+
+        if date > group.end_date:
+            date = group.end_date.replace(day=1)
     else:
         last_group_lesson = date + timedelta(days=100)
 
