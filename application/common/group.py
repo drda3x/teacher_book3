@@ -203,7 +203,9 @@ def calc_group_profit(group, dates):
     else:
         params = dict(group=group)
 
-    params['date__in'] = dates
+    canceled_dates = set(CanceledLessons.objects.filter(date__in=dates).values_list("date", flat=True))
+
+    params['date__in'] = set(dates) - canceled_dates
     lessons = sorted(
         Lessons.objects.filter(**params).exclude(status=Lessons.STATUSES['not_processed']),
         key=lambda l: l.date
