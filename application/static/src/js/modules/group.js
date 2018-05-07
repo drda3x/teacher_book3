@@ -1,3 +1,4 @@
+// module
 app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $document, $timeout) {
     $scope.data = {};
     $scope.main_list = [];

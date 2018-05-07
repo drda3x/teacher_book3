@@ -165,10 +165,8 @@ def get_base_info(request):
     if group.end_date is not None:
         try:
             last_group_lesson = Lessons.objects.filter(group=group).order_by('date').last().date
-            print "a"
         except AttributeError:
             last_group_lesson = group.end_date
-            print "b"
 
         if date > group.end_date:
             date = group.end_date.replace(day=1)
@@ -187,6 +185,9 @@ def get_base_info(request):
     ).values_list("date", flat=True)
 
     students = get_students(group).order_by('last_name', 'first_name')
+    inactive_students = Lessons.objects.filter(group=group, date__range=(dates[0], dates[-1])).exclude(student__in=students).values_list("student", flat=True)
+    students = Students.objects.filter(Q(id__in=students.values_list("id", flat=True)) | Q(id__in=inactive_students))
+
     add_dates = dict(GroupList.objects.filter(
             group=group,
             student__in=students
@@ -209,7 +210,6 @@ def get_base_info(request):
     pass_types = PassTypes.objects.filter(
         pk__in=group.available_passes.all()
     )
-
 
     now = datetime.now().replace(day=15).date()
     month_min = max(group.start_date.replace(day=15), (now - timedelta(days=90)))
