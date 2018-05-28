@@ -399,6 +399,19 @@
         $scope.main_list = [];
         $scope.sub_list = [];
         $scope.selected_month = null;
+
+        function sortList(a, b) {
+            var a = a.info.last_name + a.info.first_name,
+                b = b.info.last_name + b.info.first_name;
+
+            if (a < b) {
+                return -1;
+            } else if (a > b) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
     
         function fillSubLists() {
             var has_started = moment($scope.data.group.start_date, "DD.MM.YYYY") < moment();
@@ -418,7 +431,10 @@
                     } else {
                         $scope.sub_list.push(student);
                     }
-                })
+                });
+
+                $scope.main_list.sort(sortList);
+                $scope.sub_list.sort(sortList);
             }
         }
     
