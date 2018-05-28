@@ -5,6 +5,19 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     $scope.sub_list = [];
     $scope.selected_month = null;
 
+    function sortStudentsList(student_a, student_b) {
+        var str1 = student_a.info.last_name + student_a.info.first_name,
+            str2 = student_b.info.last_name + student_b.info.first_name;
+
+        if(str1 > str2) {
+            return 1;
+        } else if(str1 < str2) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
     function fillSubLists() {
         var has_started = moment($scope.data.group.start_date, "DD.MM.YYYY") < moment();
         $scope.main_list = [];
@@ -23,6 +36,9 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
                 } else {
                     $scope.sub_list.push(student);
                 }
+
+                $scope.main_list.sort(sortStudentsList);
+                $scope.sub_list.sort(sortStudentsList);
             })
         }
     }
@@ -218,6 +234,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
                 lesson: lesson
             });
         }
+
+        data.sort(sortStudentsList);
 
         this.data = data;
         this.index = index;

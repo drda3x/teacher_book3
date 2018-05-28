@@ -399,15 +399,15 @@
         $scope.main_list = [];
         $scope.sub_list = [];
         $scope.selected_month = null;
-
-        function sortList(a, b) {
-            var a = a.info.last_name + a.info.first_name,
-                b = b.info.last_name + b.info.first_name;
-
-            if (a < b) {
-                return -1;
-            } else if (a > b) {
+    
+        function sortStudentsList(student_a, student_b) {
+            var str1 = student_a.info.last_name + student_a.info.first_name,
+                str2 = student_b.info.last_name + student_b.info.first_name;
+    
+            if(str1 > str2) {
                 return 1;
+            } else if(str1 < str2) {
+                return -1;
             } else {
                 return 0;
             }
@@ -431,10 +431,10 @@
                     } else {
                         $scope.sub_list.push(student);
                     }
-                });
-
-                $scope.main_list.sort(sortList);
-                $scope.sub_list.sort(sortList);
+    
+                    $scope.main_list.sort(sortStudentsList);
+                    $scope.sub_list.sort(sortStudentsList);
+                })
             }
         }
     
@@ -629,6 +629,8 @@
                     lesson: lesson
                 });
             }
+    
+            data.sort(sortStudentsList);
     
             this.data = data;
             this.index = index;
