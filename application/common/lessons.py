@@ -5,7 +5,7 @@
 from collections import namedtuple, Counter, defaultdict
 from django.db.models import Q
 from date import get_calendar
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date as datetime_date
 from itertools import takewhile, groupby
 from application.models import (
     User,
@@ -18,6 +18,7 @@ from application.models import (
     PassTypes,
     CanceledLessons
 )
+from itertools import chain
 
 
 class DefaultLesson(namedtuple("DefaultLesson", ["date", "status"])):
@@ -267,24 +268,40 @@ def create_new_passes(user, group, date, data):
             p.save()
             to_delete.append(p)
 
+            debts = Debts.objects.filter(
+                group=group, student_id=student['stid']
+            ).values_list('date', flat=True)
+
             cnt = p.lessons if p.one_group_pass else 1
-            cal = get_calendar(date, group.days)
+
+            # Не списываем долги если занятий в абонементе всего одно
+            if p.lessons == 1:
+                cal = get_calendar(date, group.days)
+            else:
+                cal = chain(debts, get_calendar(date, group.days))
 
             while cnt > 0:
                 _date = cal.next()
-                is_canceled = _date.date() in canceled_lessons
+                _date = _date if isinstance(_date, datetime_date) else _date.date()
+                is_canceled = _date in canceled_lessons
 
-                if (student['stid'], _date.date()) in existed_lessons:
+                if (student['stid'], _date) in existed_lessons:
                     raise LessonsCrossException(
                         '%d %s' % (student['stid'], _date.strftime('%d.%m.%Y'))
                     )
+
+                status = Lessons.STATUSES['not_processed']
+                if is_canceled:
+                    status = Lessons.STATUSES['canceled']
+                elif _date in debts:
+                    status = Lessons.STATUSES['attended']
 
                 _l = Lessons(
                     date=_date,
                     student_id=student['stid'],
                     group=group,
                     group_pass=p,
-                    status=Lessons.STATUSES['canceled'] if is_canceled else Lessons.STATUSES['not_processed']
+                    status=status
                 )
 
                 _l.save()
@@ -292,6 +309,11 @@ def create_new_passes(user, group, date, data):
 
                 if not is_canceled:
                     cnt -= 1
+
+                if _date in debts:
+                    Debts.objects.filter(
+                        group=group, student_id=student['stid'], date=_date
+                    ).delete()
 
     except LessonsCrossException as e:
         for elem in to_delete:
@@ -645,4 +667,38 @@ def create_debts(date, group, debts):
             **group_param
         )
         new_debt.save()
+
+
+def delete_debts(date, group, students):
+    u"""
+    Функция для списания долгов
+
+    args:
+        date datetime.datetime
+        group application.models.Groups or ints
+        students [
+            application.models.Students or ints
+        ]
+    """
+
+    assert isinstance(date, datetime)
+    assert isinstance(group, (Groups, int))
+    assert all(isinstance(student, (Students, int)) for student in students)
+
+    query_params = {}
+
+    query_params['date'] = date
+
+    if isinstance(group, int):
+        query_params['group_id'] = group
+    else:
+        query_params['group'] = group
+
+    if all(isinstance(s, int) for s in students):
+        query_params['student_id__in'] = students
+
+    else:
+        query_params['student__in'] = students
+
+    Debts.objects.filter(**query_params).delete()
 
