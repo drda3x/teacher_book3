@@ -64,7 +64,7 @@
                 ng-click="lessonWidget.show($index)"
                 style="background-color: {{getSellColor(lesson.status, lesson.group_pass.color, $index)}}; border-color: #000; vertical-align: middle; width: 70px">
                 <span ng-if="lesson.status == 1">
-                    {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons}}
+                    {{lesson.group_pass.pass_type.prise / lesson.group_pass.pass_type.lessons | number:2}}
                     <img src="static/img/delete.png" 
                         ng-show="canEditLessons == true"
                         ng-click="deleteLesson($event, $index, student)" 
@@ -98,27 +98,27 @@
         </tr>
         <tr>
             <td colspan="3" style="border-color: #000">Всего за занятие</td>
-            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{calcLesson($index)}}</td>
+            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{calcLesson($index) | number: 2}}</td>
         </tr>
         <tr>
             <td colspan="3" style="border-color: #000">Аренда зала</td>
             <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">
                 <span ng-if="calcLesson($index)">
-                    {{data.group.dance_hall.prise}}
+                    {{data.group.dance_hall.prise | number: 2}}
                 </span>
             </td>
         </tr>
         <tr>
             <td style="border-color: #000" colspan="3">% Клуба</td>
-            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{calcClub($index) | number}}</td>
+            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{calcClub($index) | number: 2}}</td>
         </tr>
         <tr>
             <td style="border-color: #000" colspan="3">ИТОГО за занятие</td>
-            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{calcTotal($index) | number}}</td>
+            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{calcTotal($index) | number: 2}}</td>
         </tr>
         <tr ng-repeat="teacher in data.teachers.list" ng-if="checkTeacher(teacher)">
             <td colspan="3" style="border-color: #000">{{teacher.last_name}} {{teacher.first_name}}</td>
-            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{ calcTeacherSalary(teacher, $index) | number }}</td>
+            <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">{{ calcTeacherSalary(teacher, $index) | number:2}}</td>
         </tr>
     </table>
      
@@ -168,7 +168,7 @@
                 </tr>
                 <tr>
                     <td>На следующий месяц</td>
-                    <td style="text-align: right; font-weight: bold;">{{totals.calcNextMonth()}}</td>
+                    <td style="text-align: right; font-weight: bold;">{{totals.calcNextMonth() | number: 2}}</td>
                 </tr>
             </table>
         </div>

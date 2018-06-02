@@ -278,11 +278,16 @@ def create_new_passes(user, group, date, data):
             if p.lessons == 1:
                 cal = get_calendar(date, group.days)
             else:
-                cal = chain(debts, get_calendar(date, group.days))
+                checked_calendar = (
+                    d.date() for d in get_calendar(date, group.days)
+                    if d.date() not in debts
+                )
+                cal = chain(debts, checked_calendar)
 
             while cnt > 0:
                 _date = cal.next()
                 _date = _date if isinstance(_date, datetime_date) else _date.date()
+
                 is_canceled = _date in canceled_lessons
 
                 if (student['stid'], _date) in existed_lessons:
