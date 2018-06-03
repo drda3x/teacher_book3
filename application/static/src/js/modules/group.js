@@ -1,5 +1,21 @@
 // module
 app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $document, $timeout) {
+    month = [
+        '',
+        'Январь',
+        "Февраль",
+        "Март",
+        "Апрель",
+        "Май",
+        "Июнь",
+        "Июль",
+        "Август",
+        "Сентябрь",
+        "Октябрь",
+        "Ноябрь",
+        "Декабрь"
+    ]
+
     $scope.data = {};
     $scope.main_list = [];
     $scope.sub_list = [];
@@ -761,6 +777,95 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     }
 
     $scope.groupMoving = new GroupMovingWidget();
+
+    var MoveLessonWidget = function() {
+        this.elem = $("#moveLesson").modal({
+            show: false
+        });
+
+        this.vacant_cnt = 0;
+        this.vacant_group_pass = null;
+        this.data = [];
+    }
+
+    MoveLessonWidget.prototype.open = function(index) {
+
+        this.vacant_group_pass = null;
+
+        var dates = $scope.data.dates,
+            lessons = $scope.main_list[index].lessons;
+
+        this.data = [{
+            month: month[parseInt(dates[0].month)],
+            days: []
+        }];
+
+        for(var i=0, j=dates.length; i<j; i++) {
+            var lesson = lessons[i], 
+                str_status;
+
+            switch(lesson.status) {
+                case 0:
+                    str_status = 'occupied'
+                    break
+                    
+                case 1:
+                case 2:
+                case 4:
+                    str_status = 'locked'
+                    break
+
+                case -1:
+                case -2:
+                    str_status = 'vacant'
+            }
+
+            new_date = {
+                date: dates[i].day,
+                status: str_status,
+                color: ('group_pass' in lesson) ? lesson.group_pass.color : '#fff',
+                group_pass: ('group_pass' in lesson) ? lesson.group_pass : null
+            };
+            
+            this.data[0].days.push(new_date);
+        }
+
+        this.elem.modal("show"); 
+        this.vacant_cnt = 0;
+    }
+
+    MoveLessonWidget.prototype.close = function() {
+        this.elem.modal("hide");
+    }
+
+    MoveLessonWidget.prototype.click = function(object) {
+        if(object.status == 'locked' || (object.status == 'vacant' && this.vacant_cnt == 0)) {
+            return;
+        }
+
+        var new_statuses = {
+            vacant: "occupied",
+            occupied: "vacant"
+        };
+        
+        switch(object.status) {
+            case "occupied":
+                this.vacant_cnt++;
+                this.vacant_group_pass = object.group_pass;
+                object.group_pass = null;
+                object.color = "#fff";
+                break
+
+            case "vacant":
+                this.vacant_cnt--;
+                object.group_pass = this.vacant_group_pass;
+                object.color = object.group_pass.color;
+                break
+        }
+        object.status = new_statuses[object.status];
+    }
+
+    $scope.moveLessonWidget = new MoveLessonWidget();
 
     $scope.hideSidebar = function() {
         $rootScope.showSideBar = false;

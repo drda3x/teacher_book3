@@ -53,6 +53,8 @@
                             <li><a href="" ng-click="studentEditWidget.delete($index, main_list)">Удалить</a></li>
                             <li><a href="" ng-click="studentEditWidget.trash($index)">В помойку</a</li>
                             <li><a href="" ng-click="groupMoving.open(student)">В другую группу</a</li>
+                            <li><a href="" ng-click="moveLessonWidget.open($index)">Перенести занятия</a</li>
+                            <li><a href="" ng-click="">Удалить занятия</a</li>
                         </ul>
                     </div>
                 </span>
@@ -307,6 +309,45 @@
                             ng-click="">
                         Отмена
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="moveLesson" class="modal" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Перенос занятий</h5>
+                </div>
+
+                <div class="modal-body">
+                    <span ng-repeat="month in moveLessonWidget.data">
+                        <div class="row-fuild">{{month.month}}</div>
+
+                        <div class="row move-lesson-month">
+                            <div class="move-lesson-date" 
+                                 ng-if="day.status != 'locked'"
+                                 ng-click="moveLessonWidget.click(day)"
+                                 style="background-color: {{day.color}}"
+                                ng-repeat="day in month.days">
+                                {{day.date}}
+                            </div>
+                            <div class="move-lesson-date" 
+                                 ng-if="day.status == 'locked'"
+                                 ng-click="moveLessonWidget.click(day)"
+                                 style="background-color: {{day.color}}"
+                                ng-repeat="day in month.days">
+                                <s style="color: red; font-size: 13pt;"><span style="color: #000; font-size: 11pt;">{{day.date}}</span></s>
+                            </div>
+                        </div>
+                    </span>
+                </div>
+
+                <div class="modal-footer">
+                    <h5 ng-show="moveLessonWidget.vacant_cnt > 0">Не распределено занятий: {{moveLessonWidget.vacant_cnt}}</h5>
+                    <button ng-hide="moveLessonWidget.vacant_cnt > 0" type="button" class="btn btn-primary" ng-click="moveLessonWidget.close()">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="moveLessonWidget.close()">Отмена</button>
                 </div>
             </div>
         </div>

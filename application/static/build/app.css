@@ -1,3 +1,42 @@
 .isNew {
     color: #0079db;
 }
+
+.move-lesson-date {
+    border: 1px solid black;
+    margin-right: 5px; 
+    text-align: center;
+    padding: 0 5px; 
+    cursor: pointer;
+}
+
+.move-lesson-month {
+    padding-left: 16px;
+}
+
+del.cross {
+    display:inline-block; /* запрещает перенос текста на следующую строку */
+    text-decoration:none;
+    position:relative;
+}
+
+.del-cross {
+    display:block;
+    position:relative;
+    overflow:hidden; /* запрещает обтекать другие блоки */
+}
+
+del.cross:before,
+.del-cross:before {
+    content:'';
+    position:absolute;
+    display:block;
+    width:auto;
+    height:auto;
+    left:0;
+    top:0;
+    right:0;
+    bottom:0;
+    background: rgba(0,0,0,0) url(cross.svg) no-repeat;
+    background-size:100% 100%; /* растягивает фон на всю ширину и высоту блока */
+}
