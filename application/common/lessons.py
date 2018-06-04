@@ -590,18 +590,13 @@ def delete_lessons(date_from, count, student_id, group_id):
         ).delete()
 
 
-def move_lessons(date_from, date_to, student_id, group_id):
+def move_lessons(lessons):
 
-    group = Groups.objects.get(pk=group_id)
-    lessons = list(Lessons.objects.filter(
-        date__gte=date_from,
-        student_id=student_id,
-        group=group
-    ))
-
-    for lesson, date in zip(lessons, get_calendar(date_to, group.days)):
-        lesson.date = date
-        lesson.save()
+    for lesson in lessons:
+        Lessons.objects.filter(
+            group_pass_id=lesson['group_pass_id'],
+            date=lesson['old_date']
+        ).update(date=lesson['new_date'])
 
 
 def set_substitution(date, group, teachers):

@@ -11,7 +11,8 @@ from groups import (
     cancel_lesson,
     restore_lesson,
     delete_student,
-    change_group
+    change_group,
+    get_group_calendar
 )
 from students import edit_student
 from auth import login, logout

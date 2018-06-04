@@ -157,46 +157,6 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         return index >= 0 && index < $scope.data.dates.length && student.lessons[index].status == -2;
     }
 
-    $scope.moveLesson = function(event, cur_index, next_index, student) {
-        event.stopPropagation();
-
-        var date_from = $scope.data.dates[cur_index],
-            date_to = $scope.data.dates[next_index];
-
-        var data = {}
-
-        data.date_from = date_from.val;
-        data.date_to = date_to === undefined ? null : date_to.val;
-        data.stid = student.info.id;
-        data.group = $scope.data.group.id;
-
-        $http({
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            method: "POST",
-            data: data,
-            url: "move_lessons"
-        }).then(function(responce) {
-            var tmp;
-
-            if(cur_index < next_index) {
-                for(var i=student.lessons.length-1; i>cur_index; i--) {
-                    tmp = student.lessons[i-1];
-                    student.lessons[i-1] = student.lessons[i];
-                    student.lessons[i] = tmp;
-                }
-            } else {
-                for(var i=next_index, j=student.lessons.length-1; i<j; i++) {
-                    tmp = student.lessons[i+1];
-                    student.lessons[i+1] = student.lessons[i];
-                    student.lessons[i] = tmp;
-                }
-            }
-
-        }, function() {})
-    }
-
     $scope.deleteLesson = function(event, cur_index, student) {
         event.stopPropagation(); 
 
@@ -785,50 +745,90 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
         this.vacant_cnt = 0;
         this.vacant_group_pass = null;
+        this.vacant_group_pass_color = "#fff";
         this.data = [];
+    }
+
+    MoveLessonWidget.prototype.load = function(index) {
+        var data = {
+                group_id: $scope.data.group.id,
+                from_date: $scope.data.selected_month,
+                month_cnt: 3,
+                student_id: $scope.main_list[index].info.id
+            },
+            self = this;
+
+        $http({
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            method: "POST",
+            data: data,
+            url: "/get_group_calendar"
+        }).then(
+            function(responce) {
+                self.data = [];
+
+                var data = responce.data,
+                    days, gp_id, color, status, mth;
+                
+                for(var i=0, j=data.length; i<j; i++) {
+                    mth = data[i];
+                    days = mth.days.map(function(d) {
+                        var gp_id = null,
+                            color = '#fff',
+                            status = 'vacant';
+
+                        if('group_pass' in d.lesson_data) {
+                            gp_id = d.lesson_data.group_pass.id;
+                            
+                            switch(d.lesson_data.status) {
+                                case 0:
+                                    status='occupied';
+                                    break
+
+                                case 1:
+                                case 2:
+                                case 4:
+                                    status='locked';
+                                    break
+
+                                case -2:
+                                    status='vacant';
+                                    break
+                            }
+
+                            color = d.lesson_data.group_pass.color;
+                        }
+
+                        return {
+                            day: moment(d.day, "DDMMYYYY"),
+                            old_day: moment(d.day, "DDMMYYYY"),
+                            group_pass: gp_id,
+                            status: status,
+                            color: color 
+                        } 
+                    });
+
+                    self.data.push({
+                        month: month[mth.month],
+                        days: days
+                    });
+                }
+
+            }, function() {
+            }
+        )
     }
 
     MoveLessonWidget.prototype.open = function(index) {
 
         this.vacant_group_pass = null;
-
+        this.load(index)
         var dates = $scope.data.dates,
             lessons = $scope.main_list[index].lessons;
-
-        this.data = [{
-            month: month[parseInt(dates[0].month)],
-            days: []
-        }];
-
-        for(var i=0, j=dates.length; i<j; i++) {
-            var lesson = lessons[i], 
-                str_status;
-
-            switch(lesson.status) {
-                case 0:
-                    str_status = 'occupied'
-                    break
-                    
-                case 1:
-                case 2:
-                case 4:
-                    str_status = 'locked'
-                    break
-
-                case -1:
-                case -2:
-                    str_status = 'vacant'
-            }
-
-            new_date = {
-                date: dates[i].day,
-                status: str_status,
-                color: ('group_pass' in lesson) ? lesson.group_pass.color : '#fff',
-                group_pass: ('group_pass' in lesson) ? lesson.group_pass : null
-            };
-            
-            this.data[0].days.push(new_date);
-        }
+        this.student = $scope.main_list[index].info.last_name + " " + $scope.main_list[index].info.first_name
+        this.old_days = [];
 
         this.elem.modal("show"); 
         this.vacant_cnt = 0;
@@ -836,10 +836,59 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
     MoveLessonWidget.prototype.close = function() {
         this.elem.modal("hide");
+        this.data = [];
+    }
+
+    MoveLessonWidget.prototype.save = function() {
+        if(!confirm("Будет выполненн перенос занятий. Продолжить?")) {
+            return;
+        }
+
+        var data = {
+            lessons: []
+        };
+
+        for(var i=0, j=this.data.length; i<j; i++) {
+            var l = this.data[i].days;
+            var nl = l.filter(function(e) {
+                return e.status == 'occupied';
+            }).map(function(e) {
+                return {
+                    gpid: e.group_pass,
+                    old_date: e.old_day.format("DDMMYYYY"),
+                    new_date: e.day.format("DDMMYYYY")
+                }
+            }).filter(function(e) {
+                return e.old_date !== e.new_date;
+            });
+
+            data.lessons = data.lessons.concat(nl);
+        }
+        
+        if(data.lessons.length != 0) {
+            $http({
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                method: "POST",
+                data: data,
+                url: "/move_lessons"
+            }).then($.proxy(function(responce) {
+                this.close();
+                load();
+            }, this), 
+                $.proxy(function() {
+                alert("Ошибка при выполнении пененоса");
+                this.close();
+            }, this))        
+        } else {
+            this.close();
+        }
     }
 
     MoveLessonWidget.prototype.click = function(object) {
         if(object.status == 'locked' || (object.status == 'vacant' && this.vacant_cnt == 0)) {
+            alert('Отмеченные занятия переносить нельзя');
             return;
         }
 
@@ -852,6 +901,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             case "occupied":
                 this.vacant_cnt++;
                 this.vacant_group_pass = object.group_pass;
+                this.vacant_group_pass_color = object.color;
+                this.old_days.push(object.old_day);
                 object.group_pass = null;
                 object.color = "#fff";
                 break
@@ -859,7 +910,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             case "vacant":
                 this.vacant_cnt--;
                 object.group_pass = this.vacant_group_pass;
-                object.color = object.group_pass.color;
+                object.color = this.vacant_group_pass_color;
+                object.old_day = this.old_days.pop();
                 break
         }
         object.status = new_statuses[object.status];

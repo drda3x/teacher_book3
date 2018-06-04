@@ -56,3 +56,9 @@ var app = angular.module('app', ['ngRoute', '720kb.datepicker'])
             controller: "groupCtrl"
         })
 });
+
+app.filter('slice', function() {
+      return function(arr, start, end) {
+              return arr.slice(start, end);
+            };
+});

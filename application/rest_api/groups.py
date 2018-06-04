@@ -471,10 +471,17 @@ def move_lessons(request):
     """
     try:
         data = json.loads(request.body)
-        date_from = datetime.strptime(data['date_from'], "%d.%m.%Y")
-        date_to = datetime.strptime(data['date_to'], "%d.%m.%Y")
+        print data
+        lessons = (
+            dict(
+                group_pass_id=l['gpid'],
+                old_date=datetime.strptime(l['old_date'], '%d%m%Y'),
+                new_date=datetime.strptime(l['new_date'], '%d%m%Y')
+            )
+            for l in data['lessons']
+        )
 
-        move_lessons_func(date_from, date_to, data['stid'], data['group'])
+        move_lessons_func(lessons)
         return HttpResponse()
 
     except Exception:
@@ -662,3 +669,56 @@ def change_group(request):
 
     except Exception:
         return HttpResponseServerError(format_exc())
+
+
+@auth
+def get_group_calendar(request):
+    data = json.loads(request.body)
+    group_id = data['group_id']
+    from_date = datetime.strptime(data['from_date'], '%m%Y')
+    month_cnt = int(data['month_cnt'])
+    student_id = int(data['student_id'])
+
+    group = Groups.objects.get(pk=group_id)
+    gb = groupby(get_calendar(from_date, group.days), lambda d: d.month)
+    result = []
+
+    last_lesson_date = Lessons.objects.filter(
+        group_id=group_id,
+        student_id=student_id
+    ).latest('date').date
+    lessons = get_students_lessons(group, from_date.date(), last_lesson_date, [student_id])
+    lessons = lessons[student_id]
+    lessons_map = dict(
+        (l.date, l.__json__(
+            "group_pass__color",
+            "group_pass__id",
+            "status"
+        )) for l in lessons
+    )
+
+    next_iter_break = False
+
+    for i, g in enumerate(gb, 1):
+        month_num, days = g
+        days = list(days)
+
+        mth = dict(
+            month=month_num,
+            days=[
+                {
+                    "day": day.strftime('%d%m%Y'),
+                    "lesson_data": lessons_map.get(day.date(), [None, None, None])
+                }
+                 for day in days
+            ]
+        )
+        result.append(mth)
+
+        if next_iter_break:
+            break
+
+        if days[-1].date() >= last_lesson_date:
+            next_iter_break = True
+
+    return HttpResponse(json.dumps(result))
