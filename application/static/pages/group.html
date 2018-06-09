@@ -325,18 +325,11 @@
 
                         <div class="row move-lesson-month">
                             <div class="move-lesson-date" 
-                                 ng-if="day.status != 'locked'"
-                                 ng-click="moveLessonWidget.click(day)"
-                                 style="background-color: {{day.color}}"
+                                ng-click="moveLessonWidget.click(day)"
+                                style="background-color: {{day.color}}"
                                 ng-repeat="day in month.days">
-                                {{'0' + day.day.date() | slice:-2}}
-                            </div>
-                            <div class="move-lesson-date" 
-                                 ng-if="day.status == 'locked'"
-                                 ng-click="moveLessonWidget.click(day)"
-                                 style="background-color: {{day.color}}"
-                                ng-repeat="day in month.days">
-                                <s style="color: red; font-size: 13pt;"><span style="color: #000; font-size: 11pt;">{{'0' + day.day.date() | slice:-2}}</span></s>
+                                <span ng-if="day.status != 'locked'">{{'0' + day.day.date() | slice:-2}}</span>
+                                <s ng-if="day.status == 'locked'" style="color: red; font-size: 13pt;"><span style="color: #000; font-size: 11pt;">{{'0' + day.day.date() | slice:-2}}</span></s>
                             </div>
                         </div>
                     </span>

@@ -1288,7 +1288,10 @@
         }
     
         MoveLessonWidget.prototype.click = function(object) {
-            if(object.status == 'locked' || (object.status == 'vacant' && this.vacant_cnt == 0)) {
+            if(object.status == 'vacant' && this.vacant_cnt == 0) {
+                return;
+            }
+            if(object.status == 'locked') {
                 alert('Отмеченные занятия переносить нельзя');
                 return;
             }
