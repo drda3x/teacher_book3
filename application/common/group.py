@@ -207,13 +207,17 @@ def calc_group_profit(group, dates):
 
     params['date__in'] = set(dates) - canceled_dates
     lessons = sorted(
-        Lessons.objects.filter(**params).exclude(status=Lessons.STATUSES['not_processed']),
+        Lessons.objects.select_related(
+            'group_pass',
+            'group_pass__pass_type'
+        ).filter(**params).exclude(status=Lessons.STATUSES['not_processed']),
         key=lambda l: l.date
     )
 
     vals = dict(zip(dates, [None] * len(dates)))
+    dh_prise = group.dance_hall.prise
     for date, lessons in groupby(lessons, lambda l: l.date):
-        vals[date] = sum(l.prise() for l in lessons) - group.dance_hall.prise
+        vals[date] = sum(l.prise() for l in lessons) - dh_prise
         vals[date] -= vals[date] * 0.3
         vals[date] = max(0, vals[date])
 

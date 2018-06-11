@@ -69,11 +69,11 @@ def get_list(request):
     """
     MAX_CLOSED_GROUPS = 5
     if request.user.is_superuser:
-        groups = Groups.objects.all()
+        groups = Groups.objects.select_related('level').all()
         closed_groups = Groups.closed.order_by("-end_date")[:MAX_CLOSED_GROUPS]
 
     else:
-        groups = Groups.objects.filter(teachers=request.user)
+        groups = Groups.objects.select_related('level').filter(teachers=request.user)
         closed_groups = Groups.closed.filter(teachers=request.user).order_by("-end_date")[:MAX_CLOSED_GROUPS]
 
     data = []
