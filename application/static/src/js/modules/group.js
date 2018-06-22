@@ -738,7 +738,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
     $scope.groupMoving = new GroupMovingWidget();
 
-    var MoveLessonWidget = function() {
+    var EditLessonWidget = function() {
         this.elem = $("#moveLesson").modal({
             show: false
         });
@@ -749,7 +749,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         this.data = [];
     }
 
-    MoveLessonWidget.prototype.load = function(index) {
+    EditLessonWidget.prototype.load = function(index) {
         var data = {
                 group_id: $scope.data.group.id,
                 from_date: $scope.data.selected_month,
@@ -821,7 +821,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         )
     }
 
-    MoveLessonWidget.prototype.open = function(index) {
+    EditLessonWidget.prototype.open = function(header, alert_msg, index, save_func) {
 
         this.vacant_group_pass = null;
         this.load(index)
@@ -832,66 +832,31 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
         this.elem.modal("show"); 
         this.vacant_cnt = 0;
+
+        this.header = header;
+
+        if(save_func != undefined) {
+            this.save = save_func;
+        } else {
+            this.save_func = this.prototpye.save;
+        }
     }
 
-    MoveLessonWidget.prototype.close = function() {
+    EditLessonWidget.prototype.close = function() {
         this.elem.modal("hide");
         this.data = [];
     }
 
-    MoveLessonWidget.prototype.save = function() {
-        if(!confirm("Будет выполненн перенос занятий. Продолжить?")) {
-            return;
-        }
-
-        var data = {
-            lessons: []
-        };
-
-        for(var i=0, j=this.data.length; i<j; i++) {
-            var l = this.data[i].days;
-            var nl = l.filter(function(e) {
-                return e.status == 'occupied';
-            }).map(function(e) {
-                return {
-                    gpid: e.group_pass,
-                    old_date: e.old_day.format("DDMMYYYY"),
-                    new_date: e.day.format("DDMMYYYY")
-                }
-            }).filter(function(e) {
-                return e.old_date !== e.new_date;
-            });
-
-            data.lessons = data.lessons.concat(nl);
-        }
-        
-        if(data.lessons.length != 0) {
-            $http({
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                method: "POST",
-                data: data,
-                url: "/move_lessons"
-            }).then($.proxy(function(responce) {
-                this.close();
-                load();
-            }, this), 
-                $.proxy(function() {
-                alert("Ошибка при выполнении пененоса");
-                this.close();
-            }, this))        
-        } else {
-            this.close();
-        }
+    EditLessonWidget.prototype.save = function() {
+        throw("Method not implemented");
     }
 
-    MoveLessonWidget.prototype.click = function(object) {
+    EditLessonWidget.prototype.click = function(object) {
         if(object.status == 'vacant' && this.vacant_cnt == 0) {
             return;
         }
         if(object.status == 'locked') {
-            alert('Отмеченные занятия переносить нельзя');
+            alert(this.lock_alert_msg);
             return;
         }
 
@@ -920,7 +885,60 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         object.status = new_statuses[object.status];
     }
 
-    $scope.moveLessonWidget = new MoveLessonWidget();
+    $scope.editLessonWidget = new EditLessonWidget();
+
+    $scope.moveLessonFunc = $.proxy(function() {
+            if(!confirm("Будет выполненн перенос занятий. Продолжить?")) {
+                return;
+            }
+
+            var data = {
+                lessons: []
+            };
+
+            for(var i=0, j=this.data.length; i<j; i++) {
+                var l = this.data[i].days;
+                var nl = l.filter(function(e) {
+                    return e.status == 'occupied';
+                }).map(function(e) {
+                    return {
+                        gpid: e.group_pass,
+                        old_date: e.old_day.format("DDMMYYYY"),
+                        new_date: e.day.format("DDMMYYYY")
+                    }
+                }).filter(function(e) {
+                    return e.old_date !== e.new_date;
+                });
+
+                data.lessons = data.lessons.concat(nl);
+            }
+            
+            if(data.lessons.length != 0) {
+                $http({
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    method: "POST",
+                    data: data,
+                    url: "/move_lessons"
+                }).then($.proxy(function(responce) {
+                    this.close();
+                    load();
+                }, this), 
+                    $.proxy(function() {
+                    alert("Ошибка при выполнении пененоса");
+                    this.close();
+                }, this))        
+            } else {
+                this.close();
+            }
+        },
+        $scope.editLessonWidget
+    )
+
+    $scope.deleteLessonFunc = $.proxy(function() {
+        console.log('delete lessons');
+    }, $scope.editLessonWidget);
 
     $scope.hideSidebar = function() {
         $rootScope.showSideBar = false;

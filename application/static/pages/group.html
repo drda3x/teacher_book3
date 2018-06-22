@@ -51,8 +51,8 @@
                             <li><a href="" ng-click="studentEditWidget.delete($index, main_list)">Удалить</a></li>
                             <li><a href="" ng-click="studentEditWidget.trash($index)">В помойку</a</li>
                             <li><a href="" ng-click="groupMoving.open(student)">В другую группу</a</li>
-                            <li><a href="" ng-click="moveLessonWidget.open($index)">Перенести занятия</a</li>
-                            <!--li><a href="" ng-click="">Удалить занятия</a</li-->
+                            <li><a href="" ng-click="editLessonWidget.open('Перенос занятий', 'Отмеченые занятия нельзя удалять', $index, moveLessonFunc)">Перенести занятия</a</li>
+                            <li><a href="" ng-click="editLessonWidget.open('Удаление занятий', '', $index, deleteLessonFunc)">Удалить занятия</a</li>
                         </ul>
                     </div>
                 </span>
@@ -316,29 +316,34 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5>Перенос занятий. {{moveLessonWidget.student}}.</h5>
+                    <h5>{{editLessonWidget.header}}. {{editLessonWidget.student}}.</h5>
                 </div>
 
                 <div class="modal-body">
-                    <span ng-repeat="month in moveLessonWidget.data">
+                    <span ng-repeat="month in editLessonWidget.data">
                         <div class="row-fuild">{{month.month}}</div>
 
                         <div class="row move-lesson-month">
                             <div class="move-lesson-date" 
-                                ng-click="moveLessonWidget.click(day)"
+                                ng-click="editLessonWidget.click(day)"
                                 style="background-color: {{day.color}}"
                                 ng-repeat="day in month.days">
                                 <span ng-if="day.status != 'locked'">{{'0' + day.day.date() | slice:-2}}</span>
-                                <s ng-if="day.status == 'locked'" style="color: red; font-size: 13pt;"><span style="color: #000; font-size: 11pt;">{{'0' + day.day.date() | slice:-2}}</span></s>
+                                <s ng-if="day.status == 'locked'" style="color: red; font-size: 13pt;">
+                                    <span style="color: #000; font-size: 11pt;">{{'0' + day.day.date() | slice:-2}}
+                                    </span>
+                                </s>
                             </div>
                         </div>
                     </span>
                 </div>
 
                 <div class="modal-footer">
-                    <h5 ng-show="moveLessonWidget.vacant_cnt > 0">Не распределено занятий: {{moveLessonWidget.vacant_cnt}}</h5>
-                    <button ng-hide="moveLessonWidget.vacant_cnt > 0" type="button" class="btn btn-primary" ng-click="moveLessonWidget.save()">Сохранить</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="moveLessonWidget.close()">Отмена</button>
+                    <h5 ng-show="editLessonWidget.vacant_cnt > 0">
+                        Не распределено занятий: {{editLessonWidget.vacant_cnt}}
+                    </h5>
+                    <button ng-hide="editLessonWidget.vacant_cnt > 0" type="button" class="btn btn-primary" ng-click="editLessonWidget.save()">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="editLessonWidget.close()">Отмена</button>
                 </div>
             </div>
         </div>
