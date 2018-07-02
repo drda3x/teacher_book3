@@ -210,7 +210,9 @@ def calc_group_profit(group, dates):
         Lessons.objects.select_related(
             'group_pass',
             'group_pass__pass_type'
-        ).filter(**params).exclude(status=Lessons.STATUSES['not_processed']),
+        ).filter(**params).exclude(
+            status__in=(Lessons.STATUSES['not_processed'], Lessons.STATUSES['moved'])
+        ),
         key=lambda l: l.date
     )
 
