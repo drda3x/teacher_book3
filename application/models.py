@@ -911,6 +911,7 @@ class Lessons(models.Model):
     class Meta:
         app_label = u'application'
         verbose_name = u'Журнал посещения'
+        unique_together = (('date', 'student', 'group'))
 
 
 class SampoPayments(models.Model):
