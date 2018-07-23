@@ -565,13 +565,13 @@ def restore_database(group, date, students):
         Debts.objects.filter(q_objs).delete()
 
 
-def delete_lessons(date_from, count, student_id, group_id):
+def delete_lessons(date_from, student_id, group_id):
 
     lessons = Lessons.objects.filter(
-        date__gte=date_from,
+        date__in=date_from,
         student_id=student_id,
         group_id=group_id
-    ).select_related('group_pass').order_by('date')[:count]
+    ).select_related('group_pass').order_by('date')
 
     passes_to_edit = set()
     lessons_to_delete = list()

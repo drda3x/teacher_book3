@@ -738,8 +738,8 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
     $scope.groupMoving = new GroupMovingWidget();
 
-    var EditLessonWidget = function() {
-        this.elem = $("#moveLesson").modal({
+    var EditLessonWidget = function($elem) {
+        this.elem = $($elem).modal({
             show: false
         });
 
@@ -806,6 +806,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
                             old_day: moment(d.day, "DDMMYYYY"),
                             group_pass: gp_id,
                             status: status,
+                            old_status: status,
                             color: color 
                         } 
                     });
@@ -827,19 +828,14 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         this.load(index)
         var dates = $scope.data.dates,
             lessons = $scope.main_list[index].lessons;
-        this.student = $scope.main_list[index].info.last_name + " " + $scope.main_list[index].info.first_name
+        this.student = $scope.main_list[index].info.last_name + " " + $scope.main_list[index].info.first_name;
+        this.student_id = $scope.main_list[index].info.id;
         this.old_days = [];
 
         this.elem.modal("show"); 
         this.vacant_cnt = 0;
 
         this.header = header;
-
-        if(save_func != undefined) {
-            this.save = save_func;
-        } else {
-            this.save_func = this.prototpye.save;
-        }
     }
 
     EditLessonWidget.prototype.close = function() {
@@ -851,13 +847,17 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         throw("Method not implemented");
     }
 
-    EditLessonWidget.prototype.click = function(object) {
+    EditLessonWidget.prototype.click = function(object, force) {
         if(object.status == 'vacant' && this.vacant_cnt == 0) {
             return;
         }
-        if(object.status == 'locked') {
+        if(!force && object.status == 'locked') {
             alert(this.lock_alert_msg);
             return;
+        }
+
+        if(force && object.status == 'locked') {
+            object.status = "occupied";
         }
 
         var new_statuses = {
@@ -885,9 +885,9 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         object.status = new_statuses[object.status];
     }
 
-    $scope.editLessonWidget = new EditLessonWidget();
+    $scope.moveLessonWidget = new EditLessonWidget("#moveLesson");
 
-    $scope.moveLessonFunc = $.proxy(function() {
+    $scope.moveLessonWidget.save = $.proxy(function() {
             if(!confirm("Будет выполненн перенос занятий. Продолжить?")) {
                 return;
             }
@@ -936,8 +936,45 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         $scope.editLessonWidget
     )
 
-    $scope.deleteLessonFunc = $.proxy(function() {
-        console.log('delete lessons');
+    $scope.deleteLessonWidget = new EditLessonWidget("#deleteLesson");
+
+    $scope.deleteLessonWidget.save = $.proxy(function() {
+        res = [];
+        
+        for(var i=0, j=this.data.length; i<j; i++) {
+            mth = this.data[i];
+            dates = mth.days.filter(function(e) {
+                return e.status == 'vacant' && e.old_status != 'vacant'
+            }).map(function(e) {
+                return e.day.format('DD.MM.YYYY');
+            });
+
+            res = res.concat(dates);
+        }
+
+        var data = {
+            dates: res,
+            group: $scope.data.group.id,
+            stid: this.student_id
+        }
+
+        if(!confirm("Подтвердите удаление занятий")) {
+            return;
+        }
+
+        $http({
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            method: "POST",
+            data: data,
+            url: "delete_lessons"
+        }).then(function(responce) {
+            load();
+        }, function() {})
+
+        this.close();
+
     }, $scope.editLessonWidget);
 
     $scope.hideSidebar = function() {
