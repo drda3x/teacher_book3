@@ -450,8 +450,8 @@ def delete_lessons(request):
     """
     try:
         data = json.loads(request.body)
-        date = datetime.strptime(data['date'], "%d.%m.%Y")
-        delete_lessons_func(date, data['count'], data['stid'], data['group'])
+        date = (datetime.strptime(d, "%d.%m.%Y") for d in data['dates'])
+        delete_lessons_func(date, data['stid'], data['group'])
 
         return HttpResponse()
 
