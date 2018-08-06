@@ -756,7 +756,7 @@
                 d2 = moment(rec.end_date, 'dd.mm.YYYY');
                 d3 = moment(this.date, 'dd.mm.YYYY');
     
-                if(rec.student == student_id && d1 <= d3 && d2 >= d3) {
+                if(rec.lessons > 0 && rec.student == student_id && d1 <= d3 && d2 >= d3) {
                     return rec.id;
                 }
             }

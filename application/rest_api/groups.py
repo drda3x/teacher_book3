@@ -342,7 +342,8 @@ def get_base_info(request):
                 "id": cc.pass_type.id,
                 "student": cc.student.id,
                 "start_date": cc.start_date.strftime("%d.%m.%Y"),
-                "end_date": cc.end_date.strftime("%d.%m.%Y")
+                "end_date": cc.end_date.strftime("%d.%m.%Y"),
+                "lessons": cc.lessons_origin - Lessons.objects.filter(group_pass=cc).count()
             }
             for cc in club_cards
         ]
