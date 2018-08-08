@@ -56,6 +56,10 @@
                 templateUrl: "static/pages/group.html",
                 controller: "groupCtrl"
             })
+            .when('/mobile/:id/:date', {
+                templateUrl: "static/pages/mobile.html",
+                controller: "mobileCtrl"
+            })
     });
     
     app.filter('slice', function() {
@@ -596,8 +600,16 @@
             });
         }
     
-        LessonWidget.prototype.show = function(index) {
-            this.elem.modal('show');
+        LessonWidget.prototype.show = function(index, is_small) {
+            if(is_small === true) {
+                this.opened = true;
+                $('html, body').animate({
+                   'scrollTop':   $('#groupListMini').offset().top
+                 }, 200);
+            } else {
+                this.elem.modal('show');
+            }
+    
             var data = [],
                 lesson, student;
             for(var i=0, j=$scope.data.students.length; i<j; i++) {
@@ -629,8 +641,12 @@
             });
         }
     
-        LessonWidget.prototype.hide = function(lesson) {
-            this.elem.modal('hide');
+        LessonWidget.prototype.hide = function(lesson, is_small) {
+            if (is_small === true) {
+                this.opened = false;
+            } else {
+                this.elem.modal('hide');
+            }
         }
     
         LessonWidget.prototype.process_student = function(lesson) {

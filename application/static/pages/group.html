@@ -1,4 +1,5 @@
-<div>
+<!-- Для десктопа -->
+<div class="d-none d-md-block">
     <div style="margin-bottom: 5px">
         <button type="button" class="btn btn-secondary" ng-click="hideSidebar()" ng-show="sideBarIsOpened"> <- </button>
         <button type="button" class="btn btn-secondary" ng-click="showSidebar()" ng-show="!sideBarIsOpened"> -> </button>
@@ -506,4 +507,15 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Для мобилки -->
+<div class="d-sm-none col-xs-12">
+    <button ng-repeat="date in data.dates" type="button" class="btn btn-lg col-md-12" style="margin: 3px 0" ng-click="lessonWidget.show($index, true)">{{date.val}}</button>
+    <table ng-show="lessonWidget.opened" id="groupListMini" class="col-md-12">
+        <th>{{lessonWidget.date}}</th>
+        <tr ng-repeat="student in lessonWidget.data">
+            <td>{{student.info.last_name}} {{student.info.first_name}}</td>
+        </tr>
+    </table>
 </div>

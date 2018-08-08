@@ -4,6 +4,7 @@
     <head>
         <title>Электронный журнал</title>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
         <link rel="stylesheet" href="{% static 'build/vendor.css' %}" />
         <link rel="stylesheet" href="{% static 'build/app.css' %}" />
         <script src="{% static 'build/vendor.js' %}"></script>
@@ -16,7 +17,8 @@
         <nav style="margin-bottom: 5px; background-color: #f8f8f8 !important; border-bottom: 1px solid #d4d4d4" 
              ng-controller="navBarCtrl"
              class="navbar navbar-dark bg-primary">
-            <a class="navbar-brand" href="/" style="color:#777777">ШТ "Динамика". Электронный журнал</a>
+            <a class="navbar-brand d-none d-sm-block" href="/" style="color:#777777">ШТ "Динамика". Электронный журнал</a>
+            <a class="navbar-brand d-sm-none d-md-none" href="/" style="color:#777777">ШТ "Динамика". ЭЖ</a>
             <span class="navbar-text" style="padding-top: 0; padding-bottom: 0; color: #777">{{header2}} {{header}}<br>{{header3}}</span>
             <ul class="nav justify-content-end" ng-controller="authCtrl">
                 <li class="nav-item" ng-show="user != null">
@@ -30,7 +32,7 @@
 
         <div class="container-fluid">
             <div class="row">
-                <div class="col-2" ng-controller="sideBarCtrl" ng-show="showSideBar">
+                <div class="col-md-2 col-sm-12 col-xs-12" ng-controller="sideBarCtrl" ng-show="showSideBar">
                     <div class="list-group">
                         <span ng-repeat="level in elements" style="padding: 0 0 3px 0;" ng-init="show=false">
                             <a class="list-group-item text-secondary" 
@@ -56,7 +58,7 @@
                         </span>
                     </div>
                 </div>
-                <div ng-class="{'col-10': $root.showSidebar, 'col-12': !$root.showSideBar}" class="col-10" ng-view></div>
+                <div ng-class="{'col-md-10': $root.showSidebar, 'col-md-12': !$root.showSideBar}" class="col-md-10 col-xs-12" ng-view></div>
             </div>
         </div>
         {% endverbatim %}

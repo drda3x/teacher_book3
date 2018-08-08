@@ -55,6 +55,10 @@ var app = angular.module('app', ['ngRoute', '720kb.datepicker'])
             templateUrl: "static/pages/group.html",
             controller: "groupCtrl"
         })
+        .when('/mobile/:id/:date', {
+            templateUrl: "static/pages/mobile.html",
+            controller: "mobileCtrl"
+        })
 });
 
 app.filter('slice', function() {
