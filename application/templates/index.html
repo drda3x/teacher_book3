@@ -54,6 +54,21 @@
                                 </span>
                             </a>
                         </span>
+                        <span style="padding: 0 0 3px 0;" ng-init="show=false">
+                            <a class="list-group-item text-secondary" 
+                               ng-click="show=!show"
+                               href="">
+                                Клуб
+                            </a>
+                            <a class="list-group-item" 
+                               style="color: #000"
+                               href="/#/sampo" 
+                               ng-show="show">
+                                <span>
+                                    САМПО
+                                </span>
+                            </a>
+                        </span>
                     </div>
                 </div>
                 <div ng-class="{'col-10': $root.showSidebar, 'col-12': !$root.showSideBar}" class="col-10" ng-view></div>
