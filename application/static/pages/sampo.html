@@ -27,44 +27,102 @@
                     <tr>
                         <th>Время</th>
                         <th>Сумма</th>
+                        <th ng-show="selectedMenu=='sampo-menu-writeoff'">Причина</th>
                     </tr>
                     <tr>
-                        <td colspan="2" style="text-align: center">Добавить запись</td>
+                        <td ng-show="selectedMenu=='sampo-menu-add'" colspan="2" style="text-align: center"
+                            ng-init="active=false">
+                            <button class="btn btn-success"
+                                ng-click="active=true;"
+                                ng-show="!active">
+                                Добавить запись
+                            </button>
+                            <span ng-show="active">
+                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time">
+                                <input style="margin: 3px 1px" type="text" placeholder="Сумма" ng-model="amount">
+                                <button style="margin: 0 10px" 
+                                        class="btn btn-success" 
+                                        ng-show="time && amount" 
+                                        ng-click="addPayment(time, amount); active=false; time=null; amount=null;">сохранить</button>
+                                <button style="margin: 0 10px; padding: 6px 22px" 
+                                        class="btn btn-danger" 
+                                        ng-show="!time || !amount" 
+                                        ng-click="active=false; time=null; amount=null;">отмена</button>
+                            </span>
+                        </td>
+                        <td colspan="3" ng-show="selectedMenu=='sampo-menu-writeoff'" style="text-align: center"
+                            ng-init="active=false">
+                            <button class="btn btn-success"
+                                ng-click="active=true;"
+                                ng-show="!active">
+                                Добавить запись
+                            </button>
+                            <span ng-show="active">
+                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time">
+                                <input style="margin: 3px 1px" type="text" placeholder="Сумма" ng-model="amount"><br>
+                                <input ng-show="selectedMenu=='sampo-menu-writeoff'" 
+                                       style="margin-bottom: 5px" 
+                                       size="43" 
+                                       type="text" 
+                                       placeholder="Причина" 
+                                       ng-model="reason"><br>
+                                <button style="margin: 0 10px" 
+                                        class="btn btn-success" 
+                                        ng-show="time && amount && reason" 
+                                        ng-click="addWriteoff(time, amount, reason); active=false; time=null; amount=null; reason=null;">сохранить</button>
+                                <button style="margin: 0 10px; padding: 6px 22px" 
+                                        class="btn btn-danger" 
+                                        ng-show="!time || !amount || !reason" 
+                                        ng-click="active=false; time=null; amount=null; reason=null;">отмена</button>
+                            </span>
+                        </td>
                     </tr>
-                    <tr ng-show="selectedMenu=='sampo-menu-add'">
-                        <td>12:00</td>
-                        <td>300</td>
+                    <tr ng-show="selectedMenu=='sampo-menu-add'"
+                        ng-repeat="payment in payments">
+                        <td>{{payment.time}}</td>
+                        <td>{{payment.amount}}</td>
                     </tr>
-                    <tr ng-show="selectedMenu=='sampo-menu-add'">
-                        <td>12:10</td>
-                        <td>400</td>
-                    </tr>
-                    <tr ng-show="selectedMenu=='sampo-menu-writeoff'">
-                        <td>12:10</td>
-                        <td>700</td>
-                    </tr>
-                    <tr ng-show="selectedMenu=='sampo-menu-writeoff'">
-                        <td>12:10</td>
-                        <td>800</td>
+                    <tr ng-show="selectedMenu=='sampo-menu-writeoff'"
+                        ng-repeat="withdrawal in withdrawals">
+                        <td>{{withdrawal.time}}</td>
+                        <td>{{withdrawal.amount}}</td>
+                        <td>{{withdrawal.reason}}</td>
                     </tr>
                 </table>
                 <table class="col-12 table table-bordered table-striped"
                        ng-show="selectedMenu=='sampo-menu-pass'"
+                       ng-init="active=false"
                        style="margin-top: 0px">
                     <tr>
                         <th>Фамилия Имя</th>
                         <th>Отметка</th>
                     </tr>
                     <tr>
-                        <td colspan="2" style="text-align: center">Добавить абонемент</td>
+                        <td colspan="2" style="text-align: center">
+                            <button ng-show="!active" class="btn btn-success" ng-click="active=true">Добавить абонемент</button>
+                            <span ng-show="active">
+                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time">
+                                <input style="margin: 3px 1px" type="text" placeholder="Сумма" ng-model="amount"><br>
+                                <input style="margin-bottom: 5px" 
+                                       size="43" 
+                                       type="text" 
+                                       placeholder="Фамилия Имя" 
+                                       ng-model="name"><br>
+                                <button style="margin: 0 10px" 
+                                        class="btn btn-success" 
+                                        ng-show="time && amount && name" 
+                                        ng-click="addPass(time, amount, name); active=false; time=null; amount=null; name=null;">сохранить</button>
+                                <button style="margin: 0 10px; padding: 6px 22px" 
+                                        class="btn btn-danger" 
+                                        ng-show="!time || !amount || !name" 
+                                        ng-click="active=false; time=null; amount=null; name=null;">отмена</button>
+                            </span>
+
+                        </td>
                     </tr>
-                    <tr>
-                        <td>Нестеров Василий</td>
-                        <td><input type="checkbox"></td>
-                    </tr>
-                    <tr>
-                        <td>Кудрявцев Михаил</td>
-                        <td><input type="checkbox"></td>
+                    <tr ng-repeat="pass in passes">
+                        <td>{{pass.name}}</td>
+                        <td><input type="checkbox" ng-checked="pass.checked"></td>
                     </tr>
                 </table>
             </div>
