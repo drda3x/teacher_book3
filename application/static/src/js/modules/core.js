@@ -56,7 +56,8 @@ var app = angular.module('app', ['ngRoute', '720kb.datepicker'])
             controller: "groupCtrl"
         })
         .when('/sampo', {
-            templateURL: "static/pages/sampo.html"
+            templateUrl: "/static/pages/sampo.html",
+            controller: "sampoCtrl"
         })
 });
 
