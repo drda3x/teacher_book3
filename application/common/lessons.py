@@ -559,7 +559,7 @@ def restore_database(group, date, students):
         if q_objs is None:
             q_objs = Q(student=lesson.student, date=lesson.date)
         else:
-            q_objs != Q(student=lesson.student, date=lesson.date)
+            q_objs |= Q(student=lesson.student, date=lesson.date)
 
     if q_objs is not None:
         Debts.objects.filter(q_objs).delete()
