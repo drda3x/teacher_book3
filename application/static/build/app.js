@@ -1426,6 +1426,7 @@
     });
     // module
     app.controller('sampoCtrl', function($scope) {
+    
         $scope.selectedMenu = null; 
         $scope.today = new Date().toString();
     
@@ -1479,5 +1480,13 @@
         }
     
         $scope.selectMenu('sampo-menu-add');
+        
+        // Обработчик изменения даты
+        $scope.changeDate = function(newDate) {
+        };
+        
+        // Обработчик изменения зала
+        $scope.changeHall = function(newHall) {
+        }
     })
 })()
