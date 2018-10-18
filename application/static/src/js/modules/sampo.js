@@ -1,6 +1,7 @@
 // module
 app.controller('sampoCtrl', function($scope) {
     $scope.selectedMenu = null; 
+    $scope.today = new Date().toString();
 
     $scope.selectMenu = function(elem) {
         $('.sampo-menu').css('background-color', 'inherit');
