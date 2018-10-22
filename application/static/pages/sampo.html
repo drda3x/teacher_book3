@@ -1,7 +1,7 @@
 <div>
     <div class="row" style="margin-bottom: 10px">
         <div class="col-2">
-            <datepicker date-set="{{today}}"
+            <datepicker date-set="{{today.toString()}}"
                         date-format="dd.MM.yyyy">
                 <input ng-change="changeDate(selectedDate)" 
                        ng-model="selectedDate" 
@@ -60,7 +60,7 @@
                                 Добавить запись
                             </button>
                             <span ng-show="active">
-                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time">
+                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time" ng-change="manualTimeChange()">
                                 <input style="margin: 3px 1px" type="text" placeholder="Сумма" ng-model="amount">
                                 <button style="margin: 0 10px" 
                                         class="btn btn-success" 
@@ -80,7 +80,7 @@
                                 Добавить запись
                             </button>
                             <span ng-show="active">
-                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time">
+                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time" ng-change="manualTimeChange()">
                                 <input style="margin: 3px 1px" type="text" placeholder="Сумма" ng-model="amount"><br>
                                 <input ng-show="selectedMenu=='sampo-menu-writeoff'" 
                                        style="margin-bottom: 5px" 
@@ -123,7 +123,7 @@
                         <td colspan="2" style="text-align: center">
                             <button ng-show="!active" class="btn btn-success" ng-click="active=true">Добавить абонемент</button>
                             <span ng-show="active">
-                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time">
+                                <input style="margin-right: 6px" type="text" placeholder="Время" ng-model="time" ng-change="manualTimeChange()">
                                 <input style="margin: 3px 1px" type="text" placeholder="Сумма" ng-model="amount"><br>
                                 <input style="margin-bottom: 5px" 
                                        size="43" 

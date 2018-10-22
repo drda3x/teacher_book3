@@ -1,5 +1,5 @@
 // module
-app.controller('sampoCtrl', function($scope, $timeout, $interval) {
+app.controller('sampoCtrl', function($scope, $interval) {
 
     $scope.selectedMenu = null; 
     $scope.today = new Date();
@@ -79,28 +79,18 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval) {
         }
 
     }, 1000);
-    
-    var promice;
+
     $scope.manualTimeChange = function() {        
         lastChangeTime = moment();
-        $timeout.cancel(promice);
-        promice = $timeout(function() {
-            var t = "" + $scope.time,
-                hh, mm;
+        var t = "" + $scope.time,
+            hh, mm;
 
-            t = t.replace(':', '');
-            hh = parseInt(t.slice(0, 2));
-            mm = parseInt(t.slice(2, 4));
+        t = t.replace(':', '');
+        hh = parseInt(t.slice(0, 2));
+        mm = parseInt(t.slice(2, 4));
 
-            hh = hh > 23 ? 23 : hh;
-            mm = mm > 59 ? 59 : mm;
-
-            hh = ("0" + hh).slice(-2);
-            mm = ("0" + mm).slice(-2);
-
-            if(t.length > 2) {
-                $scope.time = hh + ":" + mm;
-            }
-        }, 300);
+        if(t.length > 2) {
+            $scope.time = t.slice(0, 2) + ":" + t.slice(2, 4);
+        }
     }
 })
