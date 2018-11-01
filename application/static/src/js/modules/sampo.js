@@ -1,5 +1,22 @@
 // module
-app.controller('sampoCtrl', function($scope, $timeout, $interval) {
+app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
+
+    function sendRequest() {
+        $http({
+            method: "POST",
+            url: "get_sampo_day",
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: JSON.stringify({
+                date: moment($scope.today).format('DD.MM.YYYY'),
+                hall: $scope.selectedDanceHall
+            })
+        }).then(function() {
+            console.log('ok')
+        });
+    }
+
 
     $scope.selectedMenu = null; 
     $scope.today = new Date();
@@ -57,10 +74,12 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval) {
     
     // Обработчик изменения даты
     $scope.changeDate = function(newDate) {
+        sendRequest();
     };
     
     // Обработчик изменения зала
     $scope.changeHall = function(newHall) {
+        sendRequest();
     };
     
     var lastChangeTime = null;

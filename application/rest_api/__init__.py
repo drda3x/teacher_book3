@@ -18,3 +18,4 @@ from students import edit_student
 from auth import login, logout
 from comments import edit_comment
 from system import view_changes
+from sampo import get_sampo_day_info
