@@ -554,15 +554,22 @@ def restore_database(group, date, students):
                     group_pass=p.group_pass
                 ).save()
 
-    q_objs = None
-    for lesson in lessons:
-        if q_objs is None:
-            q_objs = Q(student=lesson.student, date=lesson.date)
-        else:
-            q_objs |= Q(student=lesson.student, date=lesson.date)
+    debts = Debts.objects.filter(group=group)
+    d_dates = debts.values_list('id', 'student', 'date')
 
-    if q_objs is not None:
-        Debts.objects.filter(q_objs).delete()
+    if len(d_dates) > 0:
+        _, student, date = d_dates[0]
+        q = Q(student_id=student, date=date)
+
+        for _, student, date in d_dates[1:]:
+            q |= Q(student_id=student, date=date)
+
+        lessons = Lessons.objects.filter(q).values_list('student', 'date')
+        ids = (
+            i[0] for i in d_dates if (i[1], i[2]) in lessons
+        )
+
+        debts.filter(id__in=ids).delete()
 
 
 def delete_lessons(date_from, student_id, group_id):
