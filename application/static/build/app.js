@@ -1438,11 +1438,10 @@
                     date: moment($scope.today).format('DD.MM.YYYY'),
                     hall: $scope.selectedDanceHall
                 })
-            }).then(function() {
-                console.log('ok')
+            }).then(function(data) {
+                console.log(data);
             });
         }
-    
     
         $scope.selectedMenu = null; 
         $scope.today = new Date();
@@ -1466,6 +1465,25 @@
         $scope.payments = [];
         // Добавление оплаты
         $scope.addPayment = function(time, amount) {
+            var data = {
+                date: this.selectedDate,
+                time: time,
+                amount: parseInt(amount),
+                hall: this.selectedDanceHall
+            };
+            
+            $http({
+                method: "POST",
+                url: "add_sampo_payment",
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: JSON.stringify(data)
+            }).then(function(data) {
+                console.log(data);
+            });
+    
+            console.log(data);
             this.payments.push({
                 time: time,
                 amount: amount

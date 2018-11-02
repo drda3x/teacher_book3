@@ -37,5 +37,6 @@ urlpatterns = [
     url(r'^view_changes', rest_api.view_changes),
     url(r'^get_group_calendar', rest_api.get_group_calendar),
     url(r'^get_sampo_day', rest_api.get_sampo_day_info),
+    url(r'^add_sampo_payment', rest_api.add_sampo_payment),
     url(r'^$', views.index, name="index"),
 ]
