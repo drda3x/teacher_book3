@@ -9,11 +9,17 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
                 'X-CSRFToken': getCookie('csrftoken')
             },
             data: JSON.stringify({
-                date: moment($scope.today).format('DD.MM.YYYY'),
+                date: $scope.selectedDate,
                 hall: $scope.selectedDanceHall
             })
         }).then(function(data) {
-            console.log(data);
+            data = data.data.payments;
+
+            for(var i=0, j=data.length; i<j; i++) {
+                var time = moment(data[i][0], 'DD.MM.YYYY HH:mm:SS').format('HH:mm');
+                var amount = data[i][1];
+                fillPayments(time, amount);
+            }
         });
     }
 
@@ -36,7 +42,17 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
         }
     }
 
-    $scope.payments = [];
+    function reset() {
+        $scope.payments = [];
+        $scope.withdrawals = [];
+        $scope.passes = []; 
+    }
+    function fillPayments(time, amount) {
+        $scope.payments.push({
+            time: time,
+            amount: amount
+        });
+    }
     // Добавление оплаты
     $scope.addPayment = function(time, amount) {
         var data = {
@@ -54,17 +70,10 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
             },
             data: JSON.stringify(data)
         }).then(function(data) {
-            console.log(data);
+            fillPayments(time, amount);
         });
-
-        console.log(data);
-        this.payments.push({
-            time: time,
-            amount: amount
-        })
     }
     
-    $scope.withdrawals = [];
     // Добавление списания
     $scope.addWriteoff = function(time, amount, reason) {
         $scope.withdrawals.push({
@@ -74,7 +83,6 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
         });
     }
     
-    $scope.passes = []; 
     // Добавление абонементов
     $scope.addPass = function(time, amount, name) {
         $scope.payments.push({
@@ -92,11 +100,13 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
     
     // Обработчик изменения даты
     $scope.changeDate = function(newDate) {
+        reset();
         sendRequest();
     };
     
     // Обработчик изменения зала
     $scope.changeHall = function(newHall) {
+        reset();
         sendRequest();
     };
     
@@ -140,4 +150,6 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
             }
         }, 300);
     }
+
+    reset();
 })

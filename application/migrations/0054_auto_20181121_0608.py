@@ -13,12 +13,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='sampopassusage',
-            name='dance_hall',
+            name='hall',
             field=models.ForeignKey(default=4, verbose_name='\u0417\u0430\u043b', to='application.DanceHalls'),
         ),
         migrations.AddField(
             model_name='sampopayments',
-            name='dance_hall',
+            name='hall',
             field=models.ForeignKey(default=4, verbose_name='\u0417\u0430\u043b', to='application.DanceHalls'),
         ),
     ]

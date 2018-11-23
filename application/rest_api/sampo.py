@@ -26,15 +26,17 @@ def get_sampo_day_info(request):
 
     try:
         data = json.loads(request.body)
-        date = datetime.datetime.strptime(data['date'], '%d.%m.%Y')
+        date_b = datetime.datetime.strptime(data['date'], '%d.%m.%Y')
+        date_e = datetime.datetime.strptime('%s 23:59:59' % data['date'],
+                                            '%d.%m.%Y %H:%M:%S')
         day_payments = models.SampoPayments.objects.filter(
-            date=date,
-            dance_hall_id=data['hall']
+            date__range=(date_b, date_e),
+            hall_id=data['hall']
         )
 
         responce = dict()
         responce['payments'] = [
-            (payment.strftime('%d.%m.%Y %H:%M:%S'), payment.money)
+            (payment.date.strftime('%d.%m.%Y %H:%M:%S'), payment.money)
             for payment in list(day_payments.only('date', 'money'))
         ]
 
