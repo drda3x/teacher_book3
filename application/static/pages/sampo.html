@@ -111,7 +111,7 @@
                         <td>{{withdrawal.reason}}</td>
                     </tr>
                 </table>
-                <table class="col-12 table table-bordered table-striped"
+                <table class="col-12 table table-bordered"
                        ng-show="selectedMenu=='sampo-menu-pass'"
                        ng-init="active=false"
                        style="margin-top: 0px">
@@ -142,9 +142,9 @@
 
                         </td>
                     </tr>
-                    <tr ng-repeat="pass in passes">
+                    <tr ng-repeat="pass in passes" ng-class="{'table-success': pass.checked}">
                         <td>{{pass.name}}</td>
-                        <td><input type="checkbox" ng-checked="pass.checked"></td>
+                        <td><input type="checkbox" ng-model="pass.checked"></td>
                     </tr>
                 </table>
             </div>

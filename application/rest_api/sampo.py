@@ -34,10 +34,33 @@ def get_sampo_day_info(request):
             hall_id=data['hall']
         )
 
+        fdm = date_b.replace(day=1)
+        edm = fdm + datetime.timedelta(days=35)
+        edm = edm.replace(day=1)
+        passes = models.SampoPasses.objects.select_related().filter(
+            payment__in=models.SampoPayments.objects.filter(date__gte=fdm,
+                                             date__lt=edm)
+        ).order_by('surname', 'name')
+        usages = models.SampoPassUsage.objects.select_related().filter(
+            sampo_pass__in=passes,
+            date__range=(date_b, date_e)
+        ).values_list('sampo_pass_id', flat=True)
+
         responce = dict()
         responce['payments'] = [
-            (payment.date.strftime('%d.%m.%Y %H:%M:%S'), payment.money)
-            for payment in list(day_payments.only('date', 'money'))
+            (
+                payment.date.strftime('%d.%m.%Y %H:%M:%S'),
+                payment.money,
+                payment.comment
+            )
+            for payment in list(day_payments)
+        ]
+        responce['passes'] = [
+            (
+                "%s %s" % (p.surname, p.name),
+                p.id in usages
+            )
+            for p in passes
         ]
 
         return HttpResponse(json.dumps(responce))

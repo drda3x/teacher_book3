@@ -1439,12 +1439,26 @@
                     hall: $scope.selectedDanceHall
                 })
             }).then(function(data) {
-                data = data.data.payments;
+                data = data.data;
     
-                for(var i=0, j=data.length; i<j; i++) {
-                    var time = moment(data[i][0], 'DD.MM.YYYY HH:mm:SS').format('HH:mm');
-                    var amount = data[i][1];
-                    fillPayments(time, amount);
+                for(var i=0, j=data.payments.length; i<j; i++) {
+                    payment = data.payments[i]
+                    var time = moment(payment[0], 'DD.MM.YYYY HH:mm:SS').format('HH:mm');
+                    var amount = parseInt(payment[1]);
+    
+                    if (amount > 0) {
+                        fillPayments(time, amount);
+                    } else {
+                        reason = payment[2]
+                        fillWithdrawals(time, amount, reason);
+                    }
+                }
+    
+                for(var i=0, j=data.passes.length; i<j; i++) {
+                    var pass = data.passes[i],
+                        name = pass[0],
+                        checked = pass[1];
+                    fillPasses(name, checked)
                 }
             });
         }
@@ -1473,12 +1487,29 @@
             $scope.withdrawals = [];
             $scope.passes = []; 
         }
+    
         function fillPayments(time, amount) {
             $scope.payments.push({
                 time: time,
                 amount: amount
             });
         }
+    
+        function fillWithdrawals(time, amount, reason) {
+            $scope.withdrawals.push({
+                time: time,
+                amount: amount,
+                reason: reason
+            });
+        }
+    
+        function fillPasses(name, checked) {
+            $scope.passes.push({
+                name: name,
+                checked: checked
+            });
+        }
+    
         // Добавление оплаты
         $scope.addPayment = function(time, amount) {
             var data = {
@@ -1501,25 +1532,12 @@
         }
         
         // Добавление списания
-        $scope.addWriteoff = function(time, amount, reason) {
-            $scope.withdrawals.push({
-                time: time,
-                amount: amount,
-                reason: reason
-            });
-        }
-        
+        $scope.addWriteoff = fillWithdrawals;
+    
         // Добавление абонементов
         $scope.addPass = function(time, amount, name) {
-            $scope.payments.push({
-                time: time,
-                amount: amount
-            });
-    
-            $scope.passes.push({
-                name: name,
-                checked: true
-            });
+            fillPayments(time, amount);
+            fillPasses(name, true);
         }
     
         $scope.selectMenu('sampo-menu-add');
