@@ -6,4 +6,5 @@
     //= modules/side_bar.js
     //= modules/auth.js
     //= modules/group.js
+    //= modules/sampo.js
 })()

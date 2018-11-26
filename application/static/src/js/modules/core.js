@@ -55,6 +55,20 @@ var app = angular.module('app', ['ngRoute', '720kb.datepicker'])
             templateUrl: "static/pages/group.html",
             controller: "groupCtrl"
         })
+        .when('/sampo', {
+            templateUrl: "/static/pages/sampo.html",
+            controller: "sampoCtrl"
+        })
+        .when('/sampo/:id/', {
+            templateUrl: "/static/pages/sampo.html",
+            controller: "sampoCtrl",
+            reloadOnSearch: false
+        })
+        .when('/sampo/:id/:date/', {
+            templateUrl: "static/pages/sampo.html",
+            controller: "groupCtrl",
+            reloadOnSearch: false
+        })
 });
 
 app.filter('slice', function() {
