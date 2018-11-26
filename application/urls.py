@@ -40,5 +40,6 @@ urlpatterns = [
     url(r'^add_sampo_payment', rest_api.add_sampo_payment),
     url(r'^add_sampo_pass', rest_api.add_sampo_pass),
     url(r'^get_sampo_month', rest_api.get_sampo_month_info),
+    url(r'^check_sampo_pass', rest_api.check_sampo_pass),
     url(r'^$', views.index, name="index"),
 ]

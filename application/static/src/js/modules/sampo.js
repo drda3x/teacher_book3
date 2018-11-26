@@ -31,8 +31,9 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
             for(var i=0, j=data.passes.length; i<j; i++) {
                 var pass = data.passes[i],
                     name = pass[0],
-                    checked = pass[1];
-                fillPasses(name, checked)
+                    checked = pass[1],
+                    pid = pass[2];
+                fillPasses(name, checked, pid);
             }
 
             updateReport();
@@ -92,10 +93,11 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
         });
     }
 
-    function fillPasses(name, checked) {
+    function fillPasses(name, checked, pid) {
         $scope.passes.push({
             name: name,
-            checked: checked
+            checked: checked,
+            pid: pid
         });
     }
 
@@ -162,7 +164,7 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
             data: JSON.stringify(data)
         }).then(function(data) {
             fillPayments(time, amount);
-            fillPasses(name, true);
+            fillPasses(name, true, null);
         });
     }
 
@@ -223,6 +225,25 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
                 $scope.time = hh + ":" + mm;
             }
         }, 300);
+    }
+
+    $scope.checkSampo = function(pid, value) {
+        $http({
+            method: "POST",
+            url: "check_sampo_pass",
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: JSON.stringify({
+                date: $scope.selectedDate,
+                hall: $scope.selectedDanceHall,
+                pid: pid,
+                val: value
+            })
+        }).then(function(data) {
+
+        })
+        
     }
 
     reset();

@@ -22,5 +22,6 @@ from sampo import (
     get_sampo_day_info,
     add_sampo_payment,
     add_sampo_pass,
-    get_sampo_month_info
+    get_sampo_month_info,
+    check_sampo_pass
 )
