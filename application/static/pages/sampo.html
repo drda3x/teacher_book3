@@ -144,7 +144,7 @@
                     </tr>
                     <tr ng-repeat="pass in passes" ng-class="{'table-success': pass.checked}">
                         <td>{{pass.name}}</td>
-                        <td><input type="checkbox" ng-model="pass.checked"></td>
+                        <td><input type="checkbox" ng-model="pass.checked" ng-click="checkSampo(pass.pid, pass.checked)"></td>
                     </tr>
                 </table>
             </div>

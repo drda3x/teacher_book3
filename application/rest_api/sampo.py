@@ -61,7 +61,8 @@ def get_sampo_day_info(request):
         responce['passes'] = [
             (
                 "%s %s" % (p.surname, p.name),
-                p.id in usages
+                p.id in usages,
+                p.id
             )
             for p in passes
         ]
@@ -89,8 +90,12 @@ def get_sampo_month_info(request):
 
         prev_balance = dict(models.SampoPayments.objects.select_related() \
         .filter(date__lt=day_begin).values_list('hall_id').annotate(total=Sum('money')))
-        payments = models.SampoPayments.objects.select_related().filter(date__range=[day_begin, day_end]).order_by("date", "hall")
-        passes = models.SampoPasses.objects.filter(payment__in=payments).values_list("payment_id", flat=True)
+
+        payments = models.SampoPayments.objects.select_related() \
+        .filter(date__range=[day_begin, day_end]).order_by("hall", "date")
+
+        passes = models.SampoPasses.objects.filter(payment__in=payments) \
+        .values_list("payment_id", flat=True)
 
         _payments = (
             dict(amount=p.money,
@@ -220,3 +225,40 @@ def add_sampo_pass(request):
         print format_exc()
 
         return HttpResponseServerError(format_exc())
+
+
+@auth
+def check_sampo_pass(request):
+
+    try:
+        data = json.loads(request.body)
+        date = datetime.datetime.strptime(
+            data['date'],
+            "%d.%m.%Y"
+        )
+        val = data['val']
+
+        if val:
+            pass_usage = models.SampoPassUsage(
+                sampo_pass_id=data['pid'],
+                date=date,
+                hall_id=data['hall']
+            )
+            pass_usage.save()
+
+        else:
+            pass_usage = models.SampoPassUsage.objects.get(
+                sampo_pass_id=data['pid'],
+                date=date,
+                hall_id=data['hall']
+            )
+            pass_usage.delete()
+
+        return HttpResponse()
+
+    except Exception:
+        from traceback import format_exc
+        print format_exc()
+
+        return HttpResponseServerError(format_exc())
+
