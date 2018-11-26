@@ -1,5 +1,5 @@
 // module
-app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
+app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $http) {
 
     function sendRequest() {
         $http({
@@ -34,9 +34,24 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
                     checked = pass[1];
                 fillPasses(name, checked)
             }
+
+            updateReport();
         });
     }
 
+    function updateReport() {
+        $http({
+            method: "POST",
+            url: "get_sampo_month",
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        }).then(function(response) {
+            var data = response.data;
+            $scope.report = response.data;
+        });
+    }
+    
     $scope.selectedMenu = null; 
     $scope.today = new Date();
 
@@ -106,12 +121,49 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
     }
     
     // Добавление списания
-    $scope.addWriteoff = fillWithdrawals;
+    $scope.addWriteoff = function(time, amount, reason) {
+        amount = -1*amount
+        var data = {
+            date: this.selectedDate,
+            time: time,
+            amount: parseInt(amount),
+            comment: reason,
+            hall: this.selectedDanceHall
+        };
+
+        $http({
+            method: "POST",
+            url: "add_sampo_payment",
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: JSON.stringify(data)
+        }).then(function(data) {
+            fillWithdrawals(time, amount, reason);
+        });
+    }
 
     // Добавление абонементов
     $scope.addPass = function(time, amount, name) {
-        fillPayments(time, amount);
-        fillPasses(name, true);
+        var data = {
+            date: this.selectedDate,
+            time: time,
+            amount: parseInt(amount),
+            name: name,
+            hall: this.selectedDanceHall
+        };
+        
+        $http({
+            method: "POST",
+            url: "add_sampo_pass",
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            data: JSON.stringify(data)
+        }).then(function(data) {
+            fillPayments(time, amount);
+            fillPasses(name, true);
+        });
     }
 
     $scope.selectMenu('sampo-menu-add');
@@ -120,12 +172,16 @@ app.controller('sampoCtrl', function($scope, $timeout, $interval, $http) {
     $scope.changeDate = function(newDate) {
         reset();
         sendRequest();
+        var dt = newDate.replace(/\./g, '')
+//        $location.path('sampo/' + $scope.selectedDanceHall + "/" + dt);
     };
     
     // Обработчик изменения зала
     $scope.changeHall = function(newHall) {
         reset();
         sendRequest();
+        var dt = $scope.selectedDate.replace(/\./g, '')
+//        $location.path('sampo/' + newHall + "/" + dt);
     };
     
     var lastChangeTime = null;

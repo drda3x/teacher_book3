@@ -162,21 +162,13 @@
                     <th>Абонементы</th>
                     <th>Занятия</th>
                 </tr>
-                <tr>
-                    <td>01</td>
-                    <td>4500</td>
-                    <td>4000</td>
-                    <td>500</td>
-                    <td>1000</td>
-                    <td>3500</td>
-                </tr>
-                <tr>
-                    <td>02</td>
-                    <td>5000</td>
-                    <td>3000</td>
-                    <td>2000</td>
-                    <td>2000</td>
-                    <td>3000</td>
+                <tr ng-repeat="rec in report" ng-show="rec.hall == selectedDanceHall">
+                    <td>{{rec.date}}</td>
+                    <td>{{rec.total}}</td>
+                    <td>{{rec.passes}}</td>
+                    <td>{{rec.total-rec.passes}}</td>
+                    <td><div ng-repeat="w in rec.l_withdrawals">{{w.amount}}<br><span class="text-info">{{w.comment}}</span></div></td>
+                    <td>{{rec.prev_day_balance}}</td>
                 </tr>
             </table>
         </div>

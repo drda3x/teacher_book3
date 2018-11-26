@@ -20,5 +20,7 @@ from comments import edit_comment
 from system import view_changes
 from sampo import (
     get_sampo_day_info,
-    add_sampo_payment
+    add_sampo_payment,
+    add_sampo_pass,
+    get_sampo_month_info
 )
