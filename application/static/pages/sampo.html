@@ -1,7 +1,7 @@
 <div>
     <div class="row" style="margin-bottom: 10px">
         <div class="col-2">
-            <datepicker date-set="{{today.toString()}}"
+            <datepicker date-set="{{today}}"
                         date-format="dd.MM.yyyy">
                 <input ng-change="changeDate(selectedDate)" 
                        ng-model="selectedDate" 
@@ -12,14 +12,13 @@
         </div>
         <div class="col-6">
             <select ng-change="changeHall(selectedDanceHall)" 
-                    ng-init="selectedDanceHall=4" 
                     ng-model="selectedDanceHall" 
                     class="custom-select" 
                     id="" 
                     name="" 
                     style="cursor: pointer">
-                <option ng-selected="true" value="4">Волгоградский пр-т</option>
-                <option value="22">Выставочная</option>
+                <option ng-selected="selectedDanceHall == 4" value="4">Волгоградский пр-т</option>
+                <option ng-selected="selectedDanceHall == 22"value="22">Выставочная</option>
             </select>
         </div>
     </div>
@@ -142,9 +141,12 @@
 
                         </td>
                     </tr>
-                    <tr ng-repeat="pass in passes" ng-class="{'table-success': pass.checked}">
+                    <tr ng-repeat="pass in passes" 
+                        ng-click="checkSampo(pass)"
+                        ng-class="{'table-success': pass.checked}"
+                        style="cursor: pointer">
                         <td>{{pass.name}}</td>
-                        <td><input type="checkbox" ng-model="pass.checked" ng-click="checkSampo(pass.pid, pass.checked)"></td>
+                        <td><input type="checkbox" ng-checked="pass.checked" ></td>
                     </tr>
                 </table>
             </div>
