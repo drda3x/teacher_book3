@@ -88,8 +88,7 @@ def get_sampo_month_info(request):
         day_end = datetime.datetime.now().replace(hour=23, minute=59, second=59, microsecond=0)
         day_begin = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        prev_balance = dict(models.SampoPayments.objects.select_related() \
-        .filter(date__lt=day_begin).values_list('hall_id').annotate(total=Sum('money')))
+        prev_balance = dict()
 
         payments = models.SampoPayments.objects.select_related() \
         .filter(date__range=[day_begin, day_end]).order_by("hall", "date")
