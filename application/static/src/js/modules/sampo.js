@@ -1,5 +1,5 @@
 // module
-app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $http) {
+app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $http, $rootScope) {
 
     function sendRequest() {
         $http({
@@ -53,8 +53,18 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
         });
     }
     
+    var params = $location.search() 
     $scope.selectedMenu = null; 
-    $scope.today = new Date();
+
+    if (params['date'] !== undefined) {
+        $scope.selectedDate = moment(params['date'], "DDMMYYYY");
+        $scope.today = $scope.selectedDate.toDate().toString();
+    } else {
+        $scope.selectedDate = new Date();
+        $scope.today = $scope.selectedDate.toString();
+    }
+    
+    $scope.selectedDanceHall = params['hall'] || 4;
 
     $scope.selectMenu = function(elem) {
         $('.sampo-menu').css('background-color', 'inherit');
@@ -175,7 +185,7 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
         reset();
         sendRequest();
         var dt = newDate.replace(/\./g, '')
-//        $location.path('sampo/' + $scope.selectedDanceHall + "/" + dt);
+        $location.search('date', dt);
     };
     
     // Обработчик изменения зала
@@ -183,7 +193,7 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
         reset();
         sendRequest();
         var dt = $scope.selectedDate.replace(/\./g, '')
-//        $location.path('sampo/' + newHall + "/" + dt);
+        $location.search('hall', $scope.selectedDanceHall);
     };
     
     var lastChangeTime = null;
@@ -227,7 +237,8 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
         }, 300);
     }
 
-    $scope.checkSampo = function(pid, value) {
+    $scope.checkSampo = function(pass) {
+        pass.checked = !pass.checked;
         $http({
             method: "POST",
             url: "check_sampo_pass",
@@ -237,11 +248,10 @@ app.controller('sampoCtrl', function($scope, $timeout, $location, $interval, $ht
             data: JSON.stringify({
                 date: $scope.selectedDate,
                 hall: $scope.selectedDanceHall,
-                pid: pid,
-                val: value
+                pid: pass.pid,
+                val: pass.checked
             })
         }).then(function(data) {
-
         })
         
     }
