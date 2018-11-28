@@ -61,16 +61,6 @@
                 controller: "sampoCtrl",
                 reloadOnSearch: false
             })
-            /*.when('/sampo/:id/', {
-                templateUrl: "/static/pages/sampo.html",
-                controller: "sampoCtrl",
-                reloadOnSearch: false
-            })
-            .when('/sampo/:id/:date/', {
-                templateUrl: "static/pages/sampo.html",
-                controller: "groupCtrl",
-                reloadOnSearch: false
-            })*/
     });
     
     app.filter('slice', function() {
