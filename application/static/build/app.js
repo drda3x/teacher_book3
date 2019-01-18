@@ -710,6 +710,11 @@
         }
     
         LessonWidget.prototype.cancelLesson = function() {
+    
+            if (!confirm("Подтвердите отмену занятия")) {
+                return 
+            }
+    
             var self = this;
             self.hide();
     
@@ -724,9 +729,12 @@
                     group: $scope.data.group.id
                 }
             }).then(function(response) {
+                $scope.main_list = [];
+                $scope.sub_list = [];
                 $scope.data.students = response.data;
-                fillSubLists();
                 $scope.data.dates[self.index].canceled = true; 
+                fillSubLists();
+                console.log('aaa');
             }, function() {
             });
         }

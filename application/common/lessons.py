@@ -88,6 +88,9 @@ def get_students_lessons(group, date_from, date_to, students):
     if isinstance(group, int):
         group = Groups.objects.get(pk=group)
 
+    date_from = date_from.date() if isinstance(date_from, datetime) else date_from
+    date_from = max(date_from, group.start_date)
+
     if date_to is not None:
         _dates = list(takewhile(
             lambda x: x <= date_to,
