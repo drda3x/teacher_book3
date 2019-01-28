@@ -230,6 +230,18 @@
                 </form>
                 <div class="modal-footer" ng-show="!lessonWidget.is_canceled">
                     <div>
+                        <select style="margin-bottom: 10px" 
+                                class="form-control" 
+                                id="" 
+                                name="" 
+                                ng-model="lessonWidget.teachers[t_index]">
+                            <option value="-1">--выберите зал--</option>
+                            <option value="{{hall[0]}}" ng-repeat="hall in data.dance_halls">
+                                {{hall[1]}}
+                            </option>
+                        </select>
+                    </div>
+                    <div>
                         <button class="btn" type="button" ng-click="lessonWidget.cancelLesson()">Отменить занятие</button>
                     </div>
                     <div>

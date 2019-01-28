@@ -240,7 +240,8 @@ class Groups(models.Model):
     external_passes = models.ManyToManyField('PassTypes', verbose_name=u'Абонементы для показа на внешних сайтах', related_name=u'exp', null=True, blank=True)
     # _available_passes = models.CommaSeparatedIntegerField(max_length=1000, verbose_name=u'Абонементы для преподавателей', null=True, blank=True)
     # _external_passes = models.CommaSeparatedIntegerField(max_length=1000, verbose_name=u'Абонементы для показа на внешних сайтах', null=True, blank=True)
-    dance_hall = models.ForeignKey(DanceHalls, verbose_name=u'Зал')
+    dance_hall = models.ForeignKey(DanceHalls, verbose_name=u'Зал по умолчанию', null=True, blank=True)  # DEPRECATED
+    dance_halls = models.ManyToManyField(DanceHalls, verbose_name=u'Залы', related_name=u"dance_halls", null=True, blank=True)
     updates = models.CommaSeparatedIntegerField(max_length=200, verbose_name=u'Донаборы в группу', null=True, blank=True)
     lending_message = models.CharField(max_length=100, verbose_name=u'Сообщение в шапке лендинга', null=True, blank=True)
     free_placees = models.IntegerField(verbose_name=u'Общее кол-во мест в группе', null=True, blank=True)
@@ -858,6 +859,7 @@ class Lessons(models.Model):
     student = models.ForeignKey(Students, verbose_name=u'Учение')
     group_pass = models.ForeignKey(Passes, verbose_name=u'Абонемент', related_name=u'lesson_group_pass')
     status = models.IntegerField(verbose_name=u'Статус занятия', choices=[(val, key) for key, val in STATUSES.iteritems()], default=DEFAULT_STATUS)
+    dance_hall = models.ForeignKey(DanceHalls, verbose_name=u'Зал', null=True, blank=True)
 
     def __json__(self, *keys):
         return get_filtered_dict(self, *keys)

@@ -82,8 +82,17 @@ class PassTypesAdmin(admin.ModelAdmin):
 
 class GroupAdmin(admin.ModelAdmin):
     form = GroupsForm
-    list_display = (u'name', 'status', u'start_date', '_end_date', u'dance_hall', 'teachers_to_string', u'external_available')
-    filter_horizontal = ('teachers', 'available_passes', 'external_passes')
+    list_display = (u'name',
+                    u'status',
+                    u'start_date',
+                    u'_end_date',
+                    u'dance_hall',
+                    u'teachers_to_string',
+                    u'external_available')
+    filter_horizontal = ('teachers',
+                         'dance_halls',
+                         'available_passes',
+                         'external_passes')
     list_filter = (GroupsAdminStatusFilter, GroupsAdminHallFilter)
 
     def status(self, obj):

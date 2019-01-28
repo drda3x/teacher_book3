@@ -266,6 +266,8 @@ def get_base_info(request):
 
     comments = get_comments(group, students)
 
+    dhs = list(group.dance_halls.all().values_list("pk", "name", "station"))
+
     response = {
         "selected_month": date.strftime("%m%Y"),
         "month_list": month_list,
@@ -273,6 +275,7 @@ def get_base_info(request):
             "id", "name", "start_date", "days", "time",
             "dance_hall__prise", "dance_hall__station"
         ),
+        "dance_halls": dhs,
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
