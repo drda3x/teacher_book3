@@ -16,7 +16,8 @@ from application.models import (
     User,
     Comments,
     Students,
-    Debts
+    Debts,
+    DanceHallToLesson
 )
 from auth import auth
 from traceback import format_exc
@@ -50,7 +51,7 @@ from application.common.group import (
 
 from application.common.comments import get_comments
 
-from itertools import takewhile, chain, groupby
+from itertools import takewhile, chain, groupby, compress
 from collections import OrderedDict, Counter
 from application.settings import TIME_ZONE
 from pytz import timezone, utc
@@ -266,7 +267,14 @@ def get_base_info(request):
 
     comments = get_comments(group, students)
 
-    dhs = list(group.dance_halls.all().values_list("pk", "name", "station"))
+    dhs = list(group.dance_halls.all().values_list("pk", "name", "station", "prise"))
+    dh_2_date = dict(DanceHallToLesson.objects.filter(
+        date__in=dates,
+        group=group
+    ).order_by("date").values_list("date", "dance_hall_id"))
+
+    dh_2_dates = OrderedDict.fromkeys(dates, None)
+    dh_2_dates.update(dh_2_date)
 
     response = {
         "selected_month": date.strftime("%m%Y"),
@@ -276,6 +284,7 @@ def get_base_info(request):
             "dance_hall__prise", "dance_hall__station"
         ),
         "dance_halls": dhs,
+        "dance_hall_2_dates": dh_2_dates.values(),
         "dates": [
             dict(
                 val=d.strftime('%d.%m.%Y'),
@@ -375,7 +384,16 @@ def process_lesson(request):
 
     group = Groups.objects.get(pk=data['group'])
     date = datetime.strptime(data['date'], '%d.%m.%Y')
+    dance_hall = data['dance_hall']
     today = datetime.now()
+
+    dh2l, create = DanceHallToLesson.objects.get_or_create(
+        group=group,
+        date=date.date(),
+        defaults={"dance_hall_id": dance_hall}
+    )
+    dh2l.dance_hall_id = dance_hall
+    dh2l.save()
 
     attended = [
         s

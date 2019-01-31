@@ -103,8 +103,10 @@
         <tr>
             <td colspan="3" style="border-color: #000">Аренда зала</td>
             <td style="border-color: #000; background-color: {{getSellColor(4, null, $index)}}" ng-repeat="date in data.dates">
-                <span ng-if="calcLesson($index)">
-                    {{data.group.dance_hall.prise | number: 2}}
+                <span ng-if="calcLesson($index)" ng-init="dh_id = data.dance_hall_2_dates[$index]">
+                    <span ng-repeat="dh in data.dance_halls" ng-show="dh[0] == dh_id">
+                        {{dh[3]}}
+                    </span>
                 </span>
             </td>
         </tr>
@@ -228,26 +230,51 @@
                         </select>
                     </div>
                 </form>
+
+                <div class="">
+                    <select style="margin-bottom: 10px" 
+                            class="form-control" 
+                            id="" 
+                            name="" 
+                            ng-model="lessonWidget.selected_hall">
+                        <option value="-1" ng-selected="lessonWidget.selected_hall == -1">
+                            -- выберите зал --
+                        </option>
+                        <option value="{{ hall[0] }}" 
+                                ng-selected="lessonWidget.selected_hall == hall[0]"
+                                ng-repeat="hall in data.dance_halls">
+                            {{ hall[1] }}
+                        </option>
+                    </select>
+                </div>
+
                 <div class="modal-footer" ng-show="!lessonWidget.is_canceled">
                     <div>
-                        <select style="margin-bottom: 10px" 
-                                class="form-control" 
-                                id="" 
-                                name="" 
-                                ng-model="lessonWidget.teachers[t_index]">
-                            <option value="-1">--выберите зал--</option>
-                            <option value="{{hall[0]}}" ng-repeat="hall in data.dance_halls">
-                                {{hall[1]}}
-                            </option>
-                        </select>
+                        <button class="btn" 
+                                type="button" 
+                                ng-click="lessonWidget.cancelLesson()">
+                            Отменить занятие
+                        </button>
                     </div>
-                    <div>
-                        <button class="btn" type="button" ng-click="lessonWidget.cancelLesson()">Отменить занятие</button>
-                    </div>
-                    <div>
-                        <button type="button" class="btn" ng-click="lessonWidget.save(false)">Сохранить без пропусков</button>
-                        <button type="button" class="btn btn-primary" ng-click="lessonWidget.save(true)">Сохранить с пропусками</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="lessonWidget.cancel()">Отмена</button>
+                    <div class="text-danger" ng-show="lessonWidget.selected_hall == -1">
+                        <strong>Не выбран зал</strong></div>
+                    <div ng-hide="lessonWidget.selected_hall == -1">
+                        <button type="button" 
+                                class="btn" 
+                                ng-click="lessonWidget.save(false, selected_hall)">
+                            Сохранить без пропусков
+                        </button>
+                        <button type="button" 
+                                class="btn btn-primary" 
+                                ng-click="lessonWidget.save(true, selected_hall)">
+                            Сохранить с пропусками
+                        </button>
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                data-dismiss="modal" 
+                                ng-click="lessonWidget.cancel()">
+                            Отмена
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer" ng-show="lessonWidget.is_canceled">
@@ -385,8 +412,19 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button ng-hide="deleteLessonWidget.vacant_cnt == 0" type="button" class="btn btn-danger" ng-click="deleteLessonWidget.save()">Удалить {{deleteLessonWidget.vacant_cnt}}</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="deleteLessonWidget.close()">Отмена</button>
+                    <button ng-hide="deleteLessonWidget.vacant_cnt == 0" 
+                            type="button" 
+                            class="btn btn-danger" 
+                            ng-click="deleteLessonWidget.save()">
+                        Удалить {{deleteLessonWidget.vacant_cnt}}
+                    </button>
+
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            data-dismiss="modal" 
+                            ng-click="deleteLessonWidget.close()">
+                        Отмена
+                    </button>
                 </div>
             </div>
         </div>

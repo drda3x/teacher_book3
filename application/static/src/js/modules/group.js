@@ -59,7 +59,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         }
     }
 
-    function load() {
+    function load(callback) {
         $scope.data = {};
         $scope.main_list = [];
         $scope.sub_list = [];
@@ -88,6 +88,10 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
             fillSubLists();
             getAllTeachers();
+
+            if(callback != undefined) {
+                callback()
+            }
         }, function(response) {
         });
     }
@@ -218,6 +222,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         this.date = $scope.data.dates[index].val;
         this.is_canceled = $scope.data.dates[index].canceled;
         this.windowHeight = window.innerHeight;
+        this.selected_hall = $scope.data.dance_hall_2_dates[index] || -1;
 
         this.teachers = $.grep($scope.data.teachers.work, function(val, i) {
             return i == index;
@@ -239,13 +244,20 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
     }
 
     LessonWidget.prototype.save = function(attendance) {
+        if (this.selected_hall == -1) {
+            alert("Не выбран зал");
+        }
+
         var data = {
             group: $scope.data.group.id,
             date: this.date,
+            dance_hall: this.selected_hall,
             set_attendance: attendance,
             students: [],
             teachers: this.teachers
         };
+
+        var self = this;
 
         $.map(this.data, $.proxy(function(elem) {
             var d = {};
@@ -298,7 +310,9 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
                 'X-CSRFToken': getCookie('csrftoken')
             },
         }).then(function(response) {
-            load();
+            load(function() {
+                $scope.data.dance_hall_2_dates[self.index] = self.selected_hall;
+            });
         }, function(response) {
         });
     }
@@ -388,11 +402,22 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         return money;
     }
 
+    function get_dance_hall_prise(index) {
+        for (var i=0, j=$scope.data.dance_halls.length; i<j; i++) {
+            if($scope.data.dance_halls[i][0] == $scope.data.dance_hall_2_dates[index]) {
+                return $scope.data.dance_halls[i][3]
+            }
+        }
+        
+        return null
+    }
+
     $scope.calcClub = function(index) {
         var total = $scope.calcLesson(index);
+        var dance_hall_prise = get_dance_hall_prise(index) || 0;
         
         if(total) {
-            total -= $scope.data.group.dance_hall.prise;
+            total -= dance_hall_prise;
             total *= 0.3;
         }
 
@@ -401,9 +426,10 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
 
     $scope.calcTotal = function(index) {
         var total = $scope.calcLesson(index);
-        
+        var dance_hall_prise = get_dance_hall_prise(index) || 0;
+
         if(total) {
-            total -= ($scope.data.group.dance_hall.prise + $scope.calcClub(index));
+            total -= (dance_hall_prise + $scope.calcClub(index));
         }
 
         return total;
@@ -452,14 +478,18 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
         },
 
         calcDanceHall: function() {
+            var total = 0;
             try {
-                var noCanceled = $scope.data.dates.filter(function(e) {
-                    return !e.canceled;
-                });
-                return $scope.data.group.dance_hall.prise * noCanceled.length;
+                for(var i=0, j=$scope.data.dance_hall_2_dates.length; i<j; i++) {
+                    if($scope.data.dance_hall_2_dates[i] == null) {
+                        continue;
+                    }
+                    total += get_dance_hall_prise(i);
+                }
             } catch(e) {
-                return 0;
             }
+
+            return total;
         },
 
         calcClubTax: function() {

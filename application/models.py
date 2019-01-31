@@ -1080,3 +1080,13 @@ class AdministratorList(models.Model):
 
     class Meta:
         app_label = u'application'
+
+
+class DanceHallToLesson(models.Model):
+    date = models.DateField(verbose_name=u"Дата")
+    group = models.ForeignKey("Groups", verbose_name=u"Group")
+    dance_hall = models.ForeignKey("DanceHalls", verbose_name=u"Dance Hall", null=True, blank=True)
+
+    class Meta:
+        app_label = u"application"
+

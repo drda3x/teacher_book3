@@ -92,8 +92,9 @@ def get_students_lessons(group, date_from, date_to, students):
     date_from = max(date_from, group.start_date)
 
     if date_to is not None:
+        dt = date_to.date() if isinstance(date_to, datetime) else date_to
         _dates = list(takewhile(
-            lambda x: x <= date_to,
+            lambda x: x <= dt,
             get_calendar(date_from, group.days)
         ))
     else:
