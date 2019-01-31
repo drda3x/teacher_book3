@@ -236,6 +236,7 @@
                             class="form-control" 
                             id="" 
                             name="" 
+                            ng-show="data.dance_halls.length > 1"
                             ng-model="lessonWidget.selected_hall">
                         <option value="-1" ng-selected="lessonWidget.selected_hall == -1">
                             -- выберите зал --
@@ -256,8 +257,12 @@
                             Отменить занятие
                         </button>
                     </div>
-                    <div class="text-danger" ng-show="lessonWidget.selected_hall == -1">
+                    <div class="text-danger" 
+                         ng-show="lessonWidget.selected_hall == -1 && data.dance_halls.length > 0">
                         <strong>Не выбран зал</strong></div>
+                    <div class="text-danger" 
+                         ng-show="data.dance_halls.length == 0">
+                        <strong>Для группы не указаны залы!!!</strong></div>
                     <div ng-hide="lessonWidget.selected_hall == -1">
                         <button type="button" 
                                 class="btn" 

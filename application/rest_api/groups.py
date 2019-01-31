@@ -268,13 +268,19 @@ def get_base_info(request):
     comments = get_comments(group, students)
 
     dhs = list(group.dance_halls.all().values_list("pk", "name", "station", "prise"))
-    dh_2_date = dict(DanceHallToLesson.objects.filter(
-        date__in=dates,
-        group=group
-    ).order_by("date").values_list("date", "dance_hall_id"))
+
 
     dh_2_dates = OrderedDict.fromkeys(dates, None)
-    dh_2_dates.update(dh_2_date)
+
+    if len(dhs) == 1:
+       dh_2_dates = dict.fromkeys(dates, dhs[0][0])
+
+    elif len(dhs) > 1:
+        dh_2_date = dict(DanceHallToLesson.objects.filter(
+            date__in=dates,
+            group=group
+        ).order_by("date").values_list("date", "dance_hall_id"))
+        dh_2_dates.update(dh_2_date)
 
     response = {
         "selected_month": date.strftime("%m%Y"),
