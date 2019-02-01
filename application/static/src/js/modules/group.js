@@ -481,7 +481,7 @@ app.controller('groupCtrl', function($scope, $http, $location, $rootScope, $docu
             var total = 0;
             try {
                 for(var i=0, j=$scope.data.dance_hall_2_dates.length; i<j; i++) {
-                    if($scope.data.dance_hall_2_dates[i] == null) {
+                    if($scope.data.dance_hall_2_dates[i] == null || $scope.data.dates[i].canceled) {
                         continue;
                     }
                     total += get_dance_hall_prise(i);
