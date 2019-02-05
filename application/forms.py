@@ -75,6 +75,7 @@ class GroupsForm(forms.ModelForm):
             'time',
             'end_time',
             'teachers',
+            'dance_hall',
             'dance_halls',
             'available_passes',
             'external_passes',
